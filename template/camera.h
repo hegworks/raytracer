@@ -37,8 +37,8 @@ public:
 		if (IsKeyDown( GLFW_KEY_R )) camPos += speed * 2 * up, changed = true;
 		if (IsKeyDown( GLFW_KEY_F )) camPos -= speed * 2 * up, changed = true;
 		camTarget = camPos + ahead;
-		if (IsKeyDown( GLFW_KEY_UP )) camTarget -= speed * up, changed = true;
-		if (IsKeyDown( GLFW_KEY_DOWN )) camTarget += speed * up, changed = true;
+		if (IsKeyDown( GLFW_KEY_DOWN )) camTarget -= speed * up, changed = true;
+		if (IsKeyDown( GLFW_KEY_UP )) camTarget += speed * up, changed = true;
 		if (IsKeyDown( GLFW_KEY_LEFT )) camTarget -= speed * right, changed = true;
 		if (IsKeyDown( GLFW_KEY_RIGHT )) camTarget += speed * right, changed = true;
 		if (!changed) return false;
