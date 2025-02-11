@@ -4,7 +4,6 @@
     <ClCompile Include="..\template\template.cpp">
       <Filter>template</Filter>
     </ClCompile>
-    <ClCompile Include="renderer.cpp" />
     <ClCompile Include="..\lib\imgui\imgui.cpp">
       <Filter>template\imgui</Filter>
     </ClCompile>
@@ -35,6 +34,9 @@
     <ClCompile Include="..\template\tmpl8math.cpp">
       <Filter>template</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\renderer.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
@@ -43,7 +45,6 @@
     <ClInclude Include="..\template\precomp.h">
       <Filter>template</Filter>
     </ClInclude>
-    <ClInclude Include="renderer.h" />
     <ClInclude Include="..\lib\imgui\imconfig.h">
       <Filter>template\imgui</Filter>
     </ClInclude>
@@ -86,6 +87,12 @@
     <ClInclude Include="..\template\tmpl8math.h">
       <Filter>template</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Colors.h">
+      <Filter>Src\Enums</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\renderer.h">
+      <Filter>Src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">
@@ -98,6 +105,12 @@
     </Filter>
     <Filter Include="template\imgui">
       <UniqueIdentifier>{b1e7f5d5-23d5-4fa2-8854-9a94fb160820}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src">
+      <UniqueIdentifier>{aa1efe40-c064-424d-a9b0-9ef640a770ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Enums">
+      <UniqueIdentifier>{21f48b31-9040-46ba-8fd1-7a487fd86e15}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

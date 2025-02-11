@@ -90,6 +90,8 @@ void main()
 	glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
 	glfwWindowHint( GLFW_STENCIL_BITS, GL_FALSE );
 	glfwWindowHint( GLFW_RESIZABLE, GL_FALSE /* easier :) */ );
+	glfwWindowHint( GLFW_POSITION_X , 600 );
+	glfwWindowHint( GLFW_POSITION_Y, 80 );
 #ifdef FULLSCREEN
 	window = glfwCreateWindow( SCRWIDTH, SCRHEIGHT, "Tmpl8RT", glfwGetPrimaryMonitor(), 0 );
 #else
@@ -122,13 +124,13 @@ void main()
 	CONSOLE_SCREEN_BUFFER_INFO coninfo;
 	AllocConsole();
 	GetConsoleScreenBufferInfo( GetStdHandle( STD_OUTPUT_HANDLE ), &coninfo );
-	coninfo.dwSize.X = 1280;
-	coninfo.dwSize.Y = 800;
+	coninfo.dwSize.X = 600;
+	coninfo.dwSize.Y = 9999;
 	SetConsoleScreenBufferSize( GetStdHandle( STD_OUTPUT_HANDLE ), coninfo.dwSize );
 	FILE* file = nullptr;
 	freopen_s( &file, "CON", "w", stdout );
 	freopen_s( &file, "CON", "w", stderr );
-	SetWindowPos( GetConsoleWindow(), HWND_TOP, 0, 0, 1280, 800, 0 );
+	SetWindowPos( GetConsoleWindow(), HWND_TOP, 0, 0, 600, 1000, 0 );
 	glfwShowWindow( window );
 #endif
 	// initialize application
