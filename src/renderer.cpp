@@ -31,6 +31,16 @@ float3 Renderer::Trace(Ray& ray)
 	float cosa = max(0.0f, dot(N, normalize(vIL)));
 	float3 pointLightValue = scene.GetPointLightValue();
 
+	const float EPSILON = 1e-4f;
+
+	float shadowRayLength = tLI; //TODO maybe try tLI - EPSILON * 2
+	float3 shadowRayPos = I + N * EPSILON;
+	Ray shadowRay(shadowRayPos, normalize(vIL), shadowRayLength);
+	if(scene.IsOccluded(shadowRay))
+	{
+		pointLightValue = float3(0);
+	}
+
 	if(nda == 0)
 	{
 		return (N + 1) * 0.5f;
