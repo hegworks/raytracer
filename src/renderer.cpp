@@ -1,5 +1,7 @@
 #include "precomp.h"
 
+#include "Colors.h"
+
 // -----------------------------------------------------------
 // Initialize the renderer
 // -----------------------------------------------------------
@@ -92,7 +94,7 @@ void Renderer::Tick(float deltaTime)
 	avg = (1 - alpha) * avg + alpha * t.elapsed() * 1000;
 	if(alpha > 0.05f) alpha *= 0.5f;
 	float fps = 1000.0f / avg, rps = (SCRWIDTH * SCRHEIGHT) / avg;
-	//printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps / 1000);
+	printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps / 1000);
 	// handle user input
 	camera.HandleInput(deltaTime);
 }
@@ -107,7 +109,11 @@ void Renderer::UI()
 	// ray query on mouse
 	Ray r = camera.GetPrimaryRay((float)mousePos.x, (float)mousePos.y);
 	scene.FindNearest(r);
-	ImGui::Text("Object id: %i", r.objIdx);
+	bool isInScreen = mousePos.x >= 0 && mousePos.x < SCRWIDTH && mousePos.y >= 0 && mousePos.y < SCRHEIGHT;
+	float4 color = isInScreen ? accumulator[mousePos.x + mousePos.y * SCRWIDTH] : float4(Color::MAGENTA);
+	ImGui::ColorButton(" ", ImVec4(color.x, color.y, color.z, color.z));
+	ImGui::SameLine();
+	ImGui::Text("%i,%i   %i", mousePos.x, mousePos.y,r.objIdx);
 
 	ImGui::SliderInt("ndal", &nda, 0, 3);
 
