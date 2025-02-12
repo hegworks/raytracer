@@ -52,14 +52,12 @@ class PointLight
 public:
 	float3 pos = float3(0);
 	float3 color = float3(Color::MAGENTA);
-	float intensity = 1.0f;
 
 	PointLight() = default;
-	PointLight(float3 _pos, float3 _color, float _intensity)
+	PointLight(float3 _pos, float3 _color)
 	{
 		pos = _pos;
 		color = _color;
-		intensity = _intensity;
 	}
 };
 
@@ -537,7 +535,7 @@ public:
 		SetTime(0);
 		// Note: once we have triangle support we should get rid of the class
 		// hierarchy: virtuals reduce performance somewhat.
-		pointLight = PointLight(float3(0), Color::WHITE, 0.2f);
+		pointLight = PointLight(float3(0), Color::WHITE);
 	}
 	void SetTime(float t)
 	{
@@ -576,9 +574,9 @@ public:
 	{
 		return pointLight.pos;
 	}
-	float3 GetPointLightValue() const
+	float3 GetPointLightColor() const
 	{
-		return pointLight.color * pointLight.intensity;
+		return pointLight.color;
 	}
 	float3 RandomPointOnLight(const float r0, const float r1) const
 	{

@@ -29,11 +29,11 @@ float3 Renderer::Trace(Ray& ray)
 	float tLI = length(scene.GetPointLightPos() - I); // distance between Light & Intersection
 	float att = 1 / tLI * tLI; // attenuation
 	float cosa = max(0.0f, dot(N, normalize(vIL)));
-	float3 pointLightValue = scene.GetPointLightValue();
+	float3 pointLightValue = scene.GetPointLightColor();
 
 	const float EPSILON = 1e-4f;
 
-	float shadowRayLength = tLI; //TODO maybe try tLI - EPSILON * 2
+	float shadowRayLength = tLI - EPSILON * 2;
 	float3 shadowRayPos = I + N * EPSILON;
 	Ray shadowRay(shadowRayPos, normalize(vIL), shadowRayLength);
 	if(scene.IsOccluded(shadowRay))
@@ -109,12 +109,11 @@ void Renderer::UI()
 	scene.FindNearest(r);
 	ImGui::Text("Object id: %i", r.objIdx);
 
-	ImGui::SliderInt("nda", &nda, 0, 3);
+	ImGui::SliderInt("ndal", &nda, 0, 3);
 
 	if(ImGui::CollapsingHeader("PointLight"))
 	{
-		ImGui::DragFloat3("Pos", &scene.pointLight.pos.x);
-		ImGui::DragFloat3("Color", &scene.pointLight.color.x, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat("Intensity", &scene.pointLight.intensity, 0.01f, 0.0f, 10.0f);
+		ImGui::DragFloat3("Pos", &scene.pointLight.pos.x, 0.01f);
+		ImGui::DragFloat3("Color", &scene.pointLight.color.x, 0.01f, 0.0f, 10.0f);
 	}
 }

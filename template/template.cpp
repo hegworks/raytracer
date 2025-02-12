@@ -91,7 +91,7 @@ void main()
 	glfwWindowHint( GLFW_STENCIL_BITS, GL_FALSE );
 	glfwWindowHint( GLFW_RESIZABLE, GL_FALSE /* easier :) */ );
 	glfwWindowHint( GLFW_POSITION_X , 600 );
-	glfwWindowHint( GLFW_POSITION_Y, 80 );
+	glfwWindowHint( GLFW_POSITION_Y, 100 );
 #ifdef FULLSCREEN
 	window = glfwCreateWindow( SCRWIDTH, SCRHEIGHT, "Tmpl8RT", glfwGetPrimaryMonitor(), 0 );
 #else
