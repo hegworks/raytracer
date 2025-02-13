@@ -37,6 +37,12 @@
     <ClCompile Include="..\src\renderer.cpp">
       <Filter>Src</Filter>
     </ClCompile>
+    <ClCompile Include="PointLight.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>template</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
@@ -87,10 +93,16 @@
     <ClInclude Include="..\template\tmpl8math.h">
       <Filter>template</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Colors.h">
+    <ClInclude Include="..\src\renderer.h">
+      <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="PointLight.h">
+      <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Material.h">
       <Filter>Src\Enums</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\renderer.h">
+    <ClInclude Include="..\src\Color.h">
       <Filter>Src</Filter>
     </ClInclude>
   </ItemGroup>

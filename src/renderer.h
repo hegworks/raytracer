@@ -26,7 +26,7 @@ public:
 	Camera camera;
 	bool animating = true;
 	float anim_time = 0;
-	int nda = 3; // normal, distance, albedo, pointLight
+	int nda = 3; // normal, distance, albedo, light
 };
 
 } // namespace Tmpl8

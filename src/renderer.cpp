@@ -1,6 +1,6 @@
 #include "precomp.h"
 
-#include "Colors.h"
+#include <common.h>
 
 // -----------------------------------------------------------
 // Initialize the renderer
@@ -22,30 +22,44 @@ float3 Renderer::Trace(Ray& ray)
 	{
 		return 0; // or a fancy sky color
 	}
-	float3 I = ray.O + ray.t * ray.D; // SameAs ray.IntersectionPoint()
-	float3 N = scene.GetNormal(ray.objIdx, I, ray.D);
-	float3 albedo = scene.GetAlbedo(ray.objIdx, I);
 
-	float3 pointLightPos = scene.GetPointLightPos();
-	float3 vIL = pointLightPos - I; // vector from Intersection to PointLight
-	float tLI = length(scene.GetPointLightPos() - I); // distance between Light & Intersection
-	float att = 1 / tLI * tLI; // attenuation
-	float cosa = max(0.0f, dot(N, normalize(vIL)));
-	float3 pointLightValue = scene.GetPointLightColor();
+	float3 p = ray.IntersectionPoint(); /// intersection point
+	float3 n = scene.GetNormal(ray.objIdx, p, ray.D); /// normal of the intersection point
+	float3 albedo = scene.GetAlbedo(ray.objIdx, p); /// albedo of the intersection point
+	float3 wo = -ray.D; /// outgoing light direction
+	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
-	const float EPSILON = 1e-4f;
-
-	float shadowRayLength = tLI - EPSILON * 2;
-	float3 shadowRayPos = I + N * EPSILON;
-	Ray shadowRay(shadowRayPos, normalize(vIL), shadowRayLength);
-	if(scene.IsOccluded(shadowRay))
+	float3 l(0.0f); /// total outgoing radiance
+	for(int i = 0; i < static_cast<int>(scene.m_pointLights.size()); ++i)
 	{
-		pointLightValue = float3(0);
+		PointLight& light = scene.m_pointLights[i];
+		float3 lPos = light.m_pos; /// LightPos
+		float3 vi = lPos - p; /// Light Vector
+		float3 wi = normalize(vi); /// incoming light direction
+		float3 srPos = p + n * EPS; /// ShadowRayPos (considering EPS)
+		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
+
+		Ray shadowRay(srPos, wi, tMax);
+		bool isInShadow = scene.IsOccluded(shadowRay);
+		if(isInShadow)
+		{
+			continue;
+		}
+
+		float cosi = dot(n, wi); /// Lambert's cosine law
+		if(cosi <= 0)
+		{
+			continue;
+		}
+
+		float falloff = 1 / tMax * tMax; /// inverse square law
+
+		l += brdf * light.m_color * light.m_intensity * cosi * falloff;
 	}
 
 	if(nda == 0)
 	{
-		return (N + 1) * 0.5f;
+		return (n + 1) * 0.5f;
 	}
 	else if(nda == 1)
 	{
@@ -57,14 +71,10 @@ float3 Renderer::Trace(Ray& ray)
 	}
 	else if(nda == 3)
 	{
-		return albedo * pointLightValue * att * cosa;
+		return l;
 	}
 
-	// check isOcculuded "ray" and ligthPos
-	// if true: return 0
-	// else:
-	// lightColor = N.L stuff here
-	// return albedo * lightColor
+	throw std::runtime_error("Unhandled situation");
 }
 
 // -----------------------------------------------------------
@@ -113,13 +123,32 @@ void Renderer::UI()
 	float4 color = isInScreen ? accumulator[mousePos.x + mousePos.y * SCRWIDTH] : float4(Color::MAGENTA);
 	ImGui::ColorButton(" ", ImVec4(color.x, color.y, color.z, color.z));
 	ImGui::SameLine();
-	ImGui::Text("%i,%i   %i", mousePos.x, mousePos.y,r.objIdx);
+	ImGui::Text("%i,%i   %i", mousePos.x, mousePos.y, r.objIdx);
 
 	ImGui::SliderInt("ndal", &nda, 0, 3);
 
+	if(ImGui::Button("+ PointLight"))
+	{
+		scene.CreatePointLight();
+	}
+
+#if 0
 	if(ImGui::CollapsingHeader("PointLight"))
 	{
-		ImGui::DragFloat3("Pos", &scene.pointLight.pos.x, 0.01f);
-		ImGui::DragFloat3("Color", &scene.pointLight.color.x, 0.01f, 0.0f, 10.0f);
+		ImGui::DragFloat3("Pos", &scene.m_pointLights.pos.x, 0.01f);
+		ImGui::DragFloat3("Color", &scene.m_pointLights.color.x, 0.01f, 0.0f, 10.0f);
+	}
+#endif
+
+	for(int i = 0; i < static_cast<int>(scene.m_pointLights.size()); i++)
+	{
+		if(ImGui::TreeNode(("PointLight" + std::to_string(i)).c_str()))
+		{
+			ImGui::DragFloat3("Pos", &scene.m_pointLights[i].m_pos.x, 0.01f);
+			ImGui::ColorEdit3("Color", &scene.m_pointLights[i].m_color.x);
+			ImGui::DragFloat("Intensity", &scene.m_pointLights[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+
+			ImGui::TreePop();
+		}
 	}
 }

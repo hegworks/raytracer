@@ -15,7 +15,10 @@
 // - Has some high-frequency details - for filtering
 // -----------------------------------------------------------
 
-#include "Colors.h"
+#include "Color.h"
+#include <Material.h>
+#include <PointLight.h>
+#include <vector>
 
 #define FOURLIGHTS
 
@@ -47,20 +50,6 @@ public:
 	bool inside = false; // true when in medium
 };
 
-class PointLight
-{
-public:
-	float3 pos = float3(0);
-	float3 color = float3(Color::MAGENTA);
-
-	PointLight() = default;
-	PointLight(float3 _pos, float3 _color)
-	{
-		pos = _pos;
-		color = _color;
-	}
-};
-
 // -----------------------------------------------------------
 // Sphere primitive
 // Basic sphere, with explicit support for rays that start
@@ -69,6 +58,15 @@ public:
 class Sphere
 {
 public:
+	union
+	{
+		float3 pos;
+		__m128 pos4;
+	};
+	float r2 = 0, invr = 0;
+	int objIdx = -1;
+	Material m_material;
+
 	Sphere() = default;
 	Sphere(int idx, float3 p, float r) :
 		pos(p), r2(r* r), invr(1 / r), objIdx(idx)
@@ -107,17 +105,10 @@ public:
 	{
 		return (I - this->pos) * invr;
 	}
-	float3 GetAlbedo(const float3 I) const
+	float3& GetAlbedo(const float3 I)
 	{
-		return float3(0.93f);
+		return m_material.m_albedo;
 	}
-	union
-	{
-		float3 pos;
-		__m128 pos4;
-	};
-	float r2 = 0, invr = 0;
-	int objIdx = -1;
 };
 
 // -----------------------------------------------------------
@@ -128,6 +119,11 @@ public:
 class Plane
 {
 public:
+	float3 N;
+	float d;
+	int objIdx = -1;
+	Material m_material;
+
 	Plane() = default;
 	Plane(int idx, float3 normal, float dist) : N(normal), d(dist), objIdx(idx) {}
 	void Intersect(Ray& ray) const
@@ -138,6 +134,10 @@ public:
 	float3 GetNormal(const float3 I) const
 	{
 		return N;
+	}
+	float3& GetAlbedo()
+	{
+		return m_material.m_albedo;
 	}
 	float3 GetAlbedo(const float3 I) const
 	{
@@ -180,9 +180,6 @@ public:
 		}
 		return float3(0.93f);
 	}
-	float3 N;
-	float d;
-	int objIdx = -1;
 };
 
 // -----------------------------------------------------------
@@ -194,6 +191,10 @@ public:
 class Cube
 {
 public:
+	union { float4 b[2]; struct { __m128 bmin4, bmax4; }; };
+	int objIdx = -1;
+	Material m_material;
+
 	Cube() = default;
 	Cube(int idx, float3 pos, float3 size, mat4 transform = mat4::Identity())
 	{
@@ -244,12 +245,10 @@ public:
 		// return normal in world space
 		return N;
 	}
-	float3 GetAlbedo(const float3 I) const
+	float3& GetAlbedo(const float3 I)
 	{
-		return float3(1, 1, 1);
+		return m_material.m_albedo;
 	}
-	union { float4 b[2]; struct { __m128 bmin4, bmax4; }; };
-	int objIdx = -1;
 };
 
 // -----------------------------------------------------------
@@ -259,6 +258,11 @@ public:
 class Quad
 {
 public:
+	float size;
+	mat4 T, invT;
+	int objIdx = -1;
+	Material m_material;
+
 	Quad() = default;
 	Quad(int idx, float s, mat4 transform = mat4::Identity())
 	{
@@ -302,13 +306,10 @@ public:
 	{
 		return float3(-T.cell[1], -T.cell[5], -T.cell[9]);
 	}
-	float3 GetAlbedo(const float3 I) const
+	float3& GetAlbedo(const float3 I)
 	{
-		return float3(10);
+		return m_material.m_albedo;
 	}
-	float size;
-	mat4 T, invT;
-	int objIdx = -1;
 };
 
 // -----------------------------------------------------------
@@ -317,6 +318,10 @@ public:
 class Torus
 {
 public:
+	float rt2, rc2, r2;
+	int objIdx;
+	Material m_material;
+
 	Torus() = default;
 	Torus::Torus(int idx, float a, float b) : objIdx(idx)
 	{
@@ -464,12 +469,10 @@ public:
 		const float3 L = I - float3(0, 0, 1.5f);
 		return normalize(L * (dot(L, L) - rt2 - rc2 * float3(1, 1, -1)));
 	}
-	float3 Torus::GetAlbedo(const float3 I) const
+	float3& GetAlbedo(const float3 I)
 	{
-		return float3(1); // material.albedo;
+		return m_material.m_albedo;
 	}
-	float rt2, rc2, r2;
-	int objIdx;
 	// these are helper functions for the torus code
 	// these function will find the cubic root up till a certain accuracy using the newtonian method
 	float cbrtfFast(const float n) const
@@ -500,7 +503,7 @@ public:
 class Scene
 {
 public:
-	__declspec(align(64)) // start a new cacheline here
+	__declspec(align(64)) // start a new cache line here
 		float animTime = 0;
 #ifdef FOURLIGHTS
 	Quad quad[4];
@@ -512,31 +515,13 @@ public:
 	Cube cube;
 	Plane plane[6];
 	Torus torus;
-	PointLight pointLight;
+	std::vector<PointLight> m_pointLights;
 
-	Scene()
-	{
-		// we store all primitives in one continuous buffer
-#ifdef FOURLIGHTS
-		for(int i = 0; i < 4; i++) quad[i] = Quad(0, 0.5f);	// 0: four light sources
-#else
-		quad = Quad(0, 1);									// 0: light source
-#endif
-		sphere = Sphere(1, float3(0), 0.6f);				// 1: bouncing ball
-		sphere2 = Sphere(2, float3(0, 2.5f, -3.07f), 8);	// 2: rounded corners
-		cube = Cube(3, float3(2, 0, 2), float3(1.2f));		// 3: cube
-		plane[0] = Plane(4, float3(1, 0, 0), 3);			// 4: left wall
-		plane[1] = Plane(5, float3(-1, 0, 0), 2.99f);		// 5: right wall
-		plane[2] = Plane(6, float3(0, 1, 0), 1);			// 6: floor
-		plane[3] = Plane(7, float3(0, -1, 0), 2);			// 7: ceiling
-		plane[4] = Plane(8, float3(0, 0, 1), 3);			// 8: front wall
-		plane[5] = Plane(9, float3(0, 0, -1), 3.99f);		// 9: back wall
-		torus = Torus(10, 0.8f, 0.25f);						// 10: torus
-		SetTime(0);
-		// Note: once we have triangle support we should get rid of the class
-		// hierarchy: virtuals reduce performance somewhat.
-		pointLight = PointLight(float3(0), Color::WHITE);
-	}
+	PointLight& CreatePointLight();
+	PointLight& CreatePointLight(float3& pos, float3& color, float& intensity);
+	PointLight& GetPointLight(int idx);
+
+	Scene();
 	void SetTime(float t)
 	{
 		// default time for the scene is simply 0. Updating/ the time per frame
@@ -570,14 +555,7 @@ public:
 		return float3(0);
 #endif
 	}
-	float3 GetPointLightPos() const
-	{
-		return pointLight.pos;
-	}
-	float3 GetPointLightColor() const
-	{
-		return pointLight.color;
-	}
+
 	float3 RandomPointOnLight(const float r0, const float r1) const
 	{
 #ifndef FOURLIGHTS
@@ -625,7 +603,7 @@ public:
 	{
 		return float3(24, 24, 22);
 	}
-	float3 GetAreaLightColor() const
+	float3 GetAreaLightColor()
 	{
 #ifdef FOURLIGHTS
 		return quad[0].GetAlbedo(float3(0)); // they're all the same color
@@ -761,7 +739,7 @@ public:
 		if(dot(N, wo) > 0) N = -N; // hit backside / inside
 		return N;
 	}
-	float3 GetAlbedo(int objIdx, float3 I) const
+	float3& GetAlbedo(int objIdx, float3 I)
 	{
 		if(objIdx == -1) return float3(0); // or perhaps we should just crash
 #ifdef FOURLIGHTS
@@ -792,4 +770,5 @@ public:
 		return objIdx == 3 ? float3(0.5f, 0, 0.5f) : float3(0);
 	}
 };
+
 }
