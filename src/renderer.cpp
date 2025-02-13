@@ -88,7 +88,7 @@ float3 Renderer::Trace(Ray& ray)
 
 		float falloff = 1 / tMax * tMax; /// inverse square law
 
-		l += brdf * light.m_color * light.m_intensity * cosi * falloff * cutoff;
+		l += brdf * light.m_color * light.m_intensity * cosi * falloff * cutoff * cutoff;
 	}
 
 	if(nda == 0)
