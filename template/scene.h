@@ -18,6 +18,7 @@
 #include "Color.h"
 #include <Material.h>
 #include <PointLight.h>
+#include <SpotLight.h>
 #include <vector>
 
 #define FOURLIGHTS
@@ -516,10 +517,11 @@ public:
 	Plane plane[6];
 	Torus torus;
 	std::vector<PointLight> m_pointLights;
+	std::vector<SpotLight> m_spotLights;
 
 	PointLight& CreatePointLight();
 	PointLight& CreatePointLight(float3& pos, float3& color, float& intensity);
-	PointLight& GetPointLight(int idx);
+	SpotLight& CreateSpotLight();
 
 	Scene();
 	void SetTime(float t)

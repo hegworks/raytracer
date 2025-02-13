@@ -30,6 +30,7 @@ float3 Renderer::Trace(Ray& ray)
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
 	float3 l(0.0f); /// total outgoing radiance
+
 	for(int i = 0; i < static_cast<int>(scene.m_pointLights.size()); ++i)
 	{
 		PointLight& light = scene.m_pointLights[i];
@@ -55,6 +56,39 @@ float3 Renderer::Trace(Ray& ray)
 		float falloff = 1 / tMax * tMax; /// inverse square law
 
 		l += brdf * light.m_color * light.m_intensity * cosi * falloff;
+	}
+
+	for(int i = 0; i < static_cast<int>(scene.m_spotLights.size()); ++i)
+	{
+		SpotLight& light = scene.m_spotLights[i];
+		float3 lPos = light.m_pos; /// LightPos
+		float3 vi = lPos - p; /// Light Vector
+		float3 wi = normalize(vi); /// incoming light direction
+		float3 srPos = p + n * EPS; /// ShadowRayPos (considering EPS)
+		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
+
+		Ray shadowRay(srPos, wi, tMax);
+		bool isInShadow = scene.IsOccluded(shadowRay);
+		if(isInShadow)
+		{
+			continue;
+		}
+
+		float cosi = dot(n, wi); /// Lambert's cosine law.
+		if(cosi <= 0)
+		{
+			continue;
+		}
+
+		float cutoff = clamp((-dot(wi, light.m_dir) - light.m_cosO) / (light.m_cosI - light.m_cosO), 0.0f, 1.0f); // lerp. NOTICE the minus before dot
+		if(cutoff <= 0)
+		{
+			continue;
+		}
+
+		float falloff = 1 / tMax * tMax; /// inverse square law
+
+		l += brdf * light.m_color * light.m_intensity * cosi * falloff * cutoff;
 	}
 
 	if(nda == 0)
@@ -131,24 +165,56 @@ void Renderer::UI()
 	{
 		scene.CreatePointLight();
 	}
-
-#if 0
-	if(ImGui::CollapsingHeader("PointLight"))
+	ImGui::SameLine();
+	if(ImGui::Button("+ SpotLight"))
 	{
-		ImGui::DragFloat3("Pos", &scene.m_pointLights.pos.x, 0.01f);
-		ImGui::DragFloat3("Color", &scene.m_pointLights.color.x, 0.01f, 0.0f, 10.0f);
+		scene.CreateSpotLight();
 	}
-#endif
 
-	for(int i = 0; i < static_cast<int>(scene.m_pointLights.size()); i++)
+	if(!scene.m_pointLights.empty())
 	{
-		if(ImGui::TreeNode(("PointLight" + std::to_string(i)).c_str()))
+		if(ImGui::CollapsingHeader("PointLights"))
 		{
-			ImGui::DragFloat3("Pos", &scene.m_pointLights[i].m_pos.x, 0.01f);
-			ImGui::ColorEdit3("Color", &scene.m_pointLights[i].m_color.x);
-			ImGui::DragFloat("Intensity", &scene.m_pointLights[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+			for(int i = 0; i < static_cast<int>(scene.m_pointLights.size()); i++)
+			{
+				if(ImGui::TreeNode(("PL " + std::to_string(i)).c_str()))
+				{
+					ImGui::DragFloat3("Pos", &scene.m_pointLights[i].m_pos.x, 0.01f);
+					ImGui::ColorEdit3("Color", &scene.m_pointLights[i].m_color.x);
+					ImGui::DragFloat("Intensity", &scene.m_pointLights[i].m_intensity, 0.01f, 0.0f, 1000.0f);
 
-			ImGui::TreePop();
+					ImGui::TreePop();
+				}
+			}
 		}
 	}
+	if(!scene.m_spotLights.empty())
+	{
+		if(ImGui::CollapsingHeader("SpotLights"))
+		{
+			for(int i = 0; i < static_cast<int>(scene.m_spotLights.size()); i++)
+			{
+				if(ImGui::TreeNode(("SL " + std::to_string(i)).c_str()))
+				{
+					ImGui::DragFloat3("Pos", &scene.m_spotLights[i].m_pos.x, 0.01f);
+					ImGui::ColorEdit3("Color", &scene.m_spotLights[i].m_color.x);
+					ImGui::DragFloat("Intensity", &scene.m_spotLights[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+					float3 dir = scene.m_spotLights[i].m_dir;
+					ImGui::DragFloat3("Dir", &dir.x, 0.001f, -1.0f, 1.0f);
+					scene.m_spotLights[i].m_dir = normalize(dir);
+
+					ImGui::DragFloat("CosI", &scene.m_spotLights[i].m_cosI, 0.001f, scene.m_spotLights[i].m_cosO, 1.0f);
+					ImGui::SameLine();
+					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLights[i].m_cosI)));
+
+					ImGui::DragFloat("CosO", &scene.m_spotLights[i].m_cosO, 0.001f, 0.0f, scene.m_spotLights[i].m_cosI);
+					ImGui::SameLine();
+					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLights[i].m_cosO)));
+
+					ImGui::TreePop();
+				}
+			}
+		}
+	}
+
 }

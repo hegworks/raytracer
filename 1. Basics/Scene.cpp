@@ -31,6 +31,7 @@ Scene::Scene()
 	// Note: once we have triangle support we should get rid of the class
 	// hierarchy: virtuals reduce performance somewhat.
 	m_pointLights.reserve(5);
+	m_spotLights.reserve(5);
 }
 
 PointLight& Scene::CreatePointLight()
@@ -50,9 +51,11 @@ PointLight& Scene::CreatePointLight(float3& pos, float3& color, float& intensity
 	return light;
 }
 
-PointLight& Scene::GetPointLight(int idx)
+SpotLight& Scene::CreateSpotLight()
 {
-	return m_pointLights[idx];
+	m_spotLights.emplace_back();
+	SpotLight& light = m_spotLights.back();
+	return light;
 }
 
 }
