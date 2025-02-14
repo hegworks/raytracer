@@ -19,9 +19,7 @@ Scene::Scene()
 	cube = Cube(3, float3(2, 0, 2), float3(1.2f));		// 3: cube
 	cube.m_material.m_albedo = Color::MAGENTA;			// 3: cube
 	plane[0] = Plane(4, float3(1, 0, 0), 3);			// 4: left wall
-	plane[0].m_material.m_albedo = Color::RED;			// 4: left wall
 	plane[1] = Plane(5, float3(-1, 0, 0), 2.99f);		// 5: right wall
-	plane[1].m_material.m_albedo = Color::GREEN;		// 5: right wall
 	plane[2] = Plane(6, float3(0, 1, 0), 1);			// 6: floor
 	plane[3] = Plane(7, float3(0, -1, 0), 2);			// 7: ceiling
 	plane[4] = Plane(8, float3(0, 0, 1), 3);			// 8: front wall
@@ -32,6 +30,7 @@ Scene::Scene()
 	// hierarchy: virtuals reduce performance somewhat.
 	m_pointLights.reserve(5);
 	m_spotLights.reserve(5);
+	m_dirLights.reserve(5);
 }
 
 PointLight& Scene::CreatePointLight()
@@ -55,6 +54,13 @@ SpotLight& Scene::CreateSpotLight()
 {
 	m_spotLights.emplace_back();
 	SpotLight& light = m_spotLights.back();
+	return light;
+}
+
+DirLight& Scene::CreateDirLight()
+{
+	m_dirLights.emplace_back();
+	DirLight& light = m_dirLights.back();
 	return light;
 }
 

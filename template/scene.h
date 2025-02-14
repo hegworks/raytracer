@@ -16,6 +16,7 @@
 // -----------------------------------------------------------
 
 #include "Color.h"
+#include <DirLight.h>
 #include <Material.h>
 #include <PointLight.h>
 #include <SpotLight.h>
@@ -518,10 +519,12 @@ public:
 	Torus torus;
 	std::vector<PointLight> m_pointLights;
 	std::vector<SpotLight> m_spotLights;
+	std::vector<DirLight> m_dirLights;
 
 	PointLight& CreatePointLight();
 	PointLight& CreatePointLight(float3& pos, float3& color, float& intensity);
 	SpotLight& CreateSpotLight();
+	DirLight& CreateDirLight();
 
 	Scene();
 	void SetTime(float t)

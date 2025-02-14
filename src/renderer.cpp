@@ -91,6 +91,28 @@ float3 Renderer::Trace(Ray& ray)
 		l += brdf * light.m_color * light.m_intensity * cosi * falloff * cutoff * cutoff;
 	}
 
+	for(int i = 0; i < static_cast<int>(scene.m_dirLights.size()); ++i)
+	{
+		DirLight& light = scene.m_dirLights[i];
+		float3 wi = -light.m_dir; /// incoming light direction
+		float3 srPos = p + n * EPS; /// ShadowRayPos (considering EPS)
+
+		Ray shadowRay(srPos, wi);
+		bool isInShadow = scene.IsOccluded(shadowRay);
+		if(isInShadow)
+		{
+			continue;
+		}
+
+		float cosi = dot(n, wi); /// Lambert's cosine law
+		if(cosi <= 0)
+		{
+			continue;
+		}
+
+		l += brdf * light.m_color * light.m_intensity * cosi;
+	}
+
 	if(nda == 0)
 	{
 		return (n + 1) * 0.5f;
@@ -161,14 +183,19 @@ void Renderer::UI()
 
 	ImGui::SliderInt("ndal", &nda, 0, 3);
 
-	if(ImGui::Button("+ PointLight"))
+	if(ImGui::Button("+ PointL"))
 	{
 		scene.CreatePointLight();
 	}
 	ImGui::SameLine();
-	if(ImGui::Button("+ SpotLight"))
+	if(ImGui::Button("+ SpotL"))
 	{
 		scene.CreateSpotLight();
+	}
+	ImGui::SameLine();
+	if(ImGui::Button("+ DirL"))
+	{
+		scene.CreateDirLight();
 	}
 
 	if(!scene.m_pointLights.empty())
@@ -210,6 +237,26 @@ void Renderer::UI()
 					ImGui::DragFloat("CosO", &scene.m_spotLights[i].m_cosO, 0.001f, 0.0f, scene.m_spotLights[i].m_cosI);
 					ImGui::SameLine();
 					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLights[i].m_cosO)));
+
+					ImGui::TreePop();
+				}
+			}
+		}
+	}
+	if(!scene.m_dirLights.empty())
+	{
+		if(ImGui::CollapsingHeader("DirLights"))
+		{
+			for(int i = 0; i < static_cast<int>(scene.m_dirLights.size()); i++)
+			{
+				if(ImGui::TreeNode(("DL " + std::to_string(i)).c_str()))
+				{
+					DirLight& light = scene.m_dirLights[i];
+					float3 dir = light.m_dir;
+					ImGui::DragFloat3("Dir", &dir.x, 0.01f);
+					light.m_dir = normalize(dir);
+					ImGui::ColorEdit3("Color", &light.m_color.x);
+					ImGui::DragFloat("Intensity", &light.m_intensity, 0.01f, 0.0f, 1000.0f);
 
 					ImGui::TreePop();
 				}

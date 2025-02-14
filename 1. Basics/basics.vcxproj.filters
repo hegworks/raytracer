@@ -37,11 +37,11 @@
     <ClCompile Include="..\src\renderer.cpp">
       <Filter>Src</Filter>
     </ClCompile>
-    <ClCompile Include="PointLight.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>template</Filter>
+    </ClCompile>
+    <ClCompile Include="PointLight.cpp">
+      <Filter>Src\Lights</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -96,17 +96,20 @@
     <ClInclude Include="..\src\renderer.h">
       <Filter>Src</Filter>
     </ClInclude>
-    <ClInclude Include="PointLight.h">
-      <Filter>Src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Material.h">
+    <ClInclude Include="..\src\Color.h">
       <Filter>Src\Enums</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Color.h">
+    <ClInclude Include="..\src\Material.h">
       <Filter>Src</Filter>
     </ClInclude>
+    <ClInclude Include="PointLight.h">
+      <Filter>Src\Lights</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\SpotLight.h">
-      <Filter>Src</Filter>
+      <Filter>Src\Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DirLight.h">
+      <Filter>Src\Lights</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -126,6 +129,9 @@
     </Filter>
     <Filter Include="Src\Enums">
       <UniqueIdentifier>{21f48b31-9040-46ba-8fd1-7a487fd86e15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Lights">
+      <UniqueIdentifier>{53e79265-24f7-45e7-94ea-1c1d2af1896e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
