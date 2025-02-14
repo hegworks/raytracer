@@ -40,9 +40,6 @@
     <ClCompile Include="Scene.cpp">
       <Filter>template</Filter>
     </ClCompile>
-    <ClCompile Include="PointLight.cpp">
-      <Filter>Src\Lights</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
@@ -111,6 +108,15 @@
     <ClInclude Include="..\src\DirLight.h">
       <Filter>Src\Lights</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\QuadLight.h">
+      <Filter>Src\Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="..\template\Ray.h">
+      <Filter>template</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Quad.h">
+      <Filter>Src\Shapes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">
@@ -132,6 +138,9 @@
     </Filter>
     <Filter Include="Src\Lights">
       <UniqueIdentifier>{53e79265-24f7-45e7-94ea-1c1d2af1896e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Shapes">
+      <UniqueIdentifier>{83579ce3-ff35-4190-a688-00d09bf07e3a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -140,7 +140,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\template\tmpl8math.cpp" />
-    <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +152,8 @@
     <ClInclude Include="..\lib\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\lib\imgui\imstb_textedit.h" />
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\src\Quad.h" />
+    <ClInclude Include="..\src\QuadLight.h" />
     <ClInclude Include="..\src\Color.h" />
     <ClInclude Include="..\src\DirLight.h" />
     <ClInclude Include="..\src\Material.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="..\template\common.h" />
     <ClInclude Include="..\template\opengl.h" />
     <ClInclude Include="..\template\precomp.h" />
+    <ClInclude Include="..\template\Ray.h" />
     <ClInclude Include="..\template\scene.h" />
     <ClInclude Include="..\template\surface.h" />
     <ClInclude Include="..\template\tmpl8math.h" />

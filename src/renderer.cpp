@@ -197,6 +197,11 @@ void Renderer::UI()
 	{
 		scene.CreateDirLight();
 	}
+	ImGui::SameLine();
+	if(ImGui::Button("+ QuadL"))
+	{
+		scene.CreateQuadLight();
+	}
 
 	if(!scene.m_pointLights.empty())
 	{
@@ -257,6 +262,32 @@ void Renderer::UI()
 					light.m_dir = normalize(dir);
 					ImGui::ColorEdit3("Color", &light.m_color.x);
 					ImGui::DragFloat("Intensity", &light.m_intensity, 0.01f, 0.0f, 1000.0f);
+
+					ImGui::TreePop();
+				}
+			}
+		}
+	}
+	if(!scene.m_quadLights.empty())
+	{
+		if(ImGui::CollapsingHeader("QuadLights"))
+		{
+			for(int i = 0; i < static_cast<int>(scene.m_quadLights.size()); i++)
+			{
+				if(ImGui::TreeNode(("QL " + std::to_string(i)).c_str()))
+				{
+					QuadLight& light = scene.m_quadLights[i];
+
+					ImGui::DragFloat3("Pos", &light.m_quad.m_pos.x, 0.01f);
+					ImGui::DragFloat3("Dir", &light.m_quad.m_dir.x, 1.0f);
+					mat4 baseMat = mat4::Identity();
+					baseMat = baseMat * mat4::RotateX(DEG_TO_RAD(light.m_quad.m_dir.x));
+					baseMat = baseMat * mat4::RotateY(DEG_TO_RAD(light.m_quad.m_dir.y));
+					baseMat = baseMat * mat4::RotateZ(DEG_TO_RAD(light.m_quad.m_dir.z));
+					light.m_quad.T = mat4::Translate(light.m_quad.m_pos) * baseMat;
+					light.m_quad.invT = light.m_quad.T.FastInvertedTransformNoScale();
+
+					ImGui::DragFloat("Size", &light.m_quad.size, 0.01f, 0.0f, 100.0f);
 
 					ImGui::TreePop();
 				}

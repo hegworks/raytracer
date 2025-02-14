@@ -19,10 +19,13 @@
 #include <DirLight.h>
 #include <Material.h>
 #include <PointLight.h>
+#include <Quad.h>
+#include <QuadLight.h>
+#include <Ray.h>
 #include <SpotLight.h>
 #include <vector>
 
-#define FOURLIGHTS
+//#define FOURLIGHTS
 
 #define PLANE_X(o,i) {t=-(ray.O.x+o)*ray.rD.x;if(t<ray.t&&t>0)ray.t=t,ray.objIdx=i;}
 #define PLANE_Y(o,i) {t=-(ray.O.y+o)*ray.rD.y;if(t<ray.t&&t>0)ray.t=t,ray.objIdx=i;}
@@ -30,28 +33,6 @@
 
 namespace Tmpl8
 {
-__declspec(align(64)) class Ray
-{
-public:
-	Ray() = default;
-	Ray(const float3 origin, const float3 direction, const float distance = 1e34f, const int idx = -1)
-	{
-		O = origin, D = direction, t = distance;
-		// calculate reciprocal ray direction for triangles and AABBs
-		rD = float3(1 / D.x, 1 / D.y, 1 / D.z);
-		d0 = 1, d1 = d2 = 0; // ready for SIMD matrix math
-		objIdx = idx;
-	}
-	float3 IntersectionPoint() const { return O + t * D; }
-	// ray data
-	union { struct { float3 O; float d0; }; __m128 O4; };
-	union { struct { float3 D; float d1; }; __m128 D4; };
-	union { struct { float3 rD; float d2; }; __m128 rD4; };
-	float t = 1e34f;
-	int objIdx = -1;
-	bool inside = false; // true when in medium
-};
-
 // -----------------------------------------------------------
 // Sphere primitive
 // Basic sphere, with explicit support for rays that start
@@ -246,67 +227,6 @@ public:
 		if(d5 < minDist) minDist = d5, N = float3(0, 0, 1);
 		// return normal in world space
 		return N;
-	}
-	float3& GetAlbedo(const float3 I)
-	{
-		return m_material.m_albedo;
-	}
-};
-
-// -----------------------------------------------------------
-// Quad primitive
-// Oriented quad, intended to be used as a light source.
-// -----------------------------------------------------------
-class Quad
-{
-public:
-	float size;
-	mat4 T, invT;
-	int objIdx = -1;
-	Material m_material;
-
-	Quad() = default;
-	Quad(int idx, float s, mat4 transform = mat4::Identity())
-	{
-		objIdx = idx;
-		size = s * 0.5f;
-		T = transform, invT = transform.FastInvertedTransformNoScale();
-	}
-	void Intersect(Ray& ray) const
-	{
-		const float Oy = invT.cell[4] * ray.O.x + invT.cell[5] * ray.O.y + invT.cell[6] * ray.O.z + invT.cell[7];
-		const float Dy = invT.cell[4] * ray.D.x + invT.cell[5] * ray.D.y + invT.cell[6] * ray.D.z;
-		const float t = Oy / -Dy;
-		if(t < ray.t && t > 0)
-		{
-			const float Ox = invT.cell[0] * ray.O.x + invT.cell[1] * ray.O.y + invT.cell[2] * ray.O.z + invT.cell[3];
-			const float Oz = invT.cell[8] * ray.O.x + invT.cell[9] * ray.O.y + invT.cell[10] * ray.O.z + invT.cell[11];
-			const float Dx = invT.cell[0] * ray.D.x + invT.cell[1] * ray.D.y + invT.cell[2] * ray.D.z;
-			const float Dz = invT.cell[8] * ray.D.x + invT.cell[9] * ray.D.y + invT.cell[10] * ray.D.z;
-			const float Ix = Ox + t * Dx, Iz = Oz + t * Dz;
-			if(Ix > -size && Ix < size && Iz > -size && Iz < size)
-				ray.t = t, ray.objIdx = objIdx;
-		}
-	}
-	bool IsOccluded(const Ray& ray) const
-	{
-		const float Oy = invT.cell[4] * ray.O.x + invT.cell[5] * ray.O.y + invT.cell[6] * ray.O.z + invT.cell[7];
-		const float Dy = invT.cell[4] * ray.D.x + invT.cell[5] * ray.D.y + invT.cell[6] * ray.D.z;
-		const float t = Oy / -Dy;
-		if(t < ray.t && t > 0)
-		{
-			const float Ox = invT.cell[0] * ray.O.x + invT.cell[1] * ray.O.y + invT.cell[2] * ray.O.z + invT.cell[3];
-			const float Oz = invT.cell[8] * ray.O.x + invT.cell[9] * ray.O.y + invT.cell[10] * ray.O.z + invT.cell[11];
-			const float Dx = invT.cell[0] * ray.D.x + invT.cell[1] * ray.D.y + invT.cell[2] * ray.D.z;
-			const float Dz = invT.cell[8] * ray.D.x + invT.cell[9] * ray.D.y + invT.cell[10] * ray.D.z;
-			const float Ix = Ox + t * Dx, Iz = Oz + t * Dz;
-			return Ix > -size && Ix < size && Iz > -size && Iz < size;
-		}
-		return false;
-	}
-	float3 GetNormal(const float3 I) const
-	{
-		return float3(-T.cell[1], -T.cell[5], -T.cell[9]);
 	}
 	float3& GetAlbedo(const float3 I)
 	{
@@ -520,11 +440,14 @@ public:
 	std::vector<PointLight> m_pointLights;
 	std::vector<SpotLight> m_spotLights;
 	std::vector<DirLight> m_dirLights;
+	std::vector<QuadLight> m_quadLights;
 
+	int m_nextIdx = 0;
 	PointLight& CreatePointLight();
 	PointLight& CreatePointLight(float3& pos, float3& color, float& intensity);
 	SpotLight& CreateSpotLight();
 	DirLight& CreateDirLight();
+	QuadLight& CreateQuadLight();
 
 	Scene();
 	void SetTime(float t)
@@ -672,6 +595,10 @@ public:
 #else
 		quad.Intersect(ray);
 #endif
+		for(int i = 0; i < static_cast<int>(m_quadLights.size()); ++i)
+		{
+			m_quadLights[i].m_quad.Intersect(ray);
+		}
 		{
 			// SIMD sphere intersection code by Jesse Vrooman
 			const __m128 oc = _mm_sub_ps(ray.O4, sphere.pos4);
@@ -717,6 +644,12 @@ public:
 #else
 		if(quad.IsOccluded(ray)) return true;
 #endif
+
+		for(int i = 0; i < static_cast<int>(m_quadLights.size()); ++i)
+		{
+			if(m_quadLights[i].m_quad.IsOccluded(ray)) return true;
+		}
+
 		if(torus.IsOccluded(ray)) return true;
 		return false; // skip planes and rounded corners
 	}
@@ -735,11 +668,15 @@ public:
 		else if(objIdx == 2) N = sphere2.GetNormal(I);
 		else if(objIdx == 3) N = cube.GetNormal(I);
 		else if(objIdx == 10) N = torus.GetNormal(I);
-		else
+		else if(objIdx >= 4 && objIdx <= 9)
 		{
 			// faster to handle the 6 planes without a call to GetNormal
 			N = float3(0);
 			N[(objIdx - 4) / 2] = 1 - 2 * (float)(objIdx & 1);
+		}
+		else if(objIdx >= 11)
+		{
+			N = m_quadLights[objIdx - 11].m_quad.GetNormal(I);
 		}
 		if(dot(N, wo) > 0) N = -N; // hit backside / inside
 		return N;
@@ -755,8 +692,12 @@ public:
 		if(objIdx == 1) return sphere.GetAlbedo(I);
 		if(objIdx == 2) return sphere2.GetAlbedo(I);
 		if(objIdx == 3) return cube.GetAlbedo(I);
+		if(objIdx >= 4 && objIdx <= 9) return plane[objIdx - 4].GetAlbedo(I);
 		if(objIdx == 10) return torus.GetAlbedo(I);
-		return plane[objIdx - 4].GetAlbedo(I);
+		if(objIdx >= 11)
+		{
+			return m_quadLights[objIdx - 11].m_quad.m_material.m_albedo;
+		}
 		// once we have triangle support, we should pass objIdx and the bary-
 		// centric coordinates of the hit, instead of the intersection location.
 	}

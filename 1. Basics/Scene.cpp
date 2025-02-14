@@ -25,6 +25,7 @@ Scene::Scene()
 	plane[4] = Plane(8, float3(0, 0, 1), 3);			// 8: front wall
 	plane[5] = Plane(9, float3(0, 0, -1), 3.99f);		// 9: back wall
 	torus = Torus(10, 0.8f, 0.25f);						// 10: torus
+	m_nextIdx = 11;
 	SetTime(0);
 	// Note: once we have triangle support we should get rid of the class
 	// hierarchy: virtuals reduce performance somewhat.
@@ -61,6 +62,13 @@ DirLight& Scene::CreateDirLight()
 {
 	m_dirLights.emplace_back();
 	DirLight& light = m_dirLights.back();
+	return light;
+}
+
+QuadLight& Scene::CreateQuadLight()
+{
+	m_quadLights.emplace_back(m_nextIdx++);
+	QuadLight& light = m_quadLights.back();
 	return light;
 }
 
