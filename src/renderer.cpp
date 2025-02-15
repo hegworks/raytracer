@@ -257,7 +257,8 @@ void Renderer::UI()
 		green = (pixel & 0x00FF00) >> 8;
 		blue = pixel & 0x0000FF;
 	}
-	ImGui::ColorButton("", ImGui::ColorConvertU32ToFloat4(pixel));
+	ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+	ImGui::ColorButton("", color);
 	ImGui::SameLine();
 
 	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, mousePos.x, mousePos.y, r.objIdx);
