@@ -63,7 +63,11 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 			continue;
 		}
 
-		float falloff = 1 / tMax * tMax; /// inverse square law
+		float falloff = 1.0f / (tMax * tMax); /// inverse square law
+		if(falloff < EPS)
+		{
+			continue;
+		}
 
 		l += brdf * light.m_color * light.m_intensity * cosi * falloff;
 	}
@@ -96,7 +100,11 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 			continue;
 		}
 
-		float falloff = 1 / tMax * tMax; /// inverse square law
+		float falloff = 1.0f / (tMax * tMax); /// inverse square law
+		if(falloff < EPS)
+		{
+			continue;
+		}
 
 		l += brdf * light.m_color * light.m_intensity * cosi * falloff * cutoff * cutoff;
 	}
@@ -138,7 +146,6 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 			float3 wi = normalize(vi);
 			float tMax = length(vi) - EPS * 2;
 
-
 			if(qlOneSided)
 			{
 				bool isOppositeSide = dot(lightDir, wi) <= 0;
@@ -161,11 +168,15 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 				continue;
 			}
 
-			float falloff = 1 / tMax * tMax; /// inverse square law
+			float falloff = 1.0f / (tMax * tMax); /// inverse square law
+			if(falloff < EPS)
+			{
+				continue;
+			}
 
 			lSamples += brdf * light.m_color * light.m_intensity * cosi * falloff * pdfEffect;
 		}
-		l += lSamples / qlNumSamples;
+		l += lSamples / static_cast<float>(qlNumSamples);
 	}
 
 	if(nda == 0)
