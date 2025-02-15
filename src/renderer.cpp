@@ -10,12 +10,20 @@ void Renderer::Init()
 	// create fp32 rgb pixel buffer to render to
 	accumulator = (float4*)MALLOC64(SCRWIDTH * SCRHEIGHT * 16);
 	memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);
+
+	for(int y = 0; y < SCRHEIGHT; y++)
+	{
+		for(int x = 0; x < SCRWIDTH; x++)
+		{
+			pixelSeeds[x + y * SCRWIDTH] = threadRng.InitSeed(1 + x + y * SCRWIDTH);
+		}
+	}
 }
 
 // -----------------------------------------------------------
 // Evaluate light transport
 // -----------------------------------------------------------
-float3 Renderer::Trace(Ray& ray)
+float3 Renderer::Trace(Ray& ray, int x, int y)
 {
 	scene.FindNearest(ray);
 	if(ray.objIdx == -1)
@@ -113,6 +121,49 @@ float3 Renderer::Trace(Ray& ray)
 		l += brdf * light.m_color * light.m_intensity * cosi;
 	}
 
+	for(int i = 0; i < static_cast<int>(scene.m_quadLights.size()); ++i)
+	{
+		QuadLight& light = scene.m_quadLights[i];
+		float3 lSamples = float3(0);
+		float3 srPos = p + n * EPS;
+		float3 lightDir = -light.m_quad.GetNormal();
+		float pdfEffect = 1 / light.GetPDF();
+
+		for(int j = 0; j < QL_NUM_SAMPLES; ++j)
+		{
+			float3 a = light.GetRandomPoint(pixelSeeds[x + y * SCRWIDTH]);
+			float3 vi = a - p;
+			float3 wi = normalize(vi);
+			float tMax = length(vi) - EPS * 2;
+
+#if 1
+			bool isOppositeSide = dot(lightDir, wi) <= 0;
+			if(isOppositeSide)
+			{
+				continue;
+			}
+#endif
+
+			Ray shadowRay(srPos, wi, tMax);
+			bool isInShadow = scene.IsOccluded(shadowRay);
+			if(isInShadow)
+			{
+				continue;
+			}
+
+			float cosi = dot(n, wi); /// Lambert's cosine law.
+			if(cosi <= 0)
+			{
+				continue;
+			}
+
+			float falloff = 1 / tMax * tMax; /// inverse square law
+
+			lSamples += brdf * light.m_color * light.m_intensity * cosi * falloff * pdfEffect;
+		}
+		l += lSamples / QL_NUM_SAMPLES;
+	}
+
 	if(nda == 0)
 	{
 		return (n + 1) * 0.5f;
@@ -149,7 +200,7 @@ void Renderer::Tick(float deltaTime)
 		// trace a primary ray for each pixel on the line
 		for(int x = 0; x < SCRWIDTH; x++)
 		{
-			float4 pixel = float4(Trace(camera.GetPrimaryRay((float)x, (float)y)), 0);
+			float4 pixel = float4(Trace(camera.GetPrimaryRay((float)x, (float)y), x, y), 0);
 			// translate accumulator contents to rgb32 pixels
 			screen->pixels[x + y * SCRWIDTH] = RGBF32_to_RGB8(&pixel);
 			accumulator[x + y * SCRWIDTH] = pixel;
@@ -182,6 +233,7 @@ void Renderer::UI()
 	ImGui::Text("%i,%i   %i", mousePos.x, mousePos.y, r.objIdx);
 
 	ImGui::SliderInt("ndal", &nda, 0, 3);
+	ImGui::SliderInt("QL Samples", &QL_NUM_SAMPLES, 1, 32);
 
 	if(ImGui::Button("+ PointL"))
 	{
@@ -288,6 +340,9 @@ void Renderer::UI()
 					light.m_quad.invT = light.m_quad.T.FastInvertedTransformNoScale();
 
 					ImGui::DragFloat("Size", &light.m_quad.size, 0.01f, 0.0f, 100.0f);
+
+					ImGui::ColorEdit3("Color", &light.m_color.x);
+					ImGui::DragFloat("Intensity", &light.m_intensity, 0.01f, 0.0f, 1000.0f);
 
 					ImGui::TreePop();
 				}

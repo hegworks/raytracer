@@ -595,10 +595,12 @@ public:
 #else
 		quad.Intersect(ray);
 #endif
+#if 1
 		for(int i = 0; i < static_cast<int>(m_quadLights.size()); ++i)
 		{
 			m_quadLights[i].m_quad.Intersect(ray);
 		}
+#endif
 		{
 			// SIMD sphere intersection code by Jesse Vrooman
 			const __m128 oc = _mm_sub_ps(ray.O4, sphere.pos4);
@@ -645,10 +647,12 @@ public:
 		if(quad.IsOccluded(ray)) return true;
 #endif
 
+#if 1
 		for(int i = 0; i < static_cast<int>(m_quadLights.size()); ++i)
 		{
 			if(m_quadLights[i].m_quad.IsOccluded(ray)) return true;
 		}
+#endif
 
 		if(torus.IsOccluded(ray)) return true;
 		return false; // skip planes and rounded corners
@@ -662,7 +666,7 @@ public:
 #ifdef FOURLIGHTS
 		if(objIdx == 0) N = quad[0].GetNormal(I); // they're all oriented the same
 #else
-		if(objIdx == 0) N = quad.GetNormal(I);
+		if(objIdx == 0) N = quad.GetNormal();
 #endif
 		else if(objIdx == 1) N = sphere.GetNormal(I);
 		else if(objIdx == 2) N = sphere2.GetNormal(I);
@@ -676,7 +680,7 @@ public:
 		}
 		else if(objIdx >= 11)
 		{
-			N = m_quadLights[objIdx - 11].m_quad.GetNormal(I);
+			N = m_quadLights[objIdx - 11].m_quad.GetNormal();
 		}
 		if(dot(N, wo) > 0) N = -N; // hit backside / inside
 		return N;

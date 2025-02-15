@@ -117,6 +117,9 @@
     <ClInclude Include="..\src\Quad.h">
       <Filter>Src\Shapes</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\RNG.h">
+      <Filter>Src\Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">
@@ -141,6 +144,9 @@
     </Filter>
     <Filter Include="Src\Shapes">
       <UniqueIdentifier>{83579ce3-ff35-4190-a688-00d09bf07e3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Tools">
+      <UniqueIdentifier>{1e52af11-38c4-4b13-9986-ede5e8ea44d3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

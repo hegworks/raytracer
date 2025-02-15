@@ -1,4 +1,5 @@
 #pragma once
+#include "RNG.h"
 
 namespace Tmpl8
 {
@@ -8,7 +9,7 @@ class Renderer : public TheApp
 public:
 	// game flow methods
 	void Init();
-	float3 Trace(Ray& ray);
+	float3 Trace(Ray& ray, int x, int y);
 	void Tick(float deltaTime);
 	void UI();
 	void Shutdown() { /* implement if you want to do things on shutdown */ }
@@ -27,6 +28,9 @@ public:
 	bool animating = true;
 	float anim_time = 0;
 	int nda = 3; // normal, distance, albedo, light
+	uint pixelSeeds[SCRWIDTH * SCRHEIGHT];
+	static thread_local RNG threadRng;
+	int QL_NUM_SAMPLES = 1;
 };
 
 } // namespace Tmpl8

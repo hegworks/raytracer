@@ -158,6 +158,7 @@
     <ClInclude Include="..\src\DirLight.h" />
     <ClInclude Include="..\src\Material.h" />
     <ClInclude Include="..\src\renderer.h" />
+    <ClInclude Include="..\src\RNG.h" />
     <ClInclude Include="..\src\SpotLight.h" />
     <ClInclude Include="..\template\camera.h" />
     <ClInclude Include="..\template\common.h" />

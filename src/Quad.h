@@ -13,7 +13,7 @@ public:
 	mat4 T, invT;
 	int objIdx = -1;
 	Material m_material;
-	float3 m_pos;
+	float3 m_pos = float3(0);
 	float3 m_dir = float3(0,1,0);
 
 	Quad() = default;
@@ -55,7 +55,7 @@ public:
 		}
 		return false;
 	}
-	float3 GetNormal(const float3 I) const
+	float3 GetNormal() const
 	{
 		return float3(-T.cell[1], -T.cell[5], -T.cell[9]);
 	}
