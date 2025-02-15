@@ -18,6 +18,8 @@ void Renderer::Init()
 			pixelSeeds[x + y * SCRWIDTH] = threadRng.InitSeed(1 + x + y * SCRWIDTH);
 		}
 	}
+
+	acmCounter = 1;
 }
 
 // -----------------------------------------------------------
@@ -129,20 +131,22 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 		float3 lightDir = -light.m_quad.GetNormal();
 		float pdfEffect = 1 / light.GetPDF();
 
-		for(int j = 0; j < QL_NUM_SAMPLES; ++j)
+		for(int j = 0; j < qlNumSamples; ++j)
 		{
 			float3 a = light.GetRandomPoint(pixelSeeds[x + y * SCRWIDTH]);
 			float3 vi = a - p;
 			float3 wi = normalize(vi);
 			float tMax = length(vi) - EPS * 2;
 
-#if 1
-			bool isOppositeSide = dot(lightDir, wi) <= 0;
-			if(isOppositeSide)
+
+			if(qlOneSided)
 			{
-				continue;
+				bool isOppositeSide = dot(lightDir, wi) <= 0;
+				if(isOppositeSide)
+				{
+					continue;
+				}
 			}
-#endif
 
 			Ray shadowRay(srPos, wi, tMax);
 			bool isInShadow = scene.IsOccluded(shadowRay);
@@ -161,7 +165,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 
 			lSamples += brdf * light.m_color * light.m_intensity * cosi * falloff * pdfEffect;
 		}
-		l += lSamples / QL_NUM_SAMPLES;
+		l += lSamples / qlNumSamples;
 	}
 
 	if(nda == 0)
@@ -193,6 +197,7 @@ void Renderer::Tick(float deltaTime)
 	if(animating) scene.SetTime(anim_time += deltaTime * 0.002f);
 	// pixel loop
 	Timer t;
+	const float scale = 1.0f / static_cast<float>(acmCounter++);
 	// lines are executed as OpenMP parallel tasks (disabled in DEBUG)
 #pragma omp parallel for schedule(dynamic)
 	for(int y = 0; y < SCRHEIGHT; y++)
@@ -200,10 +205,9 @@ void Renderer::Tick(float deltaTime)
 		// trace a primary ray for each pixel on the line
 		for(int x = 0; x < SCRWIDTH; x++)
 		{
-			float4 pixel = float4(Trace(camera.GetPrimaryRay((float)x, (float)y), x, y), 0);
-			// translate accumulator contents to rgb32 pixels
-			screen->pixels[x + y * SCRWIDTH] = RGBF32_to_RGB8(&pixel);
-			accumulator[x + y * SCRWIDTH] = pixel;
+			accumulator[x + y * SCRWIDTH] += float4(Trace(camera.GetPrimaryRay((float)x, (float)y), x, y), 0);
+			float4 avg = accumulator[x + y * SCRWIDTH] * scale;
+			screen->pixels[x + y * SCRWIDTH] = RGBF32_to_RGB8(&avg);
 		}
 	}
 	// performance report - running average - ms, MRays/s
@@ -213,7 +217,11 @@ void Renderer::Tick(float deltaTime)
 	float fps = 1000.0f / avg, rps = (SCRWIDTH * SCRHEIGHT) / avg;
 	printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps / 1000);
 	// handle user input
-	camera.HandleInput(deltaTime);
+	if(camera.HandleInput(deltaTime) || (useACMMax && acmCounter > acmMax))
+	{
+		memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);
+		acmCounter = 1;
+	}
 }
 
 // -----------------------------------------------------------
@@ -233,7 +241,10 @@ void Renderer::UI()
 	ImGui::Text("%i,%i   %i", mousePos.x, mousePos.y, r.objIdx);
 
 	ImGui::SliderInt("ndal", &nda, 0, 3);
-	ImGui::SliderInt("QL Samples", &QL_NUM_SAMPLES, 1, 32);
+
+	ImGui::Checkbox("ACM MAX", &useACMMax);
+	ImGui::SameLine();
+	ImGui::SliderInt(" ", &acmMax, 1, 1000);
 
 	if(ImGui::Button("+ PointL"))
 	{
@@ -324,6 +335,9 @@ void Renderer::UI()
 	{
 		if(ImGui::CollapsingHeader("QuadLights"))
 		{
+			ImGui::SliderInt("Samples", &qlNumSamples, 1, 32);
+			ImGui::Checkbox("1 Sided", &qlOneSided);
+
 			for(int i = 0; i < static_cast<int>(scene.m_quadLights.size()); i++)
 			{
 				if(ImGui::TreeNode(("QL " + std::to_string(i)).c_str()))

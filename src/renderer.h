@@ -30,7 +30,12 @@ public:
 	int nda = 3; // normal, distance, albedo, light
 	uint pixelSeeds[SCRWIDTH * SCRHEIGHT];
 	static thread_local RNG threadRng;
-	int QL_NUM_SAMPLES = 1;
+	int qlNumSamples = 1;
+	bool qlOneSided = true;
+	int acmMax = 500;
+	inline static int acmCounter;
+	bool uiChanged = false;
+	bool useACMMax = true;
 };
 
 } // namespace Tmpl8
