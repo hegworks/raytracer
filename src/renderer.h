@@ -29,7 +29,7 @@ public:
 	float anim_time = 0;
 	int nda = 3; // normal, distance, albedo, light
 	uint pixelSeeds[SCRWIDTH * SCRHEIGHT];
-	static thread_local RNG threadRng;
+	inline static thread_local RNG threadRng;
 	int qlNumSamples = 1;
 	bool qlOneSided = true;
 	int acmMax = 500;
