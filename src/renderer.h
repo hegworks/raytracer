@@ -36,6 +36,7 @@ public:
 	inline static int acmCounter;
 	bool uiChanged = false;
 	bool useACMMax = true;
+	float davg, dfps, drps; // DEBUG
 };
 
 } // namespace Tmpl8

@@ -214,8 +214,9 @@ void Renderer::Tick(float deltaTime)
 	static float avg = 10, alpha = 1;
 	avg = (1 - alpha) * avg + alpha * t.elapsed() * 1000;
 	if(alpha > 0.05f) alpha *= 0.5f;
-	float fps = 1000.0f / avg, rps = (SCRWIDTH * SCRHEIGHT) / avg;
-	printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps / 1000);
+	float fps = 1000.0f / avg, rps = (SCRWIDTH * SCRHEIGHT) / (avg * 1000);
+	dfps = fps, drps = rps, davg = avg;
+	printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps);
 	// handle user input
 	if(camera.HandleInput(deltaTime) || (useACMMax && acmCounter > acmMax))
 	{
@@ -230,15 +231,25 @@ void Renderer::Tick(float deltaTime)
 void Renderer::UI()
 {
 	// animation toggle
+	ImGui::Text("avg	fps	rps");
+	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
 	ImGui::Checkbox("Animate scene", &animating);
 	// ray query on mouse
 	Ray r = camera.GetPrimaryRay((float)mousePos.x, (float)mousePos.y);
 	scene.FindNearest(r);
 	bool isInScreen = mousePos.x >= 0 && mousePos.x < SCRWIDTH && mousePos.y >= 0 && mousePos.y < SCRHEIGHT;
-	float4 color = isInScreen ? accumulator[mousePos.x + mousePos.y * SCRWIDTH] : float4(Color::MAGENTA);
-	ImGui::ColorButton(" ", ImVec4(color.x, color.y, color.z, color.z));
+	uint pixel = 0xFF00FF, red = -1, green = -1, blue = -1;
+	if(isInScreen)
+	{
+		pixel = screen->pixels[mousePos.x + mousePos.y * SCRWIDTH];
+		red = (pixel & 0xFF0000) >> 16;
+		green = (pixel & 0x00FF00) >> 8;
+		blue = pixel & 0x0000FF;
+	}
+	ImGui::ColorButton("", ImGui::ColorConvertU32ToFloat4(pixel));
 	ImGui::SameLine();
-	ImGui::Text("%i,%i   %i", mousePos.x, mousePos.y, r.objIdx);
+
+	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, mousePos.x, mousePos.y, r.objIdx);
 
 	ImGui::SliderInt("ndal", &nda, 0, 3);
 
@@ -246,6 +257,7 @@ void Renderer::UI()
 	ImGui::SameLine();
 	ImGui::SliderInt(" ", &acmMax, 1, 1000);
 
+	// credits to Okke for the idea of creating lights at runtime
 	if(ImGui::Button("+ PointL"))
 	{
 		scene.CreatePointLight();
