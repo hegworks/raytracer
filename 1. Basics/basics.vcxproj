@@ -50,7 +50,7 @@
       <AdditionalIncludeDirectories>..\template;.;..\lib;..\lib\imgui;..\lib\glad;..\lib\glfw\include;..\lib\OpenCL\inc;..\lib\zlib;..\src</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
