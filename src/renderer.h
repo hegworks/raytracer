@@ -37,6 +37,7 @@ public:
 	bool uiChanged = false;
 	bool useACMMax = true;
 	float davg, dfps, drps; // DEBUG
+	bool useAA = true;
 };
 
 } // namespace Tmpl8

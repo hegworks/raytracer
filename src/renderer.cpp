@@ -216,7 +216,10 @@ void Renderer::Tick(float deltaTime)
 		// trace a primary ray for each pixel on the line
 		for(int x = 0; x < SCRWIDTH; x++)
 		{
-			accumulator[x + y * SCRWIDTH] += float4(Trace(camera.GetPrimaryRay((float)x, (float)y), x, y), 0);
+			const float xOffset = useAA ? RandomFloat(pixelSeeds[x + y * SCRWIDTH]) : 0.0f;
+			const float yOffset = useAA ? RandomFloat(pixelSeeds[x + y * SCRWIDTH]) : 0.0f;
+			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset);
+			accumulator[x + y * SCRWIDTH] += float4(Trace(r, x, y), 0);
 			float4 avg = accumulator[x + y * SCRWIDTH] * scale;
 			screen->pixels[x + y * SCRWIDTH] = RGBF32_to_RGB8(&avg);
 		}
@@ -244,7 +247,9 @@ void Renderer::UI()
 	// animation toggle
 	ImGui::Text("avg	fps	rps");
 	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
-	ImGui::Checkbox("Animate scene", &animating);
+	ImGui::Checkbox("Animate", &animating);
+	ImGui::SameLine();
+	ImGui::Checkbox("AA", &useAA);
 	// ray query on mouse
 	Ray r = camera.GetPrimaryRay((float)mousePos.x, (float)mousePos.y);
 	scene.FindNearest(r);
