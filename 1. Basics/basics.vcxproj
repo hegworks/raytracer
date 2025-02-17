@@ -143,6 +143,7 @@
     <ClCompile Include="..\lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\src\renderer.cpp" />
+    <ClCompile Include="..\src\Scene.cpp" />
     <ClCompile Include="..\template\opengl.cpp" />
     <ClCompile Include="..\template\surface.cpp" />
     <ClCompile Include="..\template\template.cpp">
@@ -150,7 +151,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\template\tmpl8math.cpp" />
-    <ClCompile Include="Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\imgui\imconfig.h" />
@@ -162,6 +162,7 @@
     <ClInclude Include="..\lib\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\lib\imgui\imstb_textedit.h" />
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\src\PointLight.h" />
     <ClInclude Include="..\src\Quad.h" />
     <ClInclude Include="..\src\QuadLight.h" />
     <ClInclude Include="..\src\Color.h" />
@@ -178,7 +179,6 @@
     <ClInclude Include="..\template\scene.h" />
     <ClInclude Include="..\template\surface.h" />
     <ClInclude Include="..\template\tmpl8math.h" />
-    <ClInclude Include="PointLight.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE" />
