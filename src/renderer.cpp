@@ -94,14 +94,14 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 			continue;
 		}
 
-		float cutoff = clamp((-dot(wi, light.m_dir) - light.m_cosO) / (light.m_cosI - light.m_cosO), 0.0f, 1.0f); // lerp. NOTICE the minus before dot
-		if(cutoff <= 0)
+		float falloff = 1.0f / (tMax * tMax); /// inverse square law
+		if(falloff < EPS)
 		{
 			continue;
 		}
 
-		float falloff = 1.0f / (tMax * tMax); /// inverse square law
-		if(falloff < EPS)
+		float cutoff = clamp((-dot(wi, light.m_dir) - light.m_cosO) / (light.m_cosI - light.m_cosO), 0.0f, 1.0f); // lerp. NOTICE the minus before dot
+		if(cutoff <= 0)
 		{
 			continue;
 		}
