@@ -47,7 +47,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 		float3 lPos = light.m_pos; /// LightPos
 		float3 vi = lPos - p; /// Light Vector
 		float3 wi = normalize(vi); /// incoming light direction
-		float3 srPos = p + n * EPS; /// ShadowRayPos (considering EPS)
+		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
@@ -78,7 +78,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 		float3 lPos = light.m_pos; /// LightPos
 		float3 vi = lPos - p; /// Light Vector
 		float3 wi = normalize(vi); /// incoming light direction
-		float3 srPos = p + n * EPS; /// ShadowRayPos (considering EPS)
+		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
@@ -113,7 +113,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 	{
 		DirLight& light = scene.m_dirLights[i];
 		float3 wi = -light.m_dir; /// incoming light direction
-		float3 srPos = p + n * EPS; /// ShadowRayPos (considering EPS)
+		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
 
 		Ray shadowRay(srPos, wi);
 		bool isInShadow = scene.IsOccluded(shadowRay);
@@ -135,7 +135,6 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 	{
 		QuadLight& light = scene.m_quadLights[i];
 		float3 lSamples = float3(0);
-		float3 srPos = p + n * EPS;
 		float3 lightDir = -light.m_quad.GetNormal();
 		float pdfEffect = 1 / light.GetPDF();
 
@@ -155,6 +154,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 				}
 			}
 
+			float3 srPos = p + wi * EPS;
 			Ray shadowRay(srPos, wi, tMax);
 			bool isInShadow = scene.IsOccluded(shadowRay);
 			if(isInShadow)
