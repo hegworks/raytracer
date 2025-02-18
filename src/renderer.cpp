@@ -2,6 +2,9 @@
 
 #include <common.h>
 
+#include "DBG.h"
+#include "UknittyMath.h"
+
 // -----------------------------------------------------------
 // Initialize the renderer
 // -----------------------------------------------------------
@@ -39,6 +42,48 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 	float3 wo = -ray.D; /// outgoing light direction
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
+	const bool canTDD = CanTDD(ray.objIdx, p);
+	if(canTDD)
+	{
+		int2 pd = WTS(p); /// intersection point debug
+		screen->Plot(pd.x, pd.y, 0xffffff);
+
+		if(pd.x % tddrx == 0)
+		{
+			// primary ray
+			{
+				int2 o = WTS(ray.O);
+				int2 d = pd;
+				screen->Line(o.x, o.y, d.x, d.y, 0xff0000);
+			}
+
+			// normal
+			{
+				int2 o = pd;
+				int2 d = WTS(p + n / 2.0f);
+				screen->Line(o.x, o.y, d.x, d.y, 0x00ff00);
+			}
+
+			// normal length
+			{
+				int2 o = WTS(p + n / 2.0f); /// normal debug point
+
+				char t[20];
+				sprintf(t, "%.2f", length(n));
+				if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0x00ff00);
+			}
+
+			// ray length
+			{
+				int2 o = {pd.x, pd.y - 5};
+
+				char t[20];
+				sprintf(t, "%.2f", ray.t);
+				if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0xff0000);
+			}
+		}
+	}
+
 	float3 l(0.0f); /// total outgoing radiance
 
 	for(int i = 0; i < static_cast<int>(scene.m_pointLights.size()); ++i)
@@ -52,6 +97,29 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 
 		Ray shadowRay(srPos, wi, tMax);
 		bool isInShadow = scene.IsOccluded(shadowRay);
+
+		if(canTDD)
+		{
+			// light pos
+			{
+				int2 o = WTS(lPos); /// origin
+				screen->Box(o.x - 2, o.y - 2, o.x + 2, o.y + 2, 0x00ff00);
+			}
+
+			// shadow ray
+			{
+				int2 o = WTS(srPos); /// origin
+				int2 d = WTS(lPos); /// destination
+
+				int2 pd = WTS(p);
+				uint color = isInShadow ? 0xff00ff : 0xffff00;
+				if(pd.x % tddrx == 0)
+				{
+					screen->Line(o.x, o.y, d.x, d.y, color);
+				}
+			}
+		}
+
 		if(isInShadow)
 		{
 			continue;
@@ -209,6 +277,9 @@ void Renderer::Tick(float deltaTime)
 	// pixel loop
 	Timer t;
 	const float scale = 1.0f / static_cast<float>(acmCounter++);
+
+	if(tdd) screen->Clear(0);
+
 	// lines are executed as OpenMP parallel tasks (disabled in DEBUG)
 #pragma omp parallel for schedule(dynamic)
 	for(int y = 0; y < SCRHEIGHT; y++)
@@ -221,7 +292,10 @@ void Renderer::Tick(float deltaTime)
 			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset);
 			accumulator[x + y * SCRWIDTH] += float4(Trace(r, x, y), 0);
 			float4 avg = accumulator[x + y * SCRWIDTH] * scale;
-			screen->pixels[x + y * SCRWIDTH] = RGBF32_to_RGB8(&avg);
+			if(!tdd || screen->pixels[x + y * SCRWIDTH] == 0x0) // if pixel has not been colored by tdd
+			{
+				screen->pixels[x + y * SCRWIDTH] = RGBF32_to_RGB8(&avg);
+			}
 		}
 	}
 	// performance report - running average - ms, MRays/s
@@ -237,6 +311,12 @@ void Renderer::Tick(float deltaTime)
 		memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);
 		acmCounter = 1;
 	}
+
+
+	if(tdd)
+	{
+		screen->Line(0, 360, SCRWIDTH - 1, 360, 0xff0000);
+	}
 }
 
 // -----------------------------------------------------------
@@ -244,12 +324,30 @@ void Renderer::Tick(float deltaTime)
 // -----------------------------------------------------------
 void Renderer::UI()
 {
+	if(tdd)
+	{
+		ImGui::Begin("2D Debugger");
+		ImGui::DragFloat("SceneScale", &tddSceneScale, 0.01f, -5, 5);
+		ImGui::DragInt2("Offset", &tddOffset.x);
+		ImGui::DragInt("rx", &tddrx, 0.5f, 1, 200);
+		ImGui::End();
+	}
+
 	// animation toggle
 	ImGui::Text("avg	fps	rps");
 	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
+	ImGui::SameLine();
+	if(ImGui::Button("ResetCam"))
+	{
+		tddResetCam = true;
+	}
+
 	ImGui::Checkbox("Animate", &animating);
 	ImGui::SameLine();
 	ImGui::Checkbox("AA", &useAA);
+	ImGui::SameLine();
+	ImGui::Checkbox("TDD", &tdd);
+
 	// ray query on mouse
 	Ray r = camera.GetPrimaryRay((float)mousePos.x, (float)mousePos.y);
 	scene.FindNearest(r);
@@ -393,4 +491,16 @@ void Renderer::UI()
 		}
 	}
 
+}
+
+int2 Renderer::WTS(float3 p)
+{
+	int x = (int)floorf(range_to_range(-4 * tddSceneScale, 4 * tddSceneScale, 0, SCRWIDTH, p.x)) + tddOffset.x;
+	int y = (int)floorf(range_to_range(2.25 * tddSceneScale, -2.25 * tddSceneScale, 0, SCRHEIGHT, p.z)) + tddOffset.y;
+	return {x,y};
+}
+
+bool Renderer::CanTDD(int objIdx, float3 p)
+{
+	return tdd && IsCloseF(p.y, camera.camPos.y) && (objIdx == 1 || objIdx == 3 || objIdx == 10);
 }

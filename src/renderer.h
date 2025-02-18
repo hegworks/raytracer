@@ -20,24 +20,29 @@ public:
 	void MouseWheel(float y) { /* implement if you want to handle the mouse wheel */ }
 	void KeyUp(int key) { /* implement if you want to handle keys */ }
 	void KeyDown(int key) { /* implement if you want to handle keys */ }
+	int2 WTS(float3 p); /// WorldToScreen;
+	bool CanTDD(int objIdx, float3 p);
 	// data members
 	int2 mousePos;
 	float4* accumulator;
 	Scene scene;
 	Camera camera;
-	bool animating = true;
+	bool animating = false;
 	float anim_time = 0;
 	int nda = 3; // normal, distance, albedo, light
 	uint pixelSeeds[SCRWIDTH * SCRHEIGHT];
 	inline static thread_local RNG threadRng;
 	int qlNumSamples = 1;
 	bool qlOneSided = true;
-	int acmMax = 500;
+	int acmMax = 1;
 	inline static int acmCounter;
-	bool uiChanged = false;
 	bool useACMMax = true;
-	float davg, dfps, drps; // DEBUG
-	bool useAA = true;
+	float davg, dfps, drps; /// DEBUG
+	bool useAA = false; /// Anti-Aliasing
+	float tddSceneScale = 3;
+	int2 tddOffset = int2(0, -110);
+	float tddy = 0.25f;
+	int tddrx = 20;
 };
 
 } // namespace Tmpl8

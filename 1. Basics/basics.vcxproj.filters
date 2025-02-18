@@ -37,9 +37,7 @@
     <ClCompile Include="..\src\renderer.cpp">
       <Filter>Src</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>template</Filter>
-    </ClCompile>
+    <ClCompile Include="..\src\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
@@ -99,9 +97,6 @@
     <ClInclude Include="..\src\Material.h">
       <Filter>Src</Filter>
     </ClInclude>
-    <ClInclude Include="PointLight.h">
-      <Filter>Src\Lights</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\SpotLight.h">
       <Filter>Src\Lights</Filter>
     </ClInclude>
@@ -119,6 +114,13 @@
     </ClInclude>
     <ClInclude Include="..\src\RNG.h">
       <Filter>Src\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PointLight.h" />
+    <ClInclude Include="..\src\UknittyMath.h">
+      <Filter>Src\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DBG.h">
+      <Filter>Src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
