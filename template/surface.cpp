@@ -95,6 +95,40 @@ void Surface::Bar( int x1, int y1, int x2, int y2, uint c )
 	}
 }
 
+void Surface::Circle(int x0, int y0, int radius, uint c)
+{
+	int x = radius;
+	int y = 0;
+	int xChange = 1 - (radius << 1); // Initial xChange
+	int yChange = 0;
+	int radiusError = 0;
+
+	while(x >= y)
+	{
+		// Plot points in all eight octants
+		Plot(x0 + x, y0 + y, c);
+		Plot(x0 - x, y0 + y, c);
+		Plot(x0 + x, y0 - y, c);
+		Plot(x0 - x, y0 - y, c);
+		Plot(x0 + y, y0 + x, c);
+		Plot(x0 - y, y0 + x, c);
+		Plot(x0 + y, y0 - x, c);
+		Plot(x0 - y, y0 - x, c);
+
+		y++; // Move to the next row
+		radiusError += yChange; // Update the error term
+		yChange += 2; // Adjust yChange for the next row
+
+		// Check if we need to move x inward
+		if((radiusError << 1) + xChange > 0)
+		{
+			x--; // Move x inward
+			radiusError += xChange; // Update the error term
+			xChange += 2; // Adjust xChange for the next column
+		}
+	}
+}
+
 // Surface::Print: Print some text with the hard-coded mini-font.
 void Surface::Print( const char* s, int x1, int y1, uint c )
 {
