@@ -687,7 +687,7 @@ public:
 	}
 	float3& GetAlbedo(int objIdx, float3 I)
 	{
-		if(objIdx == -1) return float3(0); // or perhaps we should just crash
+		if(objIdx == -1) throw std::runtime_error("Getting albedo for objIdx -1"); // or perhaps we should just crash
 #ifdef FOURLIGHTS
 		if(objIdx == 0) return quad[0].GetAlbedo(I); // they're all the same
 #else
@@ -704,6 +704,7 @@ public:
 		}
 		// once we have triangle support, we should pass objIdx and the bary-
 		// centric coordinates of the hit, instead of the intersection location.
+		throw std::runtime_error("GetAlbedo for ObjIdx not handled");
 	}
 	float GetReflectivity(int objIdx, float3 I) const
 	{
