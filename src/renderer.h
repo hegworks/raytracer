@@ -37,12 +37,6 @@ public:
 	int acmMax = 1;
 	inline static int acmCounter;
 	bool useACMMax = true;
-	float davg, dfps, drps; /// DEBUG
-	bool useAA = false; /// Anti-Aliasing
-	float tddSceneScale = 3;
-	int2 tddOffset = int2(0, -110);
-	float tddy = 0.25f;
-	int tddrx = 20;
 };
 
 } // namespace Tmpl8

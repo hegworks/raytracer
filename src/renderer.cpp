@@ -51,6 +51,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 		if(pd.x % tddrx == 0)
 		{
 			// primary ray
+			if(tddPRay)
 			{
 				int2 o = WTS(ray.O);
 				int2 d = pd;
@@ -58,6 +59,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 			}
 
 			// normal
+			if(tddPN)
 			{
 				int2 o = pd;
 				int2 d = WTS(p + n / 2.0f);
@@ -65,6 +67,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 			}
 
 			// normal length
+			if(tddPNL)
 			{
 				int2 o = WTS(p + n / 2.0f); /// normal debug point
 
@@ -74,6 +77,7 @@ float3 Renderer::Trace(Ray& ray, int x, int y)
 			}
 
 			// ray length
+			if(tddPRayL)
 			{
 				int2 o = {pd.x, pd.y - 5};
 
@@ -327,9 +331,16 @@ void Renderer::UI()
 	if(tdd)
 	{
 		ImGui::Begin("2D Debugger");
+
 		ImGui::DragFloat("SceneScale", &tddSceneScale, 0.01f, -5, 5);
 		ImGui::DragInt2("Offset", &tddOffset.x);
 		ImGui::DragInt("rx", &tddrx, 0.5f, 1, 200);
+
+		ImGui::Checkbox("Primary Ray", &tddPRay);
+		ImGui::Checkbox("Primary Ray Length", &tddPRayL);
+		ImGui::Checkbox("P Normal", &tddPN);
+		ImGui::Checkbox("P Normal Length", &tddPNL);
+
 		ImGui::End();
 	}
 
