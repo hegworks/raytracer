@@ -15,6 +15,7 @@ void Renderer::UI()
 		ImGui::DragInt2("Offset", &tddOffset.x);
 		ImGui::DragInt("Ray Count", &tddrx, 0.5f, 1, 200);
 
+		ImGui::Checkbox("Black Background", &tddBBG);
 		ImGui::Checkbox("Primary Ray", &tddPRay);
 		ImGui::Checkbox("Primary Ray Length", &tddPRayL);
 		ImGui::Checkbox("P Normal", &tddPN);

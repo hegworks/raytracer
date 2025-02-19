@@ -9,7 +9,7 @@ class Renderer : public TheApp
 public:
 	// game flow methods
 	void Init();
-	float3 Trace(Ray& ray, int pixelIndex);
+	float3 Trace(Ray& ray, int pixelIndex, bool isTddX);
 	void Tick(float deltaTime);
 	void UI();
 	void Shutdown() { /* implement if you want to do things on shutdown */ }
@@ -23,8 +23,8 @@ public:
 	float3 CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPoint, bool isTddX);
 	float3 CalcSpotLight(float3 p, float3 n, float3 brdf);
 	float3 CalcDirLight(float3 p, float3 n, float3 brdf);
-	float3 CalcQuadLight(uint pixelIndex, float3 p, float3 n, float3 brdf);
-	float3 CalcLights(Ray& ray, uint pixelIndex);
+	float3 CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex);
+	float3 CalcLights(Ray& ray, uint pixelIndex, bool isTddX);
 
 	// data members
 	int2 mousePos;

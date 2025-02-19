@@ -47,15 +47,14 @@ void Renderer::Tick(float deltaTime)
 		for(int x = 0; x < SCRWIDTH; x++)
 		{
 			int pixelIndex = x + yTimesSCRWDTH;
+			bool isTddX = tdd && x % tddrx == 0;
 			const float xOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			const float yOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset);
-			accumulator[pixelIndex] += float4(Trace(r, pixelIndex), 0);
+			accumulator[pixelIndex] += float4(Trace(r, pixelIndex, isTddX), 0);
 			float4 avg = accumulator[pixelIndex] * scale;
-			if(!tdd || screen->pixels[pixelIndex] == 0x0) // if pixel has not been colored by tdd
-			{
-				screen->pixels[pixelIndex] = RGBF32_to_RGB8(&avg);
-			}
+			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
+			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&avg);
 		}
 	}
 	// performance report - running average - ms, MRays/s
@@ -81,7 +80,7 @@ void Renderer::Tick(float deltaTime)
 // -----------------------------------------------------------
 // Evaluate light transport
 // -----------------------------------------------------------
-float3 Renderer::Trace(Ray& ray, int pixelIndex)
+float3 Renderer::Trace(Ray& ray, int pixelIndex, bool isTddX)
 {
 	scene.FindNearest(ray);
 	if(ray.objIdx == -1)
@@ -89,7 +88,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex)
 		return 0; // or a fancy sky color
 	}
 
-	float3 l = CalcLights(ray, pixelIndex);
+	float3 l = CalcLights(ray, pixelIndex, isTddX);
 
 	switch(ndal)
 	{
@@ -106,7 +105,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex)
 	}
 }
 
-float3 Renderer::CalcLights(Ray& ray, uint pixelIndex)
+float3 Renderer::CalcLights(Ray& ray, uint pixelIndex, bool isTddX)
 {
 	float3 p = ray.IntersectionPoint(); /// intersection point
 	float3 n = scene.GetNormal(ray.objIdx, p, ray.D); /// normal of the intersection point
@@ -114,12 +113,11 @@ float3 Renderer::CalcLights(Ray& ray, uint pixelIndex)
 	//float3 wo = -ray.D; /// outgoing light direction
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
-	bool isTddPoint = false, isTddX = false;
+	bool isTddPoint = false;
 	if(tdd)
 	{
 		int2 pd = WTS(p); /// intersection point debug
 		isTddPoint = IsTddPoint(ray.objIdx, p.y, camera.camPos.y);
-		isTddX = pd.x % tddrx == 0;
 
 		if(isTddPoint)
 		{
@@ -170,7 +168,7 @@ float3 Renderer::CalcLights(Ray& ray, uint pixelIndex)
 	l += CalcPointLight(p, n, brdf, isTddPoint, isTddX);
 	l += CalcSpotLight(p, n, brdf);
 	l += CalcDirLight(p, n, brdf);
-	l += CalcQuadLight(pixelIndex, p, n, brdf);
+	l += CalcQuadLight(p, n, brdf, pixelIndex);
 
 	return l;
 }
@@ -307,7 +305,7 @@ float3 Renderer::CalcDirLight(float3 p, float3 n, float3 brdf)
 	return l;
 }
 
-float3 Renderer::CalcQuadLight(uint pixelIndex, float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex)
 {
 	float3 l(0);
 	int numQuadLights = static_cast<int>(scene.m_quadLights.size());

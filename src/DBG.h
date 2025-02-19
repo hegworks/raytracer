@@ -7,6 +7,8 @@ inline float tddSceneScale = 3;
 inline int2 tddOffset = int2(0, -110);
 inline float tddy = 0.25f;
 inline int tddrx = 20;
+
+inline bool tddBBG = false; /// BlackBackGround
 inline bool tddPRay = true; /// PrimaryRay
 inline bool tddPRayL = true; /// PrimaryRayLength
 inline bool tddPN = true; /// P Normal
