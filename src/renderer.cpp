@@ -113,56 +113,8 @@ float3 Renderer::CalcLights(Ray& ray, uint pixelIndex, bool isTddX)
 	//float3 wo = -ray.D; /// outgoing light direction
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
-	bool isTddPoint = false;
-	if(tdd)
-	{
-		int2 pd = WTS(p); /// intersection point debug
-		isTddPoint = IsTddPoint(ray.objIdx, p.y, camera.camPos.y);
-
-		if(isTddPoint)
-		{
-			screen->Plot(pd.x, pd.y, 0xffffff);
-
-			if(isTddX)
-			{
-				// primary ray
-				if(tddPRay)
-				{
-					float2 o = WTS(ray.O);
-					float2 d = pd;
-					screen->Line(o.x, o.y, d.x, d.y, 0xff0000);
-				}
-
-				// normal
-				if(tddPN)
-				{
-					float2 o = pd;
-					float2 d = WTS(p + n / 2.0f);
-					screen->Line(o.x, o.y, d.x, d.y, 0x00ff00);
-				}
-
-				// normal length
-				if(tddPNL)
-				{
-					int2 o = WTS(p + n / 2.0f); /// normal debug point
-
-					char t[20];
-					sprintf(t, "%.2f", length(n));
-					if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0x00ff00);
-				}
-
-				// ray length
-				if(tddPRayL)
-				{
-					int2 o = {pd.x, pd.y - 5};
-
-					char t[20];
-					sprintf(t, "%.2f", ray.t);
-					if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0xff0000);
-				}
-			}
-		}
-	}
+	bool isTddPoint = tdd && IsTddPoint(ray.objIdx, p.y, camera.camPos.y);
+	if(isTddPoint) TDDP(ray, isTddX, p, n, screen);
 
 	float3 l(0); /// total outgoing radiance
 	l += CalcPointLight(p, n, brdf, isTddPoint, isTddX);
