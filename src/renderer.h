@@ -20,11 +20,11 @@ public:
 	void MouseWheel(float y) { /* implement if you want to handle the mouse wheel */ }
 	void KeyUp(int key) { /* implement if you want to handle keys */ }
 	void KeyDown(int key) { /* implement if you want to handle keys */ }
-	float3 CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPoint, bool isTddX);
+	float3 CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 	float3 CalcSpotLight(float3 p, float3 n, float3 brdf);
 	float3 CalcDirLight(float3 p, float3 n, float3 brdf);
 	float3 CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex);
-	float3 CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddX, bool isTddPoint);
+	float3 CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCamearY);
 
 	// data members
 	int2 mousePos;

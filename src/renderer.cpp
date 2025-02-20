@@ -107,7 +107,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	{
 		case Material::Type::DIFFUSE:
 		{
-			l += CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelX);
+			l += CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			break;
 		}
 		case Material::Type::REFLECTIVE:
@@ -119,7 +119,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		}
 		case Material::Type::GLOSSY:
 		{
-			l += (1.0f - mat.m_glossiness) * CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelX);
+			l += (1.0f - mat.m_glossiness) * CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + rrdir * EPS, rrdir);
 			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
@@ -142,14 +142,14 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 }
 
-float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddX, bool isTddPoint)
+float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCamearY)
 {
 	float3 albedo = scene.GetAlbedo(ray.objIdx, p); /// albedo of the intersection point
 	//float3 wo = -ray.D; /// outgoing light direction
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
 	float3 l(0); /// total outgoing radiance
-	l += CalcPointLight(p, n, brdf, isTddPoint, isTddX);
+	l += CalcPointLight(p, n, brdf, isTddPixelX, isTddPixelY, isTddCamearY);
 	l += CalcSpotLight(p, n, brdf);
 	l += CalcDirLight(p, n, brdf);
 	l += CalcQuadLight(p, n, brdf, pixelIndex);
@@ -157,7 +157,7 @@ float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool 
 	return l;
 }
 
-float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPoint, bool isTddX)
+float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
 {
 	float3 l(0);
 	int numPointLights = static_cast<int>(scene.m_pointLights.size());
@@ -173,7 +173,7 @@ float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPoint
 		Ray shadowRay(srPos, wi, tMax);
 		bool isInShadow = scene.IsOccluded(shadowRay);
 
-		if(isTddPoint)
+		if(isTddPixelX && isTddPixelY)
 		{
 			// light pos
 			if(tddPLP)
@@ -189,7 +189,7 @@ float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPoint
 				float2 d = WTS(lPos); /// destination
 
 				uint color = isInShadow ? 0xff00ff : 0xffff00;
-				if(isTddX)
+				if(isTddPixelY)
 				{
 					screen->Line(o.x, o.y, d.x, d.y, color);
 				}
