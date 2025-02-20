@@ -9,24 +9,83 @@ void Renderer::UI()
 {
 	if(tdd)
 	{
+		ImGui::SetNextWindowPos(ImVec2(0, 360));
+		ImGui::SetNextWindowSize(ImVec2(200, 300));
+		ImGui::SetNextWindowBgAlpha(0.2f);
 		ImGui::Begin("2D Debugger");
 
 		ImGui::DragFloat("Scale", &tddSceneScale, 0.01f, -5, 5);
 		ImGui::DragInt2("Offset", &tddOffset.x);
 		ImGui::DragInt("Ray Count", &tddrx, 0.5f, 1, 200);
+		//ImGui::DragInt("SliceY", &tddSliceY, 0.5f, 0, SCRHEIGHT);
+
+		ImGui::Separator();
+
+		ImGui::Checkbox("SingleX", &tddSXM);
+		ImGui::DragInt("SingleXX", &tddSXX, 1.0f, 0, SCRWIDTH);
+
+		ImGui::Separator();
 
 		ImGui::Checkbox("Black Background", &tddBBG);
 		ImGui::Checkbox("Primary Ray", &tddPRay);
 		ImGui::Checkbox("Primary Ray Length", &tddPRayL);
 		ImGui::Checkbox("P Normal", &tddPN);
 		ImGui::Checkbox("P Normal Length", &tddPNL);
+
 		ImGui::Separator();
+
 		ImGui::Checkbox("Point Light Pos", &tddPLP);
 		ImGui::Checkbox("Point Light Rays", &tddPLR);
 
 		ImGui::End();
 	}
 
+	{
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowSize(ImVec2(200, SCRHEIGHT / 2.0f));
+		ImGui::SetNextWindowBgAlpha(0.2f);
+		ImGui::Begin("Materials");
+
+		const char* materialTypes[] =
+		{
+			"DIFFUSE",
+			"REFLECTIVE",
+			"GLOSSY"
+		};
+
+		if(ImGui::CollapsingHeader("Sphere"))
+		{
+			Material& mat = scene.sphere.m_material;
+			int matInt = static_cast<int>(mat.m_type);
+			ImGui::Combo("Type##1", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
+			mat.m_type = static_cast<Material::Type>(matInt);
+			ImGui::ColorEdit3("Albedo##1", &mat.m_albedo.x);
+			ImGui::DragFloat("Glossiness##1", &mat.m_glossiness, 0.01f, 0.0f, 1.0f);
+		}
+		if(ImGui::CollapsingHeader("Torus"))
+		{
+			Material& mat = scene.torus.m_material;
+			int matInt = static_cast<int>(mat.m_type);
+			ImGui::Combo("Type##2", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
+			mat.m_type = static_cast<Material::Type>(matInt);
+			ImGui::ColorEdit3("Albedo##2", &mat.m_albedo.x);
+			ImGui::DragFloat("Glossiness##2", &mat.m_glossiness, 0.01f, 0.0f, 1.0f);
+		}
+		if(ImGui::CollapsingHeader("Cube"))
+		{
+			Material& mat = scene.cube.m_material;
+			int matInt = static_cast<int>(mat.m_type);
+			ImGui::Combo("Type##3", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
+			mat.m_type = static_cast<Material::Type>(matInt);
+			ImGui::ColorEdit3("Albedo##3", &mat.m_albedo.x);
+			ImGui::DragFloat("Glossiness##3", &mat.m_glossiness, 0.01f, 0.0f, 1.0f);
+		}
+
+		ImGui::End();
+	}
+
+	ImGui::SetWindowPos(ImVec2(SCRWIDTH - 300, 0));
+	ImGui::SetWindowSize(ImVec2(300, SCRHEIGHT));
 	// animation toggle
 	ImGui::Text("avg	fps	rps");
 	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
@@ -65,6 +124,8 @@ void Renderer::UI()
 	ImGui::Checkbox("ACM MAX", &useACMMax);
 	ImGui::SameLine();
 	ImGui::SliderInt(" ", &acmMax, 1, 1000);
+
+	ImGui::SliderInt("Depth", &maxDepth, 1, 20);
 
 	// credits to Okke for the idea of creating lights at runtime
 	if(ImGui::Button("+ PointL"))
@@ -184,5 +245,4 @@ void Renderer::UI()
 			}
 		}
 	}
-
 }

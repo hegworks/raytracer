@@ -37,8 +37,10 @@
     <ClCompile Include="..\src\renderer.cpp">
       <Filter>Src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Scene.cpp" />
     <ClCompile Include="..\src\RendererUI.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Scene.cpp">
       <Filter>Src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -118,12 +120,14 @@
     <ClInclude Include="..\src\RNG.h">
       <Filter>Src\Tools</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\PointLight.h" />
     <ClInclude Include="..\src\UknittyMath.h">
       <Filter>Src\Tools</Filter>
     </ClInclude>
     <ClInclude Include="..\src\DBG.h">
       <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PointLight.h">
+      <Filter>Src\Lights</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

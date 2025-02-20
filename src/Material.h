@@ -3,5 +3,14 @@
 class Material
 {
 public:
+	enum class Type : std::uint8_t
+	{
+		DIFFUSE,
+		REFLECTIVE,
+		GLOSSY,
+	};
+
 	float3 m_albedo = float3(1.0f);
+	float m_glossiness = 1.0f;
+	Type m_type = Type::DIFFUSE;
 };

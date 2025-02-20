@@ -9,7 +9,7 @@ class Renderer : public TheApp
 public:
 	// game flow methods
 	void Init();
-	float3 Trace(Ray& ray, int pixelIndex, bool isTddX);
+	float3 Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bool tddIsPixelY);
 	void Tick(float deltaTime);
 	void UI();
 	void Shutdown() { /* implement if you want to do things on shutdown */ }
@@ -24,7 +24,7 @@ public:
 	float3 CalcSpotLight(float3 p, float3 n, float3 brdf);
 	float3 CalcDirLight(float3 p, float3 n, float3 brdf);
 	float3 CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex);
-	float3 CalcLights(Ray& ray, uint pixelIndex, bool isTddX);
+	float3 CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddX, bool isTddPoint);
 
 	// data members
 	int2 mousePos;
@@ -41,6 +41,7 @@ public:
 	int acmMax = 1;
 	inline static int acmCounter;
 	bool useACMMax = true;
+	int maxDepth = 5;
 };
 
 } // namespace Tmpl8

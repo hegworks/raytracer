@@ -720,6 +720,21 @@ public:
 	{
 		return objIdx == 3 ? float3(0.5f, 0, 0.5f) : float3(0);
 	}
+	Material& GetMaterial(int objIdx)
+	{
+		if(objIdx == -1) throw std::runtime_error("Getting albedo for objIdx -1");
+		if(objIdx == 0) return quad.m_material;
+		if(objIdx == 1) return sphere.m_material;
+		if(objIdx == 2) return sphere2.m_material;
+		if(objIdx == 3) return cube.m_material;
+		if(objIdx >= 4 && objIdx <= 9) return plane[objIdx - 4].m_material;
+		if(objIdx == 10) return torus.m_material;
+		if(objIdx >= 11)
+		{
+			return m_quadLights[objIdx - 11].m_quad.m_material;
+		}
+		throw std::runtime_error("GetAlbedo for ObjIdx not handled");
+	}
 };
 
 }

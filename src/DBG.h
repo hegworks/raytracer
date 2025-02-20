@@ -7,6 +7,9 @@ inline float tddSceneScale = 3;
 inline int2 tddOffset = int2(0, -110);
 inline float tddy = 0.25f;
 inline int tddrx = 20;
+inline bool tddSXM = false; /// SingleXMode
+inline int tddSXX = 0; /// SingleXX
+inline int tddSliceY = SCRHEIGHT / 2; /// SingleXX
 
 inline bool tddBBG = false; /// BlackBackGround
 inline bool tddPRay = true; /// PrimaryRay
@@ -30,11 +33,6 @@ static bool IsCloseF(const float a, const float b)
 	return abs(a - b) < 0.001;
 }
 
-static bool IsTddPoint(int objIdx, float pY, float cameraY)
-{
-	return IsCloseF(pY, cameraY) && (objIdx == 1 || objIdx == 3 || objIdx == 10);
-}
-
 /// World To Screen
 static int2 WTS(float3 p)
 {
@@ -44,38 +42,56 @@ static int2 WTS(float3 p)
 }
 
 /// 2D Debugger Primary/Point
-static void TDDP(Ray& ray, bool isTddX, float3 p, float3 n, Surface* screen)
+static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool tddIsPixelX, bool tddIsPixelY, bool tddIsOutline)
 {
 	int2 pd = WTS(p); /// intersection point debug
-	screen->Plot(pd.x, pd.y, 0xffffff);
+	if(tddIsOutline)
+	{
+		screen->Plot(pd.x, pd.y, 0xffffff);
 
-	if(isTddX)
+	}
+
+	if(tddIsPixelX && tddIsPixelY)
 	{
 		// primary ray
 		if(tddPRay)
 		{
 			float2 o = WTS(ray.O);
 			float2 d = pd;
-			screen->Line(o.x, o.y, d.x, d.y, 0xff0000);
+			int colordepth = depth % 4;
+			uint color = 0xffffff;
+			if(colordepth == 1) color = 0xff0000;
+			if(colordepth == 2) color = 0x00ff00;
+			if(colordepth == 3) color = 0x0000ff;
+			screen->Line(o.x, o.y, d.x, d.y, color);
+
+			{
+				float2 o = d;
+				o += 5;
+				char t[50];
+				sprintf(t, "%.2f,%.2f,%.2f", p.x, p.y, p.z);
+				if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0x00ff00);
+			}
 		}
 
 		// normal
 		if(tddPN)
 		{
 			float2 o = pd;
-			float2 d = WTS(p + n / 2.0f);
+			float2 d = WTS(p + n * 0.2f);
 			screen->Line(o.x, o.y, d.x, d.y, 0x00ff00);
 		}
 
 		// normal length
 		if(tddPNL)
 		{
-			int2 o = WTS(p + n / 2.0f); /// normal debug point
+			int2 o = WTS(p + n * 0.2f); /// normal debug point
 
 			char t[20];
 			sprintf(t, "%.2f", length(n));
 			if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0x00ff00);
 		}
+
 
 		// ray length
 		if(tddPRayL)

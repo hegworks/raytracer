@@ -43,15 +43,16 @@ void Renderer::Tick(float deltaTime)
 	for(int y = 0; y < SCRHEIGHT; y++)
 	{
 		int yTimesSCRWDTH = y * SCRWIDTH;
+		bool tddIsPixelY = tdd && y == tddSliceY;
 		// trace a primary ray for each pixel on the line
 		for(int x = 0; x < SCRWIDTH; x++)
 		{
+			bool tddIsPixelX = tdd && ((!tddSXM && x % tddrx == 0) || (tddSXM && x == tddSXX));
 			int pixelIndex = x + yTimesSCRWDTH;
-			bool isTddX = tdd && x % tddrx == 0;
 			const float xOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			const float yOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset);
-			accumulator[pixelIndex] += float4(Trace(r, pixelIndex, isTddX), 0);
+			accumulator[pixelIndex] += float4(Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY), 0);
 			float4 avg = accumulator[pixelIndex] * scale;
 			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
 			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&avg);
@@ -80,15 +81,51 @@ void Renderer::Tick(float deltaTime)
 // -----------------------------------------------------------
 // Evaluate light transport
 // -----------------------------------------------------------
-float3 Renderer::Trace(Ray& ray, int pixelIndex, bool isTddX)
+float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bool tddIsPixelY)
 {
+	if(depth == maxDepth)
+	{
+		return 0; // or a fancy sky color
+	}
+
 	scene.FindNearest(ray);
 	if(ray.objIdx == -1)
 	{
 		return 0; // or a fancy sky color
 	}
 
-	float3 l = CalcLights(ray, pixelIndex, isTddX);
+	float3 p = ray.IntersectionPoint(); /// intersection point
+	float3 n = scene.GetNormal(ray.objIdx, p, ray.D); /// normal of the intersection point
+
+	bool tddIsCameraY = tdd && IsCloseF(p.y, camera.camPos.y);
+	//bool isTddPoint = tddIsPixel;
+	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+
+	float3 l(0);
+	Material& mat = scene.GetMaterial(ray.objIdx);
+	switch(mat.m_type)
+	{
+		case Material::Type::DIFFUSE:
+		{
+			l += CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelX);
+			break;
+		}
+		case Material::Type::REFLECTIVE:
+		{
+			float3 rrdir = reflect(ray.D, n);
+			Ray rr(p + n * EPS, rrdir);
+			l += 0.95f * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			break;
+		}
+		case Material::Type::GLOSSY:
+		{
+			l += (1.0f - mat.m_glossiness) * CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelX);
+			float3 rrdir = reflect(ray.D, n);
+			Ray rr(p + rrdir * EPS, rrdir);
+			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			break;
+		}
+	}
 
 	switch(ndal)
 	{
@@ -105,16 +142,11 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, bool isTddX)
 	}
 }
 
-float3 Renderer::CalcLights(Ray& ray, uint pixelIndex, bool isTddX)
+float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddX, bool isTddPoint)
 {
-	float3 p = ray.IntersectionPoint(); /// intersection point
-	float3 n = scene.GetNormal(ray.objIdx, p, ray.D); /// normal of the intersection point
 	float3 albedo = scene.GetAlbedo(ray.objIdx, p); /// albedo of the intersection point
 	//float3 wo = -ray.D; /// outgoing light direction
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
-
-	bool isTddPoint = tdd && IsTddPoint(ray.objIdx, p.y, camera.camPos.y);
-	if(isTddPoint) TDDP(ray, isTddX, p, n, screen);
 
 	float3 l(0); /// total outgoing radiance
 	l += CalcPointLight(p, n, brdf, isTddPoint, isTddX);
