@@ -114,7 +114,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		{
 			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + n * EPS, rrdir);
-			l += 0.95f * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 		case Material::Type::GLOSSY:

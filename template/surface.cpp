@@ -130,6 +130,7 @@ void Surface::Circle(int x0, int y0, int radius, uint c)
 }
 
 // Surface::Print: Print some text with the hard-coded mini-font.
+// Credits to Okke for the variable size print function
 void Surface::Print(std::string_view str, int x1, int y1, uint color, int size)
 {
 // can still be improved:
