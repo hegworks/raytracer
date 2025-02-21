@@ -129,7 +129,17 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		{
 			float3 refracDir = refract(ray.D, n, ior);
 			Ray refracR(p + refracDir * EPS, refracDir);
-			l += Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 refracted = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+
+			float3 reflecDir = reflect(ray.D, n);
+			Ray reflecR(p + reflecDir * EPS, reflecDir);
+			float3 reflected = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+
+			float fres;
+			fresnel(ray.D, n, ior, fres);
+
+			l += (fres * reflected) + ((1.0f - fres) * refracted);
+
 			break;
 		}
 	}
