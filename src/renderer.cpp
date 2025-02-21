@@ -113,7 +113,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case Material::Type::REFLECTIVE:
 		{
 			float3 rrdir = reflect(ray.D, n);
-			Ray rr(p + n * EPS, rrdir);
+			Ray rr(p + rrdir * EPS, rrdir);
 			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
@@ -123,6 +123,13 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + rrdir * EPS, rrdir);
 			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			break;
+		}
+		case Material::Type::REFRACTIVE:
+		{
+			float3 refracDir = refract(ray.D, n, 1.5f);
+			Ray refracR(p + refracDir * EPS, refracDir);
+			l += Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 	}

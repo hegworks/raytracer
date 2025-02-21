@@ -535,6 +535,21 @@ inline int4 abs( const int4& v ) { return make_int4( abs( v.x ), abs( v.y ), abs
 
 inline float3 reflect( const float3& i, const float3& n ) { return i - 2.0f * n * dot( n, i ); }
 
+// based on https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/reflection-refraction-fresnel.html
+/// <param name="I">Incoming Ray Direction</param>
+/// <param name="N">Normal</param>
+/// <param name="ior">Index Of Refraction of the physical object</param>
+inline float3 refract(const float3& I, const float3& N, const float& ior)
+{
+    float cosi = clamp(-1.0f, 1.0f, dot(N,I));
+    float etai = 1, etat = ior; /// ior of air and the physical object
+    float3 n = N;
+    if (cosi < 0) { cosi = -cosi; } else { std::swap(etai, etat); n = -N; }
+    float eta = etai / etat;
+    float k = 1 - eta * eta * (1 - cosi * cosi);
+    return k < 0 ? reflect(I, N) : eta * I + (eta * cosi - sqrtf(k)) * n;
+}
+
 inline float2 fma( const  float2 a, const  float2 b, const float2 c ) { return float2( fmaf( a.x, b.x, c.x ), fmaf( a.y, b.y, c.y ) ); }
 inline float3 fma( const  float3 a, const  float3 b, const float3 c ) { return float3( fmaf( a.x, b.x, c.x ), fmaf( a.y, b.y, c.y ), fmaf( a.z, b.z, c.z ) ); }
 inline float4 fma( const  float4 a, const  float4 b, const float4 c ) { return float4( fmaf( a.x, b.x, c.x ), fmaf( a.y, b.y, c.y ), fmaf( a.z, b.z, c.z ), fmaf( a.w, b.w, c.w ) ); }

@@ -8,6 +8,7 @@ public:
 		DIFFUSE,
 		REFLECTIVE,
 		GLOSSY,
+		REFRACTIVE
 	};
 
 	float3 m_albedo = float3(1.0f);

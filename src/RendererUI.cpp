@@ -176,7 +176,7 @@ void Renderer::UI()
 	if(tdd)
 	{
 		ImGui::SetNextWindowPos(ImVec2(0, 360));
-		ImGui::SetNextWindowSize(ImVec2(200, 300));
+		ImGui::SetNextWindowSize(ImVec2(200, SCRHEIGHT / 2.0f));
 		ImGui::SetNextWindowBgAlpha(0.2f);
 		ImGui::Begin("2D Debugger");
 
@@ -216,7 +216,8 @@ void Renderer::UI()
 		{
 			"DIFFUSE",
 			"REFLECTIVE",
-			"GLOSSY"
+			"GLOSSY",
+			"REFRACTIVE"
 		};
 
 		if(ImGui::CollapsingHeader("Sphere"))
