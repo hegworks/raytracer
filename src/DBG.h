@@ -3,8 +3,8 @@
 
 inline bool tdd = false;
 inline bool tddResetCam = false;
-inline float tddSceneScale = 3;
-inline int2 tddOffset = int2(0, -110);
+inline float tddSceneScale = 1.3f;
+inline int2 tddOffset = int2(0, 130);
 inline float tddy = 0.25f;
 inline int tddrx = 20;
 inline bool tddSXM = false; /// SingleXMode
@@ -13,15 +13,17 @@ inline int tddSliceY = SCRHEIGHT / 2; /// SingleXX
 
 inline bool tddBBG = false; /// BlackBackGround
 inline bool tddPRay = true; /// PrimaryRay
-inline bool tddPRayL = true; /// PrimaryRayLength
+inline bool tddPRayL = false; /// PrimaryRayLength
 inline bool tddPN = true; /// P Normal
-inline bool tddPNL = true; /// P Normal Length
+inline bool tddPNL = false; /// P Normal Length
 
-inline bool tddPLR = true; /// PointLightRay
-inline bool tddPLP = true; /// PointLightPosition
+inline bool tddPLR = false; /// PointLightRay
+inline bool tddPLP = false; /// PointLightPosition
 
 inline float davg, dfps, drps; /// DEBUG
 inline bool useAA = false; /// Anti-Aliasing
+
+inline float ior = 1.5f;
 
 static bool DBGCanPrint(const float2 pos)
 {

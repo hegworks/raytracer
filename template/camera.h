@@ -39,8 +39,8 @@ public:
 		camTarget = camPos + ahead;
 		if(IsKeyDown(GLFW_KEY_DOWN) && !tdd) camTarget -= speed * up, changed = true;
 		if(IsKeyDown(GLFW_KEY_UP) && !tdd) camTarget += speed * up, changed = true;
-		if(IsKeyDown(GLFW_KEY_LEFT) && !tdd) camTarget -= speed * right, changed = true;
-		if(IsKeyDown(GLFW_KEY_RIGHT) && !tdd) camTarget += speed * right, changed = true;
+		if(IsKeyDown(GLFW_KEY_LEFT)) camTarget -= speed * right, changed = true;
+		if(IsKeyDown(GLFW_KEY_RIGHT)) camTarget += speed * right, changed = true;
 		if(!changed) return false;
 		ahead = normalize(camTarget - camPos);
 		up = normalize(cross(ahead, right));

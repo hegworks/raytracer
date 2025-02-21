@@ -7,7 +7,7 @@
 // -----------------------------------------------------------
 void Renderer::UI()
 {
-	ImGui::Begin("General",nullptr,ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	ImGui::Begin("General", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
 	ImGui::SetWindowPos(ImVec2(SCRWIDTH - 300, 0));
 	ImGui::SetWindowSize(ImVec2(300, SCRHEIGHT));
@@ -211,6 +211,8 @@ void Renderer::UI()
 		ImGui::SetNextWindowSize(ImVec2(200, SCRHEIGHT / 2.0f));
 		ImGui::SetNextWindowBgAlpha(0.2f);
 		ImGui::Begin("Materials");
+
+		ImGui::DragFloat("ior", &ior, 0.01f, 1.0, 10.0);
 
 		const char* materialTypes[] =
 		{

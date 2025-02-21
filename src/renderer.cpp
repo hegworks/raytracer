@@ -127,7 +127,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		}
 		case Material::Type::REFRACTIVE:
 		{
-			float3 refracDir = refract(ray.D, n, 1.5f);
+			float3 refracDir = refract(ray.D, n, ior);
 			Ray refracR(p + refracDir * EPS, refracDir);
 			l += Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
