@@ -176,45 +176,63 @@ void Renderer::UI()
 	if(tdd)
 	{
 		ImGui::SetNextWindowPos(ImVec2(0, 360));
-		ImGui::SetNextWindowSize(ImVec2(200, SCRHEIGHT / 2.0f));
+		ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT / 2.0f));
 		ImGui::SetNextWindowBgAlpha(0.2f);
-		ImGui::Begin("2D Debugger");
+		ImGui::Begin("2D Debugger", nullptr, ImGuiWindowFlags_NoResize);
 
-		ImGui::DragFloat("Scale", &tddSceneScale, 0.01f, -5, 5);
+		if(ImGui::Button("Reset"))
+		{
+			tddSceneScale = 1.3f;
+			tddOffset = tddOffset = int2(0, 130);
+		}
+		ImGui::SameLine();
+		ImGui::Checkbox("Black Background", &tddBBG);
+
+		ImGui::DragFloat("Scale", &tddSceneScale, 0.01f, 0.001f, 2.5f);
 		ImGui::DragInt2("Offset", &tddOffset.x);
 		ImGui::DragInt("Ray Count", &tddrx, 0.5f, 1, 200);
-		//ImGui::DragInt("SliceY", &tddSliceY, 0.5f, 0, SCRHEIGHT);
+		ImGui::SliderInt("Font Size", &tddFS, 0, 4);
 
 		ImGui::Separator();
 
-		ImGui::Checkbox("SingleX", &tddSXM);
-		ImGui::DragInt("SingleXX", &tddSXX, 1.0f, 0, SCRWIDTH);
+		ImGui::Checkbox("Single", &tddSXM);
+		ImGui::SameLine();
+		ImGui::DragInt("X", &tddSXX, 1.0f, 0, SCRWIDTH);
 
 		ImGui::Separator();
 
-		ImGui::Checkbox("Black Background", &tddBBG);
-		ImGui::Checkbox("Primary Ray", &tddPRay);
-		ImGui::Checkbox("Primary Ray Length", &tddPRayL);
-		ImGui::Checkbox("P Normal", &tddPN);
-		ImGui::Checkbox("P Normal Length", &tddPNL);
+		ImGui::Text("Ray");
+		ImGui::SameLine();
+		ImGui::Checkbox("##0", &tddPRay);
+		ImGui::SameLine();
+		ImGui::Checkbox("Length##0", &tddPRayL);
+		ImGui::SameLine();
+		ImGui::Checkbox("Coord##0", &tddRC);
 
-		ImGui::Separator();
+		ImGui::Text("Normal");
+		ImGui::SameLine();
+		ImGui::Checkbox("##1", &tddPN);
+		ImGui::SameLine();
+		ImGui::Checkbox("Length##1", &tddPNL);
 
-		ImGui::Checkbox("Point Light Pos", &tddPLP);
-		ImGui::Checkbox("Point Light Rays", &tddPLR);
+		ImGui::Text("PointLight");
+		ImGui::SameLine();
+		ImGui::Checkbox("Pos", &tddPLP);
+		ImGui::SameLine();
+		ImGui::Checkbox("Ray", &tddPLR);
 
 		ImGui::End();
 	}
 
 	{
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		ImGui::SetNextWindowSize(ImVec2(200, SCRHEIGHT / 2.0f));
+		ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT / 2.0f));
 		ImGui::SetNextWindowBgAlpha(0.2f);
-		ImGui::Begin("Materials");
+		ImGui::Begin("Materials", nullptr, ImGuiWindowFlags_NoResize);
 
-		ImGui::DragFloat("ior", &ior, 0.01f, 1.0, 10.0);
+		ImGui::DragFloat("ior", &dbgIor, 0.01f, 1.0, 10.0);
 		ImGui::SameLine();
-		ImGui::Checkbox("BL", &tddBL);
+		ImGui::Checkbox("Beer", &dbgBeer);
 
 		const char* materialTypes[] =
 		{

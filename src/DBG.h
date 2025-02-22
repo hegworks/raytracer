@@ -10,6 +10,8 @@ inline int tddrx = 20;
 inline bool tddSXM = false; /// SingleXMode
 inline int tddSXX = 0; /// SingleXX
 inline int tddSliceY = SCRHEIGHT / 2; /// SingleXX
+inline int tddFS = 2; /// FontSize
+inline bool tddRC = true; /// RayCoord
 
 inline bool tddBBG = false; /// BlackBackGround
 inline bool tddPRay = true; /// PrimaryRay
@@ -23,8 +25,8 @@ inline bool tddPLP = false; /// PointLightPosition
 inline float davg, dfps, drps; /// DEBUG
 inline bool useAA = false; /// Anti-Aliasing
 
-inline float ior = 1.5f;
-inline bool tddBL = true; /// beer's law
+inline float dbgIor = 1.5f;
+inline bool dbgBeer = true; /// beer's law
 
 static bool DBGCanPrint(const float2 pos)
 {
@@ -45,18 +47,17 @@ static int2 WTS(float3 p)
 }
 
 /// 2D Debugger Primary/Point
-static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool tddIsPixelX, bool tddIsPixelY, bool tddIsOutline)
+static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool tddIsPixelX, bool tddIsPixelY, bool tddIsCameraY)
 {
 	int2 pd = WTS(p); /// intersection point debug
-	if(tddIsOutline)
+	if(tddIsCameraY)
 	{
 		screen->Plot(pd.x, pd.y, 0xffffff);
-
 	}
 
 	if(tddIsPixelX && tddIsPixelY)
 	{
-		// primary ray
+		// ray
 		if(tddPRay)
 		{
 			float2 o = WTS(ray.O);
@@ -74,14 +75,26 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 				color = 0xffff00;
 			}
 			screen->Line(o.x, o.y, d.x, d.y, color);
+		}
 
-			{
-				float2 o = d;
-				o += 5;
-				char t[50];
-				sprintf(t, "%.2f,%.2f,%.2f", p.x, p.y, p.z);
-				if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0x00ff00, 2);
-			}
+		// ray coord
+		if(tddRC)
+		{
+			float2 o = pd;
+			o += 5;
+			char t[50];
+			sprintf(t, "%.2f,%.2f,%.2f", p.x, p.y, p.z);
+			if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0x00ff00, tddFS);
+		}
+
+		// ray length
+		if(tddPRayL)
+		{
+			int2 o = {pd.x, pd.y - 5};
+
+			char t[20];
+			sprintf(t, "%.2f", ray.t);
+			if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0xff0000, tddFS);
 		}
 
 		// normal
@@ -99,18 +112,7 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 
 			char t[20];
 			sprintf(t, "%.2f", length(n));
-			if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0x00ff00, 2);
-		}
-
-
-		// ray length
-		if(tddPRayL)
-		{
-			int2 o = {pd.x, pd.y - 5};
-
-			char t[20];
-			sprintf(t, "%.2f", ray.t);
-			if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0xff0000, 2);
+			if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0xff00ff, tddFS);
 		}
 	}
 }

@@ -128,12 +128,12 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case Material::Type::REFRACTIVE:
 		{
 			float fres;
-			fresnel(rayDN, n, ior, fres);
+			fresnel(rayDN, n, dbgIor, fres);
 
 			float3 refracted(0);
 			if((1.0f - fres) > EPS)
 			{
-				float3 refracDir = refract(rayDN, n, ior);
+				float3 refracDir = refract(rayDN, n, dbgIor);
 				Ray refracR(p + refracDir * EPS, refracDir);
 				refracR.inside = !ray.inside;
 				refracted = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
@@ -150,7 +150,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 			// here mat.m_glossiness is being used as density of the matter
 			float3 beer = ray.inside ? expf(-mat.m_albedo * mat.m_glossiness * ray.t) : 1.0f;
-			float3 alb = tddBL ? beer : mat.m_albedo;
+			float3 alb = dbgBeer ? beer : mat.m_albedo;
 
 			l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
 
