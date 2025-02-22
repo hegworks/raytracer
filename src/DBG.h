@@ -60,11 +60,14 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 		{
 			float2 o = WTS(ray.O);
 			float2 d = pd;
-			int colordepth = depth % 4;
 			uint color = 0xffffff;
-			if(colordepth == 1) color = 0xff0000;
-			if(colordepth == 2) color = 0x00ff00;
-			if(colordepth == 3) color = 0x0000ff;
+			if(depth > 0)
+			{
+				int colordepth = (depth - 1) % 3;
+				if(colordepth == 0) color = 0xff0000;
+				if(colordepth == 1) color = 0x00ff00;
+				if(colordepth == 2) color = 0x0000ff;
+			}
 			screen->Line(o.x, o.y, d.x, d.y, color);
 
 			{
@@ -81,7 +84,7 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 		{
 			float2 o = pd;
 			float2 d = WTS(p + n * 0.2f);
-			screen->Line(o.x, o.y, d.x, d.y, 0x00ff00);
+			screen->Line(o.x, o.y, d.x, d.y, 0xff00ff);
 		}
 
 		// normal length

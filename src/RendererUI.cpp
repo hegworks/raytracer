@@ -229,7 +229,7 @@ void Renderer::UI()
 			ImGui::Combo("Type##1", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
 			mat.m_type = static_cast<Material::Type>(matInt);
 			ImGui::ColorEdit3("Albedo##1", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##1", &mat.m_glossiness, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Glossiness##1", &mat.m_glossiness, 0.01f, 0.0f, 10.0f);
 		}
 		if(ImGui::CollapsingHeader("Torus"))
 		{
@@ -238,7 +238,7 @@ void Renderer::UI()
 			ImGui::Combo("Type##2", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
 			mat.m_type = static_cast<Material::Type>(matInt);
 			ImGui::ColorEdit3("Albedo##2", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##2", &mat.m_glossiness, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Glossiness##2", &mat.m_glossiness, 0.01f, 0.0f, 10.0f);
 		}
 		if(ImGui::CollapsingHeader("Cube"))
 		{
@@ -247,7 +247,7 @@ void Renderer::UI()
 			ImGui::Combo("Type##3", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
 			mat.m_type = static_cast<Material::Type>(matInt);
 			ImGui::ColorEdit3("Albedo##3", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##3", &mat.m_glossiness, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Glossiness##3", &mat.m_glossiness, 0.01f, 0.0f, 10.0f);
 		}
 
 		ImGui::End();

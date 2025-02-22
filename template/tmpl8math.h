@@ -541,7 +541,7 @@ inline float3 reflect(const float3& i, const float3& n) { return i - 2.0f * n * 
 /// <param name="ior">Index Of Refraction of the physical object</param>
 inline float3 refract(const float3& I, const float3& N, const float& ior)
 {
-	float cosi = clamp(-1.0f, 1.0f, dot(N, I));
+	float cosi = dot(N, I);
 	float etai = 1, etat = ior; /// ior of air and the physical object
 	float3 n = N;
 	if(cosi < 0) { cosi = -cosi; }
@@ -554,7 +554,7 @@ inline float3 refract(const float3& I, const float3& N, const float& ior)
 // based on https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/reflection-refraction-fresnel.html
 inline void fresnel(const float3& I, const float3& N, const float& ior, float& kr)
 {
-	float cosi = clamp(-1.0f, 1.0f, dot(I, N));
+	float cosi = dot(I, N);
 	float etai = 1, etat = ior;
 	if(cosi > 0) { std::swap(etai, etat); }
 	// Compute sini using Snell's law
