@@ -24,6 +24,7 @@ inline float davg, dfps, drps; /// DEBUG
 inline bool useAA = false; /// Anti-Aliasing
 
 inline float ior = 1.5f;
+inline bool tddBL = true; /// beer's law
 
 static bool DBGCanPrint(const float2 pos)
 {
@@ -67,6 +68,10 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 				if(colordepth == 0) color = 0xff0000;
 				if(colordepth == 1) color = 0x00ff00;
 				if(colordepth == 2) color = 0x0000ff;
+			}
+			if(ray.inside)
+			{
+				color = 0xffff00;
 			}
 			screen->Line(o.x, o.y, d.x, d.y, color);
 

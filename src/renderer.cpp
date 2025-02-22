@@ -131,7 +131,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			fresnel(rayDN, n, ior, fres);
 
 			float3 refracted(0);
-			if((1.0f - fres) > 0.1f)
+			if((1.0f - fres) > EPS)
 			{
 				float3 refracDir = refract(rayDN, n, ior);
 				Ray refracR(p + refracDir * EPS, refracDir);
@@ -140,7 +140,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			}
 
 			float3 reflected(0);
-			if(fres > 0.1f)
+			if(fres > EPS)
 			{
 				float3 reflecDir = reflect(rayDN, n);
 				Ray reflecR(p + reflecDir * EPS, reflecDir);
@@ -150,8 +150,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 			// here mat.m_glossiness is being used as density of the matter
 			float3 beer = ray.inside ? expf(-mat.m_albedo * mat.m_glossiness * ray.t) : 1.0f;
+			float3 alb = tddBL ? beer : mat.m_albedo;
 
-			l += beer * ((fres * reflected) + ((1.0f - fres) * refracted));
+			l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
 
 			break;
 		}

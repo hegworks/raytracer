@@ -213,6 +213,8 @@ void Renderer::UI()
 		ImGui::Begin("Materials");
 
 		ImGui::DragFloat("ior", &ior, 0.01f, 1.0, 10.0);
+		ImGui::SameLine();
+		ImGui::Checkbox("BL", &tddBL);
 
 		const char* materialTypes[] =
 		{
