@@ -28,6 +28,12 @@ inline bool useAA = false; /// Anti-Aliasing
 inline float dbgIor = 1.5f;
 inline bool dbgBeer = true; /// beer's law
 
+inline bool isDbgPixel = false;
+inline bool isDbgPixelClicked = false;
+inline bool isDbgPixelEntered = false;
+inline int2 dbgpixel{0,0};
+inline bool isDbgFixSeed = false;
+
 static bool DBGCanPrint(const float2 pos)
 {
 	return !(pos.x < 0 || pos.x >= SCRWIDTH || pos.y < 0 || pos.y >= SCRHEIGHT - 10);

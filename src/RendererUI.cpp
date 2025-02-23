@@ -11,13 +11,35 @@ void Renderer::UI()
 
 	ImGui::SetWindowPos(ImVec2(SCRWIDTH - 300, 0));
 	ImGui::SetWindowSize(ImVec2(300, SCRHEIGHT));
-	// animation toggle
+
 	ImGui::Text("avg	fps	rps");
 	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
-	ImGui::SameLine();
+
 	if(ImGui::Button("ResetCam"))
 	{
 		tddResetCam = true;
+	}
+
+	ImGui::Checkbox("Fixed Seed", &isDbgFixSeed);
+	if(!isDbgPixel)
+	{
+		ImGui::SameLine();
+		if(ImGui::Button("DBG Pixel"))
+		{
+			isDbgPixel = true;
+		}
+	}
+	else if(isDbgPixelClicked && !isDbgPixelEntered)
+	{
+		ImDrawList* drawList = ImGui::GetForegroundDrawList();
+		ImU32 color = IM_COL32(255, 0, 255, 255);
+
+		float size = 20.0f; // Cursor size (change as needed)
+		ImVec2 pos = {static_cast<float>(dbgpixel.x),static_cast<float>(dbgpixel.y)};
+		drawList->AddRectFilled(pos, ImVec2(pos.x + size, pos.y + size), color);
+
+		//drawList->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + 1, pos.y + 1), color);
+
 	}
 
 	ImGui::Checkbox("Animate", &animating);
@@ -27,13 +49,14 @@ void Renderer::UI()
 	ImGui::Checkbox("TDD", &tdd);
 
 	// ray query on mouse
-	Ray r = camera.GetPrimaryRay((float)mousePos.x, (float)mousePos.y);
+	int2 coord = isDbgPixel ? dbgpixel : mousePos;
+	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
 	scene.FindNearest(r);
-	bool isInScreen = mousePos.x >= 0 && mousePos.x < SCRWIDTH && mousePos.y >= 0 && mousePos.y < SCRHEIGHT;
+	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
 	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
 	if(isInScreen)
 	{
-		pixel = screen->pixels[mousePos.x + mousePos.y * SCRWIDTH];
+		pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
 		red = (pixel & 0xFF0000) >> 16;
 		green = (pixel & 0x00FF00) >> 8;
 		blue = pixel & 0x0000FF;
@@ -42,7 +65,7 @@ void Renderer::UI()
 	ImGui::ColorButton("", color);
 	ImGui::SameLine();
 
-	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, mousePos.x, mousePos.y, r.objIdx);
+	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, coord.x, coord.y, r.objIdx);
 
 	ImGui::SliderInt("ndal", &ndal, 0, 3);
 
@@ -249,7 +272,7 @@ void Renderer::UI()
 			ImGui::Combo("Type##1", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
 			mat.m_type = static_cast<Material::Type>(matInt);
 			ImGui::ColorEdit3("Albedo##1", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##1", &mat.m_glossiness, 0.01f, 0.0f, 10.0f);
+			ImGui::DragFloat("Glossiness##1", &mat.m_glossiness, 0.01f, 0.0f, 30.0f);
 		}
 		if(ImGui::CollapsingHeader("Torus"))
 		{
@@ -258,7 +281,7 @@ void Renderer::UI()
 			ImGui::Combo("Type##2", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
 			mat.m_type = static_cast<Material::Type>(matInt);
 			ImGui::ColorEdit3("Albedo##2", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##2", &mat.m_glossiness, 0.01f, 0.0f, 10.0f);
+			ImGui::DragFloat("Glossiness##2", &mat.m_glossiness, 0.01f, 0.0f, 30.0f);
 		}
 		if(ImGui::CollapsingHeader("Cube"))
 		{
@@ -267,9 +290,37 @@ void Renderer::UI()
 			ImGui::Combo("Type##3", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
 			mat.m_type = static_cast<Material::Type>(matInt);
 			ImGui::ColorEdit3("Albedo##3", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##3", &mat.m_glossiness, 0.01f, 0.0f, 10.0f);
+			ImGui::DragFloat("Glossiness##3", &mat.m_glossiness, 0.01f, 0.0f, 30.0f);
 		}
 
 		ImGui::End();
+	}
+}
+
+void Renderer::MouseDown(int button)
+{
+	if(isDbgPixel && !isDbgPixelClicked)
+	{
+		if(button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			isDbgPixelClicked = true;
+		}
+	}
+}
+
+void Renderer::KeyDown(int key)
+{
+	if(isDbgPixel && isDbgPixelClicked)
+	{
+		if(key == GLFW_KEY_UP) dbgpixel.y = dbgpixel.y == 0 ? 0 : dbgpixel.y - 1;
+		if(key == GLFW_KEY_DOWN) dbgpixel.y = dbgpixel.y == SCRHEIGHT - 1 ? SCRHEIGHT - 1 : dbgpixel.y + 1;
+		if(key == GLFW_KEY_LEFT) dbgpixel.x = dbgpixel.x == 0 ? 0 : dbgpixel.x - 1;
+		if(key == GLFW_KEY_RIGHT) dbgpixel.x = dbgpixel.x == SCRWIDTH - 1 ? SCRWIDTH - 1 : dbgpixel.x + 1;
+
+		if(key == GLFW_KEY_ENTER)
+		{
+			printf("DBG PIXEL AT %i,%i\n", dbgpixel.x, dbgpixel.y);
+			isDbgPixelEntered = true;
+		}
 	}
 }

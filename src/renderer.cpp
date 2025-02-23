@@ -36,6 +36,18 @@ void Renderer::Tick(float deltaTime)
 	Timer t;
 	const float scale = 1.0f / static_cast<float>(acmCounter++);
 
+	if(isDbgPixel && !isDbgPixelEntered)
+	{
+		if(!isDbgPixelClicked)
+		{
+
+			dbgpixel = {mousePos.x,mousePos.y};
+			return;
+		}
+
+		return;
+	}
+
 	if(tdd) screen->Clear(0);
 
 	// lines are executed as OpenMP parallel tasks (disabled in DEBUG)
@@ -47,8 +59,10 @@ void Renderer::Tick(float deltaTime)
 		// trace a primary ray for each pixel on the line
 		for(int x = 0; x < SCRWIDTH; x++)
 		{
+			if(isDbgPixel && isDbgPixelEntered && dbgpixel.x == x && dbgpixel.y == y) __debugbreak();
 			bool tddIsPixelX = tdd && ((!tddSXM && x % tddrx == 0) || (tddSXM && x == tddSXX));
 			int pixelIndex = x + yTimesSCRWDTH;
+			if(isDbgFixSeed) lastPixelSeeds[pixelIndex] = pixelSeeds[pixelIndex];
 			const float xOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			const float yOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset);
@@ -56,6 +70,7 @@ void Renderer::Tick(float deltaTime)
 			float4 avg = accumulator[pixelIndex] * scale;
 			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
 			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&avg);
+			if(isDbgFixSeed) pixelSeeds[pixelIndex] = lastPixelSeeds[pixelIndex];
 		}
 	}
 	// performance report - running average - ms, MRays/s
