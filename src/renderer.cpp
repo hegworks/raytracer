@@ -24,6 +24,10 @@ void Renderer::Init()
 
 	acmCounter = 1;
 
+	PointLight& pl = scene.CreatePointLight();
+	pl.m_pos.y = 1.0f;
+	pl.m_intensity = 10.0f;
+
 #if _DEBUG
 	dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
