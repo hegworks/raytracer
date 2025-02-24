@@ -23,6 +23,12 @@ void Renderer::Init()
 	}
 
 	acmCounter = 1;
+
+#if _DEBUG
+	dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
+	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
+#endif // _DEBUG
+
 }
 
 // -----------------------------------------------------------
@@ -52,12 +58,12 @@ void Renderer::Tick(float deltaTime)
 
 	// lines are executed as OpenMP parallel tasks (disabled in DEBUG)
 #pragma omp parallel for schedule(dynamic)
-	for(int y = 0; y < SCRHEIGHT; y++)
+	for(int y = dbgScrRangeY.x; y < dbgScrRangeY.y; y++)
 	{
 		int yTimesSCRWDTH = y * SCRWIDTH;
 		bool tddIsPixelY = tdd && y == tddSliceY;
 		// trace a primary ray for each pixel on the line
-		for(int x = 0; x < SCRWIDTH; x++)
+		for(int x = dbgScrRangeX.x; x < dbgScrRangeX.y; x++)
 		{
 			if(isDbgPixel && isDbgPixelEntered && dbgpixel.x == x && dbgpixel.y == y) __debugbreak();
 			bool tddIsPixelX = tdd && ((!tddSXM && x % tddrx == 0) || (tddSXM && x == tddSXX));

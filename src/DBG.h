@@ -33,6 +33,8 @@ inline bool isDbgPixelClicked = false;
 inline bool isDbgPixelEntered = false;
 inline int2 dbgpixel{0,0};
 inline bool isDbgFixSeed = false;
+inline int2 dbgScrRangeX = {0,SCRWIDTH};
+inline int2 dbgScrRangeY = {0,SCRHEIGHT};
 
 static bool DBGCanPrint(const float2 pos)
 {

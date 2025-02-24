@@ -42,6 +42,16 @@ void Renderer::UI()
 
 	}
 
+	ImGui::Separator();
+	if(ImGui::SliderInt2("SCR RANGE X", &dbgScrRangeX.x, 0, SCRWIDTH) ||
+	   ImGui::SliderInt2("SCR RANGE Y", &dbgScrRangeY.x, 0, SCRHEIGHT))
+	{
+		screen->Clear(0);
+	}
+
+
+	ImGui::Separator();
+
 	ImGui::Checkbox("Animate", &animating);
 	ImGui::SameLine();
 	ImGui::Checkbox("AA", &useAA);
