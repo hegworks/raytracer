@@ -24,7 +24,7 @@ public:
 	float3 CalcSpotLight(float3 p, float3 n, float3 brdf);
 	float3 CalcDirLight(float3 p, float3 n, float3 brdf);
 	float3 CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex);
-	float3 CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCamearY);
+	float3 CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 
 	// data members
 	int2 mousePos;

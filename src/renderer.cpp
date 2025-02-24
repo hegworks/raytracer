@@ -27,6 +27,7 @@ void Renderer::Init()
 #if _DEBUG
 	dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
+	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 #endif // _DEBUG
 }
 
@@ -208,14 +209,14 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 }
 
-float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCamearY)
+float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
 {
 	float3 albedo = scene.GetAlbedo(ray.objIdx, p); /// albedo of the intersection point
 	//float3 wo = -ray.D; /// outgoing light direction
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
 	float3 l(0); /// total outgoing radiance
-	l += CalcPointLight(p, n, brdf, isTddPixelX, isTddPixelY, isTddCamearY);
+	l += CalcPointLight(p, n, brdf, isTddPixelX, isTddPixelY, isTddCameraY);
 	l += CalcSpotLight(p, n, brdf);
 	l += CalcDirLight(p, n, brdf);
 	l += CalcQuadLight(p, n, brdf, pixelIndex);
