@@ -6,6 +6,7 @@ public:
 	enum class Type : std::uint8_t
 	{
 		DIFFUSE,
+		DIFFUSE_PT,
 		REFLECTIVE,
 		GLOSSY,
 		REFRACTIVE

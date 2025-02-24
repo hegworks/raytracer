@@ -32,4 +32,9 @@ public:
 		return customSeed;
 	}
 	float RandomFloat(uint& customSeed) { return RandomUInt(customSeed) * 2.3283064365387e-10f; }
+
+	float RandomFloat(uint& customSeed, float min, float max)
+	{
+		return min + (RandomFloat(customSeed) * (max - min));
+	}
 };

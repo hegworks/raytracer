@@ -28,7 +28,6 @@ void Renderer::Init()
 	dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 #endif // _DEBUG
-
 }
 
 // -----------------------------------------------------------
@@ -129,6 +128,21 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case Material::Type::DIFFUSE:
 		{
 			l += CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			break;
+		}
+		case Material::Type::DIFFUSE_PT:
+		{
+			float3 randPoint = {
+				threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
+				threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
+				threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
+			};
+			bool isInCorrectHemisphere = dot(randPoint, n) > 0.0f;
+			if(!isInCorrectHemisphere) randPoint = -randPoint;
+			float3 randDir = normalize(n + randPoint);
+
+			Ray r(p + randDir * EPS, randDir);
+			l += mat.m_albedo * mat.m_glossiness * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 		case Material::Type::REFLECTIVE:

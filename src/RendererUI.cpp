@@ -270,6 +270,7 @@ void Renderer::UI()
 		const char* materialTypes[] =
 		{
 			"DIFFUSE",
+			"DIFFUSE_PT",
 			"REFLECTIVE",
 			"GLOSSY",
 			"REFRACTIVE"
