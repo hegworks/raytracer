@@ -129,6 +129,12 @@
     <ClInclude Include="..\src\PointLight.h">
       <Filter>Src\Lights</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Mesh.h">
+      <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Model.h">
+      <Filter>Src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">

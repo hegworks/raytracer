@@ -23,3 +23,4 @@
 #define SQRT_PI_INV		0.56418958355f
 #define LARGE_FLOAT		1e34f
 #define EPS				1e-4f
+const std::string ASSETDIR("../assets/");

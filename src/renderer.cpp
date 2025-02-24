@@ -3,7 +3,7 @@
 #include <common.h>
 
 #include "DBG.h"
-#include "UknittyMath.h"
+#include "Model.h"
 
 // -----------------------------------------------------------
 // Initialize the renderer
@@ -33,6 +33,9 @@ void Renderer::Init()
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 #endif // _DEBUG
+
+	Model model(ASSETDIR + "Models/Primitives/Sphere/Sphere.obj");
+	printf(model.GetStrippedFileName().c_str());
 }
 
 // -----------------------------------------------------------
@@ -137,15 +140,24 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		}
 		case Material::Type::DIFFUSE_PT:
 		{
-			float3 randPoint = {
-				threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
-				threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
-				threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
-			};
+			float3 randPoint(0);
+			while(true)
+			{
+				randPoint =
+				{
+					threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
+					threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
+					threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
+				};
+				float len = length(randPoint);
+				if(len > 1e-160 && len <= 1.0f)
+				{
+					break;
+				}
+			}
 			bool isInCorrectHemisphere = dot(randPoint, n) > 0.0f;
 			if(!isInCorrectHemisphere) randPoint = -randPoint;
 			float3 randDir = normalize(n + randPoint);
-
 			Ray r(p + randDir * EPS, randDir);
 			l += mat.m_albedo * mat.m_glossiness * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
