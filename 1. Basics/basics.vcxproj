@@ -148,6 +148,7 @@
     <ClCompile Include="..\src\renderer.cpp" />
     <ClCompile Include="..\src\RendererUI.cpp" />
     <ClCompile Include="..\src\Scene.cpp" />
+    <ClCompile Include="..\src\TinyBvhImp.cpp" />
     <ClCompile Include="..\template\opengl.cpp" />
     <ClCompile Include="..\template\surface.cpp" />
     <ClCompile Include="..\template\template.cpp">
@@ -166,6 +167,7 @@
     <ClInclude Include="..\lib\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\lib\imgui\imstb_textedit.h" />
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\lib\tiny_bvh.h" />
     <ClInclude Include="..\src\DBG.h" />
     <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\Model.h" />

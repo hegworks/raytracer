@@ -26,20 +26,19 @@ public:
 	~Model()
 	{
 		std::cout << "Destroying Model: " << m_directory << std::endl;
-		for(unsigned int i = 0; i < textures_loaded.size(); i++)
+		for(unsigned int i = 0; i < m_texturesLoaded.size(); i++)
 		{
-			glDeleteTextures(1, &textures_loaded[i].m_id);
+			glDeleteTextures(1, &m_texturesLoaded[i].m_id);
 		}
 	}
 
 	std::string GetDirectory() const { return m_directory; }
 	std::string GetStrippedFileName() const;
+	std::vector<Mesh> m_meshes;
 
 private:
-	// model data
-	std::vector<Mesh> meshes;
 	std::string m_directory;
-	std::vector<Texture> textures_loaded;
+	std::vector<Texture> m_texturesLoaded;
 
 	void loadModel(std::string path);
 	void processNode(aiNode* node, const aiScene* scene);
@@ -78,7 +77,7 @@ inline void Model::processNode(aiNode* node, const aiScene* scene)
 	for(unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(processMesh(mesh, scene));
+		m_meshes.push_back(processMesh(mesh, scene));
 	}
 	// then do the same for each of its children
 	for(unsigned int i = 0; i < node->mNumChildren; i++)
@@ -92,6 +91,7 @@ inline Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
+	std::vector<float4> triangles;
 
 	for(unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -115,11 +115,19 @@ inline Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		vertices.push_back(vertex);
 	}
 	// process indices
+	triangles.reserve(mesh->mNumFaces * 3);
 	for(unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
 		for(unsigned int j = 0; j < face.mNumIndices; j++)
+		{
 			indices.push_back(face.mIndices[j]);
+			float4 trianglePoint(0);
+			trianglePoint.x = mesh->mVertices[face.mIndices[j]].x;
+			trianglePoint.y = mesh->mVertices[face.mIndices[j]].y;
+			trianglePoint.z = mesh->mVertices[face.mIndices[j]].z;
+			triangles.push_back(trianglePoint);
+		}
 	}
 	// process material
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
@@ -130,7 +138,7 @@ inline Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-	return Mesh(vertices, indices, textures);
+	return {vertices, indices, textures, triangles, mesh->mNumFaces};
 }
 
 inline unsigned int Model::TextureFromFile(const char* path, const std::string& directory)
@@ -185,11 +193,11 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 		aiString str;
 		mat->GetTexture(type, i, &str);
 		bool wasTextureLoadedBefore = false;
-		for(unsigned int j = 0; j < textures_loaded.size(); j++)
+		for(unsigned int j = 0; j < m_texturesLoaded.size(); j++)
 		{
-			if(std::strcmp(textures_loaded[j].m_path.data, str.C_Str()) == 0)
+			if(std::strcmp(m_texturesLoaded[j].m_path.data, str.C_Str()) == 0)
 			{
-				textures.push_back(textures_loaded[j]);
+				textures.push_back(m_texturesLoaded[j]);
 				wasTextureLoadedBefore = true;
 				break;
 			}
@@ -210,7 +218,7 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 			texture.m_type = typeName;
 			texture.m_path = str.C_Str();
 			textures.push_back(texture);
-			textures_loaded.push_back(texture);
+			m_texturesLoaded.push_back(texture);
 		}
 	}
 	return textures;

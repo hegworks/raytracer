@@ -23,17 +23,18 @@ struct Texture
 class Mesh
 {
 public:
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
-
-	// mesh data
-	std::vector<Vertex>       m_vertices;
+	std::vector<Vertex> m_vertices;
 	std::vector<unsigned int> m_indices;
-	std::vector<Texture>      m_textures;
-};
+	std::vector<Texture> m_textures;
+	std::vector<float4> m_triangles;
+	uint32_t m_numFaces = 0;
 
-inline Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
-{
-	m_vertices = vertices;
-	m_indices = indices;
-	m_textures = textures;
-}
+	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures, const std::vector<float4>& triangles, const uint32_t& numFaces)
+	{
+		m_vertices = vertices;
+		m_indices = indices;
+		m_textures = textures;
+		m_numFaces = numFaces;
+		m_triangles = triangles;
+	}
+};

@@ -5,6 +5,20 @@
 #include "DBG.h"
 #include "Model.h"
 
+#define TINYBVH_IMPLEMENTATION
+#define TINYBVH_USE_CUSTOM_VECTOR_TYPES
+#define NO_DOUBLE_PRECISION_SUPPORT
+namespace tinybvh
+{
+using bvhint2 = int2;
+using bvhint3 = int3;
+using bvhuint2 = uint2;
+using bvhvec2 = float2;
+using bvhvec3 = float3;
+using bvhvec4 = float4;
+}
+#include "tiny_bvh.h"
+
 // -----------------------------------------------------------
 // Initialize the renderer
 // -----------------------------------------------------------
@@ -34,8 +48,17 @@ void Renderer::Init()
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 #endif // _DEBUG
 
-	Model model(ASSETDIR + "Models/Primitives/Sphere/Sphere.obj");
+	Model& model = m_models.emplace_back(ASSETDIR + "Models/Primitives/Cube/Cube.obj");
 	printf(model.GetStrippedFileName().c_str());
+	printf("\n");
+	printf("NumMeshes: %i\n", model.m_meshes.size());
+	printf("NumFaces: %i\n", model.m_meshes[0].m_numFaces);
+	printf("NumIndices: %i\n", model.m_meshes[0].m_indices.size());
+	printf("NumVertices: %i\n", model.m_meshes[0].m_vertices.size());
+
+	tinybvh::BVH bvh;
+	bvh.Build(model.m_meshes[0].m_triangles.data(), model.m_meshes[0].m_numFaces);
+
 }
 
 // -----------------------------------------------------------

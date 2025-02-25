@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Model.h"
 #include "RNG.h"
 
 namespace Tmpl8
@@ -43,6 +45,7 @@ public:
 	inline static int acmCounter;
 	bool useACMMax = true;
 	int maxDepth = 5;
+	std::vector<Model> m_models;
 };
 
 } // namespace Tmpl8
