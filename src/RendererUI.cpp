@@ -61,7 +61,7 @@ void Renderer::UI()
 	// ray query on mouse
 	int2 coord = isDbgPixel ? dbgpixel : mousePos;
 	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
-	scene.FindNearest(r);
+	scene.m_bvhs[0].Intersect(r); //TODO
 	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
 	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
 	if(isInScreen)
@@ -75,7 +75,7 @@ void Renderer::UI()
 	ImGui::ColorButton("", color);
 	ImGui::SameLine();
 
-	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, coord.x, coord.y, r.objIdx);
+	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, coord.x, coord.y, r.hit.prim);
 
 	ImGui::SliderInt("ndal", &ndal, 0, 3);
 
@@ -276,7 +276,8 @@ void Renderer::UI()
 			"REFRACTIVE"
 		};
 
-		if(ImGui::CollapsingHeader("Sphere"))
+		//TODO
+		/*if(ImGui::CollapsingHeader("Sphere"))
 		{
 			Material& mat = scene.sphere.m_material;
 			int matInt = static_cast<int>(mat.m_type);
@@ -285,6 +286,7 @@ void Renderer::UI()
 			ImGui::ColorEdit3("Albedo##1", &mat.m_albedo.x);
 			ImGui::DragFloat("Glossiness##1", &mat.m_glossiness, 0.01f, 0.0f, 30.0f);
 		}
+		//TODO
 		if(ImGui::CollapsingHeader("Torus"))
 		{
 			Material& mat = scene.torus.m_material;
@@ -294,6 +296,7 @@ void Renderer::UI()
 			ImGui::ColorEdit3("Albedo##2", &mat.m_albedo.x);
 			ImGui::DragFloat("Glossiness##2", &mat.m_glossiness, 0.01f, 0.0f, 30.0f);
 		}
+		//TODO
 		if(ImGui::CollapsingHeader("Cube"))
 		{
 			Material& mat = scene.cube.m_material;
@@ -302,7 +305,7 @@ void Renderer::UI()
 			mat.m_type = static_cast<Material::Type>(matInt);
 			ImGui::ColorEdit3("Albedo##3", &mat.m_albedo.x);
 			ImGui::DragFloat("Glossiness##3", &mat.m_glossiness, 0.01f, 0.0f, 30.0f);
-		}
+		}*/
 
 		ImGui::End();
 	}

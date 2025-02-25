@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Model.h"
 #include "RNG.h"
+#include "Scene.h"
 
 namespace Tmpl8
 {
@@ -31,7 +31,6 @@ public:
 	// data members
 	int2 mousePos;
 	float4* accumulator;
-	Scene scene;
 	Camera camera;
 	bool animating = false;
 	float anim_time = 0;
@@ -45,7 +44,7 @@ public:
 	inline static int acmCounter;
 	bool useACMMax = true;
 	int maxDepth = 5;
-	std::vector<Model> m_models;
+	Scene scene;
 };
 
 } // namespace Tmpl8

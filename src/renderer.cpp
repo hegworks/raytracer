@@ -3,21 +3,9 @@
 #include <common.h>
 
 #include "DBG.h"
+#include "Material.h"
 #include "Model.h"
-
-#define TINYBVH_IMPLEMENTATION
-#define TINYBVH_USE_CUSTOM_VECTOR_TYPES
-#define NO_DOUBLE_PRECISION_SUPPORT
-namespace tinybvh
-{
-using bvhint2 = int2;
-using bvhint3 = int3;
-using bvhuint2 = uint2;
-using bvhvec2 = float2;
-using bvhvec3 = float3;
-using bvhvec4 = float4;
-}
-#include "tiny_bvh.h"
+#include "PointLight.h"
 
 // -----------------------------------------------------------
 // Initialize the renderer
@@ -38,6 +26,8 @@ void Renderer::Init()
 
 	acmCounter = 1;
 
+	scene = Scene();
+	scene.LoadModels();
 	PointLight& pl = scene.CreatePointLight();
 	pl.m_pos.y = 1.0f;
 	pl.m_intensity = 10.0f;
@@ -47,18 +37,6 @@ void Renderer::Init()
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 #endif // _DEBUG
-
-	Model& model = m_models.emplace_back(ASSETDIR + "Models/Primitives/Cube/Cube.obj");
-	printf(model.GetStrippedFileName().c_str());
-	printf("\n");
-	printf("NumMeshes: %i\n", model.m_meshes.size());
-	printf("NumFaces: %i\n", model.m_meshes[0].m_numFaces);
-	printf("NumIndices: %i\n", model.m_meshes[0].m_indices.size());
-	printf("NumVertices: %i\n", model.m_meshes[0].m_vertices.size());
-
-	tinybvh::BVH bvh;
-	bvh.Build(model.m_meshes[0].m_triangles.data(), model.m_meshes[0].m_numFaces);
-
 }
 
 // -----------------------------------------------------------
@@ -66,8 +44,6 @@ void Renderer::Init()
 // -----------------------------------------------------------
 void Renderer::Tick(float deltaTime)
 {
-	// animation
-	if(animating) scene.SetTime(anim_time += deltaTime * 0.002f);
 	// pixel loop
 	Timer t;
 	const float scale = 1.0f / static_cast<float>(acmCounter++);
@@ -139,21 +115,23 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		return 0; // or a fancy sky color
 	}
 
-	scene.FindNearest(ray);
-	if(ray.objIdx == -1)
+
+	scene.m_bvhs[0].Intersect(ray);
+	if(ray.hit.t > BVH_FAR)
 	{
 		return 0; // or a fancy sky color
 	}
 
 	float3 rayDN = normalize(ray.D);
-	float3 p = ray.IntersectionPoint(); /// intersection point
-	float3 n = scene.GetNormal(ray.objIdx, p, rayDN); /// normal of the intersection point
+	// return O + t * D
+	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
+	float3 n = scene.m_models[0].m_meshes[0].m_triangles[ray.hit.prim * 3]; /// normal of the intersection point
 
 	bool tddIsCameraY = tdd && IsCloseF(p.y, camera.camPos.y);
 	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 
 	float3 l(0);
-	Material& mat = scene.GetMaterial(ray.objIdx);
+	Material mat = Material();
 	switch(mat.m_type)
 	{
 		case Material::Type::DIFFUSE:
@@ -210,7 +188,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			{
 				float3 refracDir = refract(rayDN, n, dbgIor);
 				Ray refracR(p + refracDir * EPS, refracDir);
-				refracR.inside = !ray.inside;
+				//refracR.inside = !ray.inside; TODO
 				refracted = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			}
 
@@ -219,15 +197,16 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			{
 				float3 reflecDir = reflect(rayDN, n);
 				Ray reflecR(p + reflecDir * EPS, reflecDir);
-				reflecR.inside = ray.inside;
+				//reflecR.inside = ray.inside; TODO
 				reflected = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			}
 
 			// here mat.m_glossiness is being used as density of the matter
-			float3 beer = ray.inside ? expf(-mat.m_albedo * mat.m_glossiness * ray.t) : 1.0f;
-			float3 alb = dbgBeer ? beer : mat.m_albedo;
+			//float3 beer = ray.inside ? expf(-mat.m_albedo * mat.m_glossiness * ray.t) : 1.0f;
+			//float3 alb = dbgBeer ? beer : mat.m_albedo;
 
-			l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
+			//l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
+			l += ((fres * reflected) + ((1.0f - fres) * refracted));
 
 			break;
 		}
@@ -236,11 +215,12 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	switch(ndal)
 	{
 		case 0:
-			return (scene.GetNormal(ray.objIdx, ray.IntersectionPoint(), ray.D) + 1) * 0.5f;
+			return (n + 1) * 0.5f;
 		case 1:
-			return float3(ray.t) * 0.1f;
+			return float3(ray.hit.t) * 0.1f;
 		case 2:
-			return scene.GetAlbedo(ray.objIdx, ray.IntersectionPoint());
+			//return scene.GetAlbedo(ray.objIdx, ray.IntersectionPoint()); TODO
+			return {0};
 		case 3:
 			return l;
 		default:
@@ -250,7 +230,8 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
 {
-	float3 albedo = scene.GetAlbedo(ray.objIdx, p); /// albedo of the intersection point
+	//float3 albedo = scene.GetAlbedo(ray.objIdx, p); /// albedo of the intersection point TODO
+	float3 albedo = {0.5};
 	//float3 wo = -ray.D; /// outgoing light direction
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
@@ -277,7 +258,7 @@ float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixel
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.IsOccluded(shadowRay);
+		bool isInShadow = scene.m_bvhs[0].IsOccluded(shadowRay); //TODO
 
 		if(isTddPixelX && isTddPixelY)
 		{
@@ -338,7 +319,7 @@ float3 Renderer::CalcSpotLight(float3 p, float3 n, float3 brdf)
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.IsOccluded(shadowRay);
+		bool isInShadow = scene.m_bvhs[0].IsOccluded(shadowRay); //TODO
 		if(isInShadow)
 		{
 			continue;
@@ -378,7 +359,7 @@ float3 Renderer::CalcDirLight(float3 p, float3 n, float3 brdf)
 		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
 
 		Ray shadowRay(srPos, wi);
-		bool isInShadow = scene.IsOccluded(shadowRay);
+		bool isInShadow = scene.m_bvhs[0].IsOccluded(shadowRay); //TODO
 		if(isInShadow)
 		{
 			continue;
@@ -424,7 +405,7 @@ float3 Renderer::CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex)
 
 			float3 srPos = p + wi * EPS;
 			Ray shadowRay(srPos, wi, tMax);
-			bool isInShadow = scene.IsOccluded(shadowRay);
+			bool isInShadow = scene.m_bvhs[0].IsOccluded(shadowRay); //TODO
 			if(isInShadow)
 			{
 				continue;

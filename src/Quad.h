@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <Ray.h>
+#include "Material.h"
 
 // -----------------------------------------------------------
 // Quad primitive
@@ -14,7 +14,7 @@ public:
 	int objIdx = -1;
 	Material m_material;
 	float3 m_pos = float3(0);
-	float3 m_dir = float3(0,1,0);
+	float3 m_dir = float3(0, 1, 0);
 
 	Quad() = default;
 	Quad(int idx, float s, mat4 transform = mat4::Identity())
@@ -28,7 +28,7 @@ public:
 		const float Oy = invT.cell[4] * ray.O.x + invT.cell[5] * ray.O.y + invT.cell[6] * ray.O.z + invT.cell[7];
 		const float Dy = invT.cell[4] * ray.D.x + invT.cell[5] * ray.D.y + invT.cell[6] * ray.D.z;
 		const float t = Oy / -Dy;
-		if(t < ray.t && t > 0)
+		if(t < ray.hit.t && t > 0)
 		{
 			const float Ox = invT.cell[0] * ray.O.x + invT.cell[1] * ray.O.y + invT.cell[2] * ray.O.z + invT.cell[3];
 			const float Oz = invT.cell[8] * ray.O.x + invT.cell[9] * ray.O.y + invT.cell[10] * ray.O.z + invT.cell[11];
@@ -36,7 +36,7 @@ public:
 			const float Dz = invT.cell[8] * ray.D.x + invT.cell[9] * ray.D.y + invT.cell[10] * ray.D.z;
 			const float Ix = Ox + t * Dx, Iz = Oz + t * Dz;
 			if(Ix > -size && Ix < size && Iz > -size && Iz < size)
-				ray.t = t, ray.objIdx = objIdx;
+				ray.hit.t = t, ray.hit.prim = objIdx;
 		}
 	}
 	bool IsOccluded(const Ray& ray) const
@@ -44,7 +44,7 @@ public:
 		const float Oy = invT.cell[4] * ray.O.x + invT.cell[5] * ray.O.y + invT.cell[6] * ray.O.z + invT.cell[7];
 		const float Dy = invT.cell[4] * ray.D.x + invT.cell[5] * ray.D.y + invT.cell[6] * ray.D.z;
 		const float t = Oy / -Dy;
-		if(t < ray.t && t > 0)
+		if(t < ray.hit.t && t > 0)
 		{
 			const float Ox = invT.cell[0] * ray.O.x + invT.cell[1] * ray.O.y + invT.cell[2] * ray.O.z + invT.cell[3];
 			const float Oz = invT.cell[8] * ray.O.x + invT.cell[9] * ray.O.y + invT.cell[10] * ray.O.z + invT.cell[11];

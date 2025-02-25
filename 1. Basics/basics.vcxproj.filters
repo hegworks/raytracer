@@ -43,9 +43,6 @@
     <ClCompile Include="..\src\Scene.cpp">
       <Filter>Src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\TinyBvhImp.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
@@ -90,9 +87,6 @@
     <ClInclude Include="..\template\camera.h">
       <Filter>template</Filter>
     </ClInclude>
-    <ClInclude Include="..\template\scene.h">
-      <Filter>template</Filter>
-    </ClInclude>
     <ClInclude Include="..\template\tmpl8math.h">
       <Filter>template</Filter>
     </ClInclude>
@@ -113,9 +107,6 @@
     </ClInclude>
     <ClInclude Include="..\src\QuadLight.h">
       <Filter>Src\Lights</Filter>
-    </ClInclude>
-    <ClInclude Include="..\template\Ray.h">
-      <Filter>template</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Quad.h">
       <Filter>Src\Shapes</Filter>
@@ -139,6 +130,9 @@
       <Filter>Src</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\tiny_bvh.h">
+      <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Scene.h">
       <Filter>Src</Filter>
     </ClInclude>
   </ItemGroup>

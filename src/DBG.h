@@ -78,10 +78,10 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 				if(colordepth == 1) color = 0x00ff00;
 				if(colordepth == 2) color = 0x0000ff;
 			}
-			if(ray.inside)
-			{
-				color = 0xffff00;
-			}
+			//if(ray.inside) //TODO
+			//{
+				//color = 0xffff00;
+			//}
 			screen->Line(o.x, o.y, d.x, d.y, color);
 		}
 
@@ -101,7 +101,7 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 			int2 o = {pd.x, pd.y - 5};
 
 			char t[20];
-			sprintf(t, "%.2f", ray.t);
+			sprintf(t, "%.2f", ray.hit.t);
 			if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0xff0000, tddFS);
 		}
 

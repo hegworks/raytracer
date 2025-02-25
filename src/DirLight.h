@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "Color.h"
+
 class DirLight
 {
 public:
