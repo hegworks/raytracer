@@ -8,15 +8,20 @@
 void Scene::LoadModels()
 {
 	Model& model = m_models.emplace_back(ASSETDIR + "Models/Primitives/Cube/Cube.obj");
+	//Model& model = m_models.emplace_back(ASSETDIR + "Models/Primitives/Sphere/Sphere.obj");
+	//Model& model = m_models.emplace_back(ASSETDIR + "Models/Primitives/SphereSmooth/SphereSmooth.glb");
 	printf(model.GetStrippedFileName().c_str());
 	printf("\n");
 	printf("NumMeshes: %i\n", model.m_meshes.size());
-	printf("NumFaces: %i\n", model.m_meshes[0].m_numFaces);
-	printf("NumIndices: %i\n", model.m_meshes[0].m_indices.size());
 	printf("NumVertices: %i\n", model.m_meshes[0].m_vertices.size());
+	printf("NumTriangles: %i\n", model.m_meshes[0].m_triangles.size());
+	printf("NumNormals: %i\n", model.m_meshes[0].m_normals.size());
 
-	tinybvh::BVH& bvh = m_bvhs.emplace_back();
-	bvh.Build(model.m_meshes[0].m_triangles.data(), model.m_meshes[0].m_numFaces);
+	{
+		tinybvh::BVH& bvh = m_bvhs.emplace_back();
+		bvh.Build(model.m_meshes[0].m_triangles.data(), model.m_meshes[0].m_triangles.size() / 3);
+	}
+
 }
 
 PointLight& Scene::CreatePointLight()

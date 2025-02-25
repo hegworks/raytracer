@@ -24,17 +24,15 @@ class Mesh
 {
 public:
 	std::vector<Vertex> m_vertices;
-	std::vector<unsigned int> m_indices;
 	std::vector<Texture> m_textures;
 	std::vector<float4> m_triangles;
-	uint32_t m_numFaces = 0;
+	std::vector<float3> m_normals;
 
-	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures, const std::vector<float4>& triangles, const uint32_t& numFaces)
+	Mesh(const std::vector<Vertex>& vertices, const std::vector<Texture>& textures, const std::vector<float4>& triangles,const std::vector<float3>& normals)
 	{
 		m_vertices = vertices;
-		m_indices = indices;
 		m_textures = textures;
-		m_numFaces = numFaces;
 		m_triangles = triangles;
+		m_normals = normals;
 	}
 };

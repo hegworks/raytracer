@@ -52,7 +52,7 @@ private:
 inline void Model::loadModel(std::string path)
 {
 	Assimp::Importer importer;
-	unsigned int flags = aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
+	unsigned int flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
 	const aiScene* scene = importer.ReadFile(path, flags);
 	if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -89,44 +89,42 @@ inline void Model::processNode(aiNode* node, const aiScene* scene)
 inline Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
 	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 	std::vector<float4> triangles;
+	std::vector<float3> normals;
 
-	for(unsigned int i = 0; i < mesh->mNumVertices; i++)
-	{
-		// process vertex positions, normals and texture coordinates
-		Vertex vertex;
-
-		vertex.m_position = float3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-		vertex.m_normal = float3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-		if(mesh->mTextureCoords[0])
-			vertex.m_texCoords = float2(mesh->mTextureCoords[0][i].x * m_textureCoordScale.x, mesh->mTextureCoords[0][i].y * m_textureCoordScale.y);
-		else
-			vertex.m_texCoords = float2(0.0f, 0.0f);
-		if(mesh->mTangents)
-			vertex.m_tangent = float3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
-		else
-			vertex.m_tangent = float3(0.0f, 0.0f, 0.0f);
-		if(mesh->mBitangents)
-			vertex.m_bitangent = float3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
-		else
-			vertex.m_bitangent = float3(0.0f, 0.0f, 0.0f);
-		vertices.push_back(vertex);
-	}
 	// process indices
-	triangles.reserve(mesh->mNumFaces * 3);
 	for(unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
+
 		for(unsigned int j = 0; j < face.mNumIndices; j++)
 		{
-			indices.push_back(face.mIndices[j]);
 			float4 trianglePoint(0);
 			trianglePoint.x = mesh->mVertices[face.mIndices[j]].x;
 			trianglePoint.y = mesh->mVertices[face.mIndices[j]].y;
 			trianglePoint.z = mesh->mVertices[face.mIndices[j]].z;
 			triangles.push_back(trianglePoint);
+
+
+			Vertex vertex;
+			int idx = face.mIndices[j];
+			vertex.m_position = float3(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z);
+			vertex.m_normal = float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z);
+			normals.push_back(float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z));
+			if(mesh->mTextureCoords[0])
+				vertex.m_texCoords = float2(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);
+			else
+				vertex.m_texCoords = float2(0.0f, 0.0f);
+			if(mesh->mTangents)
+				vertex.m_tangent = float3(mesh->mTangents[idx].x, mesh->mTangents[idx].y, mesh->mTangents[idx].z);
+			else
+				vertex.m_tangent = float3(0.0f, 0.0f, 0.0f);
+			if(mesh->mBitangents)
+				vertex.m_bitangent = float3(mesh->mBitangents[idx].x, mesh->mBitangents[idx].y, mesh->mBitangents[idx].z);
+			else
+				vertex.m_bitangent = float3(0.0f, 0.0f, 0.0f);
+			vertices.push_back(vertex);
 		}
 	}
 	// process material
@@ -138,7 +136,7 @@ inline Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-	return {vertices, indices, textures, triangles, mesh->mNumFaces};
+	return Mesh(vertices, textures, triangles, normals);
 }
 
 inline unsigned int Model::TextureFromFile(const char* path, const std::string& directory)

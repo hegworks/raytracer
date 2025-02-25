@@ -115,7 +115,6 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		return 0; // or a fancy sky color
 	}
 
-
 	scene.m_bvhs[0].Intersect(ray);
 	if(ray.hit.t > BVH_FAR)
 	{
@@ -125,7 +124,17 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	float3 rayDN = normalize(ray.D);
 	// return O + t * D
 	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
-	float3 n = scene.m_models[0].m_meshes[0].m_triangles[ray.hit.prim * 3]; /// normal of the intersection point
+	//float3 n = scene.m_models[0].m_meshes[0].m_triangles[ray.hit.prim * 3]; /// normal of the intersection point
+	float3 n0 = scene.m_models[0].m_meshes[0].m_normals[ray.hit.prim * 3]; /// normal of the intersection point
+	float3 n1 = scene.m_models[0].m_meshes[0].m_normals[ray.hit.prim * 3 + 1]; /// normal of the intersection point
+	float3 n2 = scene.m_models[0].m_meshes[0].m_normals[ray.hit.prim * 3 + 2]; /// normal of the intersection point
+
+	float u = ray.hit.u;
+	float v = ray.hit.v;
+	float w = 1.0f - u - v;
+	float3 n = float3((w * n0) + (u * n1) + (v * n2));
+
+	bool hasHit = ray.hit.t < BVH_FAR;
 
 	bool tddIsCameraY = tdd && IsCloseF(p.y, camera.camPos.y);
 	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
@@ -215,7 +224,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	switch(ndal)
 	{
 		case 0:
-			return (n + 1) * 0.5f;
+			return hasHit ? (n + 1) * 0.5f : 0;
 		case 1:
 			return float3(ray.hit.t) * 0.1f;
 		case 2:
