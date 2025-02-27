@@ -26,9 +26,6 @@ void Renderer::Init()
 
 	acmCounter = 1;
 
-	scene = Scene();
-	scene.LoadModels();
-
 	//PointLight& pl = scene.CreatePointLight();
 	//pl.m_pos.y = 1.0f;
 	//pl.m_intensity = 10.0f;
@@ -125,9 +122,10 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 
 	scene.m_bvhList[0].Intersect(ray);
-	if(ray.hit.t > BVH_FAR)
+	bool hasHit = ray.hit.t < BVH_FAR;
+	if(!hasHit)
 	{
-		return 0; // or a fancy sky color
+		return scene.SampleSky(ray);
 	}
 
 	float3 rayDN = normalize(ray.D);
@@ -143,7 +141,6 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	float3 n = float3((w * n0) + (u * n1) + (v * n2));
 	//float3 n = n0;
 
-	bool hasHit = ray.hit.t < BVH_FAR;
 
 	bool tddIsCameraY = tdd && IsCloseF(p.y, camera.camPos.y);
 	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
@@ -219,7 +216,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 				reflected = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			}
 
-			// here mat.m_glossiness is being used as density of the matter
+			// here mat.m_glossiness is being used as density of the matter TODO
 			//float3 beer = ray.inside ? expf(-mat.m_albedo * mat.m_glossiness * ray.t) : 1.0f;
 			//float3 alb = dbgBeer ? beer : mat.m_albedo;
 

@@ -14,6 +14,8 @@ using BvhId = uint;
 class Scene
 {
 public:
+	Scene();
+
 	std::vector<PointLight> m_pointLightList;
 	std::vector<SpotLight> m_spotLightList;
 	std::vector<DirLight> m_dirLightList;
@@ -22,13 +24,24 @@ public:
 	std::vector<Model> m_modelList;
 	std::vector<tinybvh::BVH> m_bvhList;
 
-	int m_nextIdx = 0;
 
-	void LoadModels();
 	void Intersect(Ray& ray);
+	float3 SampleSky(const tinybvh::Ray& ray) const;
 
 	PointLight& CreatePointLight();
 	SpotLight& CreateSpotLight();
 	DirLight& CreateDirLight();
 	QuadLight& CreateQuadLight();
+
+private:
+	void LoadModels();
+	void LoadSkydome();
+
+	int m_nextIdx = 0;
+
+	float* m_skyPixels = nullptr;
+	int m_skyWidth = 0;
+	int m_skyHeight = 0;
+	int m_skyBpp = 0;
+	float m_skydomeBrightnessFactor = 1.5f;
 };
