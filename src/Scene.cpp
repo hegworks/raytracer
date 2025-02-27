@@ -18,9 +18,24 @@ void Scene::LoadSkydome()
 	for(int i = 0; i < m_skyWidth * m_skyHeight * 3; i++) m_skyPixels[i] = sqrtf(m_skyPixels[i]);
 }
 
+void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const mat4& mat)
+{
+	for(int i = 0; i < 15; ++i)
+	{
+		blas.transform[i] = mat.cell[i];
+	}
+}
+
 void Scene::LoadModels()
 {
+	m_modelList.reserve(20);
+	m_bvhList.reserve(20);
+	m_blasList.reserve(20);
 	CreateModel(ModelType::SPHERE);
+	CreateModel(ModelType::SPHERE);
+	mat4 t = mat4::Translate(5, 0, 0);
+	SetBlasTransform(m_blasList[1], t);
+	m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
 
 	//Model& model = m_modelList.emplace_back(ASSETDIR + "Models/Primitives/Sphere/Sphere.obj");
 	//Model& model = m_modelList.emplace_back(ASSETDIR + "Models/Primitives/SphereSmooth/SphereSmooth.glb");
@@ -67,16 +82,21 @@ Material& Scene::GetMaterial()
 
 Model& Scene::CreateModel(ModelType modelType)
 {
-	for(Model& model : m_modelList)
+	for(int i = 0; i < m_modelList.size(); ++i)
 	{
-		if(model.m_modelData.m_type == modelType)
+		if(m_modelList[i].m_modelData.m_type == modelType)
 		{
-			return model;
+			m_blasList.emplace_back(i);
+			m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
+			return m_modelList[i];
 		}
 	}
 	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType));
+	model.m_modelData.m_type = modelType;
 	tinybvh::BVH& bvh = m_bvhList.emplace_back(model.m_vertices.data(), model.m_vertices.size() / 3);
 	m_bvhBaseList.push_back(&bvh);
+	m_blasList.emplace_back(m_bvhBaseList.size() - 1);
+	m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
 
 	printf("NumVertices: %i\n", model.m_vertices.size());
 	printf("NumMeshes: %i\n", model.m_modelData.m_meshVertexBorderList.size());
@@ -86,19 +106,19 @@ Model& Scene::CreateModel(ModelType modelType)
 
 void Scene::Intersect(Ray& ray) const
 {
-	m_bvhList[0].Intersect(ray); //TODO
+	m_tlas.Intersect(ray); //TODO
 }
 
 bool Scene::IsOccluded(const Ray& ray)
 {
-	return m_bvhList[0].IsOccluded(ray); //TODO
+	return m_tlas.IsOccluded(ray); //TODO 
 }
 
 float3 Scene::GetNormal(Ray& ray) const
 {
-	float3 n0 = m_modelList[0].m_modelData.m_vertexDataList[ray.hit.prim * 3].m_normal;
-	float3 n1 = m_modelList[0].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
-	float3 n2 = m_modelList[0].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
+	float3 n0 = m_modelList[ray.instIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3].m_normal;
+	float3 n1 = m_modelList[ray.instIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
+	float3 n2 = m_modelList[ray.instIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
 	float w = 1.0f - ray.hit.u - ray.hit.v;
 	return float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2));
 }
