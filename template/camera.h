@@ -36,15 +36,26 @@ public:
 		if(IsKeyDown(GLFW_KEY_S)) camPos -= speed * 2 * ahead, changed = true;
 		if(IsKeyDown(GLFW_KEY_R)) camPos += speed * 2 * up, changed = true;
 		if(IsKeyDown(GLFW_KEY_F)) camPos -= speed * 2 * up, changed = true;
-		camTarget = camPos + ahead;
-		if(IsKeyDown(GLFW_KEY_DOWN) && !tdd) camTarget -= speed * up, changed = true;
-		if(IsKeyDown(GLFW_KEY_UP) && !tdd) camTarget += speed * up, changed = true;
-		if(IsKeyDown(GLFW_KEY_LEFT)) camTarget -= speed * right, changed = true;
-		if(IsKeyDown(GLFW_KEY_RIGHT)) camTarget += speed * right, changed = true;
+		if(changed)
+		{
+			camTarget = camPos + ahead;
+			ahead = normalize(camTarget - camPos);
+			right = normalize(cross(tmpUp, ahead));
+			up = normalize(cross(ahead, right));
+		}
+		bool rotated = false;
+		if(IsKeyDown(GLFW_KEY_DOWN) && !tdd) camTarget -= speed * up, rotated = true;
+		if(IsKeyDown(GLFW_KEY_UP) && !tdd) camTarget += speed * up, rotated = true;
+		if(IsKeyDown(GLFW_KEY_LEFT)) camTarget -= speed * right, rotated = true;
+		if(IsKeyDown(GLFW_KEY_RIGHT)) camTarget += speed * right, rotated = true;
+		if(rotated)
+		{
+			ahead = normalize(camTarget - camPos);
+			right = normalize(cross(tmpUp, ahead));
+			up = normalize(cross(ahead, right));
+			changed = true;
+		}
 		if(!changed) return false;
-		ahead = normalize(camTarget - camPos);
-		up = normalize(cross(ahead, right));
-		right = normalize(cross(up, ahead));
 		topLeft = camPos + ahead * 2.0f - aspect * right + up;
 		topRight = camPos + ahead * 2.0f + aspect * right + up;
 		bottomLeft = camPos + ahead * 2.0f - aspect * right - up;
