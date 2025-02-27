@@ -76,7 +76,7 @@ void Renderer::UI()
 	ImGui::ColorButton("", color);
 	ImGui::SameLine();
 
-	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, coord.x, coord.y, r.hit.prim);
+	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, coord.x, coord.y, r.hit.inst);
 
 	ImGui::SliderInt("ndal", &ndal, 0, 3);
 	ImGui::SliderInt("Depth", &maxDepth, 1, 20);

@@ -26,16 +26,51 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const mat4& mat)
 	}
 }
 
+void Scene::BuildTlas()
+{
+	m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
+}
+
 void Scene::LoadModels()
 {
 	m_modelList.reserve(20);
 	m_bvhList.reserve(20);
 	m_blasList.reserve(20);
-	CreateModel(ModelType::SPHERE);
-	CreateModel(ModelType::SPHERE);
-	mat4 t = mat4::Translate(5, 0, 0);
-	SetBlasTransform(m_blasList[1], t);
-	m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
+	int y = 0;
+	int z = 0;
+	int x = 0;
+	for(int i = 1; i < 21; ++i)
+	{
+		CreateModel(ModelType::SPHERE);
+		{
+			mat4 t = mat4::Translate(x, y, z);
+			x+=3;
+			SetBlasTransform(m_blasList.back(), t);
+		}
+		if(i % 4 == 0)
+		{
+			x = 0;
+			z += 2;
+		}
+	}
+	x = 0;
+	y = 2;
+	z = 0;
+	for(int i = 1; i < 21; ++i)
+	{
+		CreateModel(ModelType::DRAGON);
+		{
+			mat4 t = mat4::Translate(x, y, z);
+			y+=2;
+			SetBlasTransform(m_blasList.back(), t);
+		}
+		if(i % 4 == 0)
+		{
+			y = 2;
+			x += 2;
+		}
+	}
+	BuildTlas();
 
 	//Model& model = m_modelList.emplace_back(ASSETDIR + "Models/Primitives/Sphere/Sphere.obj");
 	//Model& model = m_modelList.emplace_back(ASSETDIR + "Models/Primitives/SphereSmooth/SphereSmooth.glb");
@@ -87,7 +122,7 @@ Model& Scene::CreateModel(ModelType modelType)
 		if(m_modelList[i].m_modelData.m_type == modelType)
 		{
 			m_blasList.emplace_back(i);
-			m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
+			BuildTlas();
 			return m_modelList[i];
 		}
 	}
@@ -95,8 +130,8 @@ Model& Scene::CreateModel(ModelType modelType)
 	model.m_modelData.m_type = modelType;
 	tinybvh::BVH& bvh = m_bvhList.emplace_back(model.m_vertices.data(), model.m_vertices.size() / 3);
 	m_bvhBaseList.push_back(&bvh);
-	m_blasList.emplace_back(m_bvhBaseList.size() - 1);
-	m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
+	m_blasList.emplace_back(m_modelList.size() - 1);
+	BuildTlas();
 
 	printf("NumVertices: %i\n", model.m_vertices.size());
 	printf("NumMeshes: %i\n", model.m_modelData.m_meshVertexBorderList.size());
@@ -116,9 +151,10 @@ bool Scene::IsOccluded(const Ray& ray)
 
 float3 Scene::GetNormal(Ray& ray) const
 {
-	float3 n0 = m_modelList[ray.instIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3].m_normal;
-	float3 n1 = m_modelList[ray.instIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
-	float3 n2 = m_modelList[ray.instIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
+
+	float3 n0 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3].m_normal;
+	float3 n1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
+	float3 n2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
 	float w = 1.0f - ray.hit.u - ray.hit.v;
 	return float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2));
 }

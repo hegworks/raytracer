@@ -38,6 +38,7 @@ private:
 	void LoadModels();
 	void LoadSkydome();
 	void SetBlasTransform(tinybvh::BLASInstance& blas, const mat4& mat);
+	void BuildTlas();
 
 	int m_nextIdx = 0;
 
