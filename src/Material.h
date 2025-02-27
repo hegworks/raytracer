@@ -1,8 +1,7 @@
 ﻿#pragma once
 
-class Material
+struct ALIGNED(32) Material
 {
-public:
 	enum class Type : std::uint8_t
 	{
 		DIFFUSE,
@@ -13,6 +12,7 @@ public:
 	};
 
 	float3 m_albedo = float3(1.0f);
-	float m_glossiness = 1.0f;
+	float m_factor = 1.0f;
 	Type m_type = Type::DIFFUSE;
+	uint32_t dummy[3];
 };

@@ -132,6 +132,9 @@
     <ClInclude Include="..\src\Scene.h">
       <Filter>Src</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ModelData.h">
+      <Filter>Src\Enums</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">

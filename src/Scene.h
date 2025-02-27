@@ -21,13 +21,13 @@ public:
 	std::vector<DirLight> m_dirLightList;
 	std::vector<QuadLight> m_quadLightList;
 
-	std::vector<Model> m_modelList;
-	std::vector<tinybvh::BVH> m_bvhList;
-
 	void Intersect(Ray& ray) const;
+	bool IsOccluded(const Ray& ray);
 	float3 GetNormal(Ray& ray) const;
-	float3 SampleSky(const tinybvh::Ray& ray);
+	float3 SampleSky(const Ray& ray);
 	Material& GetMaterial();
+
+	Model& CreateModel(ModelType modelType);
 
 	PointLight& CreatePointLight();
 	SpotLight& CreateSpotLight();
@@ -45,6 +45,12 @@ private:
 	int m_skyHeight = 0;
 	int m_skyBpp = 0;
 	float m_skydomeBrightnessFactor = 0.8f;
+
+	std::vector<Model> m_modelList;
+	std::vector<tinybvh::BVH> m_bvhList;
+	std::vector<tinybvh::BVHBase*> m_bvhBaseList;
+	std::vector<tinybvh::BLASInstance> m_blasList;
+	tinybvh::BVH m_tlas;
 
 	Material m_dragonMat; //TODO change to a list of all materials
 };

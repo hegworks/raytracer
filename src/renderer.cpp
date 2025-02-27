@@ -165,7 +165,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			if(!isInCorrectHemisphere) randPoint = -randPoint;
 			float3 randDir = normalize(n + randPoint);
 			Ray r(p + randDir * EPS, randDir);
-			float3 contribution = mat.m_albedo * mat.m_glossiness * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 contribution = mat.m_albedo * mat.m_factor * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			l += contribution;
 			break;
 		}
@@ -173,15 +173,15 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		{
 			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + rrdir * EPS, rrdir);
-			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			l += mat.m_factor * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 		case Material::Type::GLOSSY:
 		{
-			l += (1.0f - mat.m_glossiness) * CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			l += (1.0f - mat.m_factor) * CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + rrdir * EPS, rrdir);
-			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			l += mat.m_factor * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 		case Material::Type::REFRACTIVE:
@@ -206,8 +206,8 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			}
 
 			bool inside = dot(ray.D, n) > 0;
-			// here mat.m_glossiness is being used as density of the matter TODO
-			float3 beer = inside ? expf(-mat.m_albedo * mat.m_glossiness * ray.hit.t) : 1.0f;
+			// here mat.m_factor is being used as density of the matter TODO
+			float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor * ray.hit.t) : 1.0f;
 			float3 alb = dbgBeer ? beer : mat.m_albedo;
 
 			l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
@@ -259,7 +259,7 @@ float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixel
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.m_bvhList[0].IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.IsOccluded(shadowRay); //TODO
 
 		if(isTddPixelX && isTddPixelY)
 		{
@@ -320,7 +320,7 @@ float3 Renderer::CalcSpotLight(float3 p, float3 n, float3 brdf)
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.m_bvhList[0].IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.IsOccluded(shadowRay); //TODO
 		if(isInShadow)
 		{
 			continue;
@@ -360,7 +360,7 @@ float3 Renderer::CalcDirLight(float3 p, float3 n, float3 brdf)
 		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
 
 		Ray shadowRay(srPos, wi);
-		bool isInShadow = scene.m_bvhList[0].IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.IsOccluded(shadowRay); //TODO
 		if(isInShadow)
 		{
 			continue;
@@ -406,7 +406,7 @@ float3 Renderer::CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex)
 
 			float3 srPos = p + wi * EPS;
 			Ray shadowRay(srPos, wi, tMax);
-			bool isInShadow = scene.m_bvhList[0].IsOccluded(shadowRay); //TODO
+			bool isInShadow = scene.IsOccluded(shadowRay); //TODO
 			if(isInShadow)
 			{
 				continue;

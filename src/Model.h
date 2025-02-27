@@ -9,6 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "Material.h"
+#include "ModelType.h"
+
 struct Texture
 {
 	unsigned int m_id;
@@ -23,6 +26,11 @@ public:
 	{
 		stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 		m_textureCoordScale = textureCoordScale;
+
+		size_t pos = path.find_last_of("/\\");
+		m_directory = (pos != std::string::npos) ? path.substr(pos + 1) : path;
+		std::cout << "Loading Model: " << m_directory << std::endl;
+
 		loadModel(path);
 	}
 	~Model()
@@ -34,17 +42,28 @@ public:
 		}
 	}
 
+	struct ALIGNED(16) VertexData
+	{
+		float4 m_pos = 0;
+		float3 m_normal = 0;
+		float2 m_texCoord = 0;
+	};
+
+	struct ALIGNED(64) ModelData
+	{
+		alignas(64) std::vector<Material> m_meshMaterialIdxList; /// idx of material of each mesh
+		alignas(64) std::vector<int> m_meshVertexBorderList; /// last idx of m_vertices of each mesh
+		alignas(64) std::vector<Texture> m_textures;
+		alignas(64) std::vector<VertexData> m_vertexDataList;
+		ModelType m_type;
+	};
+
+	ModelData m_modelData;
+
 	float2 m_textureCoordScale = 1;
 	std::string m_directory;
 	std::vector<Texture> m_texturesLoaded;
-	std::vector<Texture> m_textures;
 	std::vector<float4> m_vertices;
-	std::vector<float3> m_normals;
-	std::vector<float2> m_texCoords;
-	std::vector<float3> m_tangents;
-	std::vector<float3> m_biTangents;
-	std::vector<uint> m_materialIdxs;
-	int m_numTriangles = 0;
 
 	std::string GetStrippedFileName() const;
 
@@ -66,9 +85,7 @@ inline void Model::loadModel(std::string path)
 		std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
 		return;
 	}
-	m_directory = path.substr(0, path.find_last_of('/'));
 
-	m_vertices.clear();
 	processNode(scene->mRootNode, scene);
 }
 
@@ -92,7 +109,6 @@ inline void Model::processNode(aiNode* node, const aiScene* scene)
 	{
 		processNode(node->mChildren[i], scene);
 	}
-	m_numTriangles = m_vertices.size() / 3;
 }
 
 inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
@@ -106,33 +122,25 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		{
 			int idx = face.mIndices[j];
 
-			m_vertices.emplace_back(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
-			m_normals.emplace_back(float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z));
-			m_materialIdxs.emplace_back(0);
-
+			VertexData& newVertexData = m_modelData.m_vertexDataList.emplace_back();
+			newVertexData.m_pos = float4(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
+			newVertexData.m_normal = float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z);
 			if(mesh->mTextureCoords[0])
-				m_texCoords.emplace_back(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);
+				newVertexData.m_texCoord = float2(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);
 			else
-				m_texCoords.emplace_back(0.0f, 0.0f);
-			if(mesh->mTangents)
-				m_tangents.emplace_back(mesh->mTangents[idx].x, mesh->mTangents[idx].y, mesh->mTangents[idx].z);
-			else
-				m_tangents.emplace_back(0.0f, 0.0f, 0.0f);
-			if(mesh->mBitangents)
-				m_biTangents.emplace_back(mesh->mBitangents[idx].x, mesh->mBitangents[idx].y, mesh->mBitangents[idx].z);
-			else
-				m_biTangents.emplace_back(0.0f, 0.0f, 0.0f);
+				newVertexData.m_texCoord = float2(0);
+
+			m_vertices.emplace_back(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
 
 		}
 	}
+	m_modelData.m_meshVertexBorderList.emplace_back(m_vertices.size() - 1);
+	m_modelData.m_meshMaterialIdxList.emplace_back(); //TODO read from file
+
 	// process material
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-	m_textures.insert(m_textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-	std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-	m_textures.insert(m_textures.end(), specularMaps.begin(), specularMaps.end());
-	std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-	m_textures.insert(m_textures.end(), normalMaps.begin(), normalMaps.end());
+	m_modelData.m_textures.insert(m_modelData.m_textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 }
 
 inline unsigned int Model::TextureFromFile(const char* path, const std::string& directory)
