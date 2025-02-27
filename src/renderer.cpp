@@ -83,7 +83,8 @@ void Renderer::Tick(float deltaTime)
 			const float xOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			const float yOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset);
-			accumulator[pixelIndex] += float4(Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY), 0);
+			float3 color = fminf(Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY), float3(dbgFF));
+			accumulator[pixelIndex] += float4(color, 0);
 			float4 avg = accumulator[pixelIndex] * scale;
 			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
 			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&avg);
