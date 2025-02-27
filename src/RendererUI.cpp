@@ -61,7 +61,7 @@ void Renderer::UI()
 	// ray query on mouse
 	int2 coord = isDbgPixel ? dbgpixel : mousePos;
 	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
-	scene.m_bvhs[0].Intersect(r); //TODO
+	scene.m_bvhList[0].Intersect(r); //TODO
 	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
 	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
 	if(isInScreen)
@@ -106,60 +106,60 @@ void Renderer::UI()
 		scene.CreateQuadLight();
 	}
 
-	if(!scene.m_pointLights.empty())
+	if(!scene.m_pointLightList.empty())
 	{
 		if(ImGui::CollapsingHeader("PointLights"))
 		{
-			for(int i = 0; i < static_cast<int>(scene.m_pointLights.size()); i++)
+			for(int i = 0; i < static_cast<int>(scene.m_pointLightList.size()); i++)
 			{
 				if(ImGui::TreeNode(("PL " + std::to_string(i)).c_str()))
 				{
-					ImGui::DragFloat3("Pos", &scene.m_pointLights[i].m_pos.x, 0.01f);
-					ImGui::ColorEdit3("Color", &scene.m_pointLights[i].m_color.x);
-					ImGui::DragFloat("Intensity", &scene.m_pointLights[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+					ImGui::DragFloat3("Pos", &scene.m_pointLightList[i].m_pos.x, 0.01f);
+					ImGui::ColorEdit3("Color", &scene.m_pointLightList[i].m_color.x);
+					ImGui::DragFloat("Intensity", &scene.m_pointLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
 
 					ImGui::TreePop();
 				}
 			}
 		}
 	}
-	if(!scene.m_spotLights.empty())
+	if(!scene.m_spotLightList.empty())
 	{
 		if(ImGui::CollapsingHeader("SpotLights"))
 		{
-			for(int i = 0; i < static_cast<int>(scene.m_spotLights.size()); i++)
+			for(int i = 0; i < static_cast<int>(scene.m_spotLightList.size()); i++)
 			{
 				if(ImGui::TreeNode(("SL " + std::to_string(i)).c_str()))
 				{
-					ImGui::DragFloat3("Pos", &scene.m_spotLights[i].m_pos.x, 0.01f);
-					ImGui::ColorEdit3("Color", &scene.m_spotLights[i].m_color.x);
-					ImGui::DragFloat("Intensity", &scene.m_spotLights[i].m_intensity, 0.01f, 0.0f, 1000.0f);
-					float3 dir = scene.m_spotLights[i].m_dir;
+					ImGui::DragFloat3("Pos", &scene.m_spotLightList[i].m_pos.x, 0.01f);
+					ImGui::ColorEdit3("Color", &scene.m_spotLightList[i].m_color.x);
+					ImGui::DragFloat("Intensity", &scene.m_spotLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+					float3 dir = scene.m_spotLightList[i].m_dir;
 					ImGui::DragFloat3("Dir", &dir.x, 0.001f, -1.0f, 1.0f);
-					scene.m_spotLights[i].m_dir = normalize(dir);
+					scene.m_spotLightList[i].m_dir = normalize(dir);
 
-					ImGui::DragFloat("CosI", &scene.m_spotLights[i].m_cosI, 0.001f, scene.m_spotLights[i].m_cosO, 1.0f);
+					ImGui::DragFloat("CosI", &scene.m_spotLightList[i].m_cosI, 0.001f, scene.m_spotLightList[i].m_cosO, 1.0f);
 					ImGui::SameLine();
-					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLights[i].m_cosI)));
+					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLightList[i].m_cosI)));
 
-					ImGui::DragFloat("CosO", &scene.m_spotLights[i].m_cosO, 0.001f, 0.0f, scene.m_spotLights[i].m_cosI);
+					ImGui::DragFloat("CosO", &scene.m_spotLightList[i].m_cosO, 0.001f, 0.0f, scene.m_spotLightList[i].m_cosI);
 					ImGui::SameLine();
-					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLights[i].m_cosO)));
+					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLightList[i].m_cosO)));
 
 					ImGui::TreePop();
 				}
 			}
 		}
 	}
-	if(!scene.m_dirLights.empty())
+	if(!scene.m_dirLightList.empty())
 	{
 		if(ImGui::CollapsingHeader("DirLights"))
 		{
-			for(int i = 0; i < static_cast<int>(scene.m_dirLights.size()); i++)
+			for(int i = 0; i < static_cast<int>(scene.m_dirLightList.size()); i++)
 			{
 				if(ImGui::TreeNode(("DL " + std::to_string(i)).c_str()))
 				{
-					DirLight& light = scene.m_dirLights[i];
+					DirLight& light = scene.m_dirLightList[i];
 					float3 dir = light.m_dir;
 					ImGui::DragFloat3("Dir", &dir.x, 0.01f);
 					light.m_dir = normalize(dir);
@@ -171,18 +171,18 @@ void Renderer::UI()
 			}
 		}
 	}
-	if(!scene.m_quadLights.empty())
+	if(!scene.m_quadLightList.empty())
 	{
 		if(ImGui::CollapsingHeader("QuadLights"))
 		{
 			ImGui::SliderInt("Samples", &qlNumSamples, 1, 32);
 			ImGui::Checkbox("1 Sided", &qlOneSided);
 
-			for(int i = 0; i < static_cast<int>(scene.m_quadLights.size()); i++)
+			for(int i = 0; i < static_cast<int>(scene.m_quadLightList.size()); i++)
 			{
 				if(ImGui::TreeNode(("QL " + std::to_string(i)).c_str()))
 				{
-					QuadLight& light = scene.m_quadLights[i];
+					QuadLight& light = scene.m_quadLightList[i];
 
 					ImGui::DragFloat3("Pos", &light.m_quad.m_pos.x, 0.01f);
 					ImGui::DragFloat3("Dir", &light.m_quad.m_dir.x, 1.0f);

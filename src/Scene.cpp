@@ -7,47 +7,60 @@
 
 void Scene::LoadModels()
 {
-	Model& model = m_models.emplace_back(ASSETDIR + "Models/Primitives/Cube/Cube.obj");
-	//Model& model = m_models.emplace_back(ASSETDIR + "Models/Primitives/Sphere/Sphere.obj");
-	//Model& model = m_models.emplace_back(ASSETDIR + "Models/Primitives/SphereSmooth/SphereSmooth.glb");
-	printf(model.GetStrippedFileName().c_str());
-	printf("\n");
-	printf("NumMeshes: %i\n", model.m_meshes.size());
-	printf("NumVertices: %i\n", model.m_meshes[0].m_vertices.size());
-	printf("NumTriangles: %i\n", model.m_meshes[0].m_triangles.size());
-	printf("NumNormals: %i\n", model.m_meshes[0].m_normals.size());
+
+	//Model& model = m_modelList.emplace_back(ASSETDIR + "Models/Primitives/Sphere/Sphere.obj");
+	//Model& model = m_modelList.emplace_back(ASSETDIR + "Models/Primitives/SphereSmooth/SphereSmooth.glb");
+	/*{
+		Model& model = m_modelList.emplace_back(ASSETDIR + "Models/dragon.glb");
+		printf(model.GetStrippedFileName().c_str());
+		printf("\n");
+		printf("NumVertices: %i\n", model.m_vertices.size());
+		printf("NumTriangles: %i\n", model.m_numTriangles);
+		printf("NumNormals: %i\n", model.m_normals.size());
+		tinybvh::BVH& bvh = m_bvhList.emplace_back();
+		bvh.Build(model.m_vertices.data(), model.m_numTriangles);
+	}*/
 
 	{
-		tinybvh::BVH& bvh = m_bvhs.emplace_back();
-		bvh.Build(model.m_meshes[0].m_triangles.data(), model.m_meshes[0].m_triangles.size() / 3);
+		Model& model = m_modelList.emplace_back(ASSETDIR + "Models/dragon.glb");
+		printf(model.GetStrippedFileName().c_str());
+		printf("\n");
+		printf("NumVertices: %i\n", model.m_vertices.size());
+		printf("NumTriangles: %i\n", model.m_numTriangles);
+		printf("NumNormals: %i\n", model.m_normals.size());
+		tinybvh::BVH& bvh = m_bvhList.emplace_back();
+		bvh.Build(model.m_vertices.data(), model.m_numTriangles);
 	}
+}
 
+void Scene::Intersect(Ray& ray)
+{
 }
 
 PointLight& Scene::CreatePointLight()
 {
-	m_pointLights.emplace_back();
-	PointLight& light = m_pointLights.back();
+	m_pointLightList.emplace_back();
+	PointLight& light = m_pointLightList.back();
 	return light;
 }
 
 SpotLight& Scene::CreateSpotLight()
 {
-	m_spotLights.emplace_back();
-	SpotLight& light = m_spotLights.back();
+	m_spotLightList.emplace_back();
+	SpotLight& light = m_spotLightList.back();
 	return light;
 }
 
 DirLight& Scene::CreateDirLight()
 {
-	m_dirLights.emplace_back();
-	DirLight& light = m_dirLights.back();
+	m_dirLightList.emplace_back();
+	DirLight& light = m_dirLightList.back();
 	return light;
 }
 
 QuadLight& Scene::CreateQuadLight()
 {
-	m_quadLights.emplace_back(m_nextIdx++);
-	QuadLight& light = m_quadLights.back();
+	m_quadLightList.emplace_back(m_nextIdx++);
+	QuadLight& light = m_quadLightList.back();
 	return light;
 }

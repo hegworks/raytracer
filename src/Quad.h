@@ -9,9 +9,8 @@
 class Quad
 {
 public:
-	float size;
+	float size = 0;
 	mat4 T, invT;
-	int objIdx = -1;
 	Material m_material;
 	float3 m_pos = float3(0);
 	float3 m_dir = float3(0, 1, 0);
@@ -19,7 +18,6 @@ public:
 	Quad() = default;
 	Quad(int idx, float s, mat4 transform = mat4::Identity())
 	{
-		objIdx = idx;
 		size = s * 0.5f;
 		T = transform, invT = transform.FastInvertedTransformNoScale();
 	}
@@ -36,7 +34,7 @@ public:
 			const float Dz = invT.cell[8] * ray.D.x + invT.cell[9] * ray.D.y + invT.cell[10] * ray.D.z;
 			const float Ix = Ox + t * Dx, Iz = Oz + t * Dz;
 			if(Ix > -size && Ix < size && Iz > -size && Iz < size)
-				ray.hit.t = t, ray.hit.prim = objIdx;
+				ray.hit.t = t, ray.hit.prim = -1;
 		}
 	}
 	bool IsOccluded(const Ray& ray) const

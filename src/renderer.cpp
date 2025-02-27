@@ -28,9 +28,17 @@ void Renderer::Init()
 
 	scene = Scene();
 	scene.LoadModels();
-	PointLight& pl = scene.CreatePointLight();
-	pl.m_pos.y = 1.0f;
-	pl.m_intensity = 10.0f;
+
+	//PointLight& pl = scene.CreatePointLight();
+	//pl.m_pos.y = 1.0f;
+	//pl.m_intensity = 10.0f;
+
+	QuadLight& ql = scene.CreateQuadLight();
+	ql.m_quad.size = 5;
+	ql.m_intensity = 5;
+	ql.m_quad.m_pos = {0,5,0};
+	ql.m_quad.T = mat4::Translate(ql.m_quad.m_pos);
+	ql.m_quad.invT = ql.m_quad.T.FastInvertedTransformNoScale();
 
 #if _DEBUG
 	dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
@@ -115,24 +123,25 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		return 0; // or a fancy sky color
 	}
 
-	scene.m_bvhs[0].Intersect(ray);
+
+	scene.m_bvhList[0].Intersect(ray);
 	if(ray.hit.t > BVH_FAR)
 	{
 		return 0; // or a fancy sky color
 	}
 
 	float3 rayDN = normalize(ray.D);
-	// return O + t * D
 	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
-	//float3 n = scene.m_models[0].m_meshes[0].m_triangles[ray.hit.prim * 3]; /// normal of the intersection point
-	float3 n0 = scene.m_models[0].m_meshes[0].m_normals[ray.hit.prim * 3]; /// normal of the intersection point
-	float3 n1 = scene.m_models[0].m_meshes[0].m_normals[ray.hit.prim * 3 + 1]; /// normal of the intersection point
-	float3 n2 = scene.m_models[0].m_meshes[0].m_normals[ray.hit.prim * 3 + 2]; /// normal of the intersection point
+	//float3 n = scene.m_modelList[0].m_meshes[0].m_triangles[ray.hit.prim * 3]; /// normal of the intersection point
+	float3 n0 = scene.m_modelList[0].m_normals[ray.hit.prim * 3]; /// normal of the intersection point
+	float3 n1 = scene.m_modelList[0].m_normals[ray.hit.prim * 3 + 1]; /// normal of the intersection point
+	float3 n2 = scene.m_modelList[0].m_normals[ray.hit.prim * 3 + 2]; /// normal of the intersection point
 
 	float u = ray.hit.u;
 	float v = ray.hit.v;
 	float w = 1.0f - u - v;
 	float3 n = float3((w * n0) + (u * n1) + (v * n2));
+	//float3 n = n0;
 
 	bool hasHit = ray.hit.t < BVH_FAR;
 
@@ -256,10 +265,10 @@ float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool 
 float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
 {
 	float3 l(0);
-	int numPointLights = static_cast<int>(scene.m_pointLights.size());
+	int numPointLights = static_cast<int>(scene.m_pointLightList.size());
 	for(int i = 0; i < numPointLights; ++i)
 	{
-		PointLight& light = scene.m_pointLights[i];
+		PointLight& light = scene.m_pointLightList[i];
 		float3 lPos = light.m_pos; /// LightPos
 		float3 vi = lPos - p; /// Light Vector
 		float3 wi = normalize(vi); /// incoming light direction
@@ -267,7 +276,7 @@ float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixel
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.m_bvhs[0].IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.m_bvhList[0].IsOccluded(shadowRay); //TODO
 
 		if(isTddPixelX && isTddPixelY)
 		{
@@ -317,10 +326,10 @@ float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixel
 float3 Renderer::CalcSpotLight(float3 p, float3 n, float3 brdf)
 {
 	float3 l(0);
-	int numSpotLights = static_cast<int>(scene.m_spotLights.size());
+	int numSpotLights = static_cast<int>(scene.m_spotLightList.size());
 	for(int i = 0; i < numSpotLights; ++i)
 	{
-		SpotLight& light = scene.m_spotLights[i];
+		SpotLight& light = scene.m_spotLightList[i];
 		float3 lPos = light.m_pos; /// LightPos
 		float3 vi = lPos - p; /// Light Vector
 		float3 wi = normalize(vi); /// incoming light direction
@@ -328,7 +337,7 @@ float3 Renderer::CalcSpotLight(float3 p, float3 n, float3 brdf)
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.m_bvhs[0].IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.m_bvhList[0].IsOccluded(shadowRay); //TODO
 		if(isInShadow)
 		{
 			continue;
@@ -360,15 +369,15 @@ float3 Renderer::CalcSpotLight(float3 p, float3 n, float3 brdf)
 float3 Renderer::CalcDirLight(float3 p, float3 n, float3 brdf)
 {
 	float3 l(0);
-	int numDirLights = static_cast<int>(scene.m_dirLights.size());
+	int numDirLights = static_cast<int>(scene.m_dirLightList.size());
 	for(int i = 0; i < numDirLights; ++i)
 	{
-		DirLight& light = scene.m_dirLights[i];
+		DirLight& light = scene.m_dirLightList[i];
 		float3 wi = -light.m_dir; /// incoming light direction
 		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
 
 		Ray shadowRay(srPos, wi);
-		bool isInShadow = scene.m_bvhs[0].IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.m_bvhList[0].IsOccluded(shadowRay); //TODO
 		if(isInShadow)
 		{
 			continue;
@@ -388,10 +397,10 @@ float3 Renderer::CalcDirLight(float3 p, float3 n, float3 brdf)
 float3 Renderer::CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex)
 {
 	float3 l(0);
-	int numQuadLights = static_cast<int>(scene.m_quadLights.size());
+	int numQuadLights = static_cast<int>(scene.m_quadLightList.size());
 	for(int i = 0; i < numQuadLights; ++i)
 	{
-		QuadLight& light = scene.m_quadLights[i];
+		QuadLight& light = scene.m_quadLightList[i];
 		float3 lSamples = float3(0);
 		float3 lightDir = -light.m_quad.GetNormal();
 		float pdfEffect = 1 / light.GetPDF();
@@ -414,7 +423,7 @@ float3 Renderer::CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex)
 
 			float3 srPos = p + wi * EPS;
 			Ray shadowRay(srPos, wi, tMax);
-			bool isInShadow = scene.m_bvhs[0].IsOccluded(shadowRay); //TODO
+			bool isInShadow = scene.m_bvhList[0].IsOccluded(shadowRay); //TODO
 			if(isInShadow)
 			{
 				continue;
