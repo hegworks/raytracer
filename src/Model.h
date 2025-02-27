@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Material.h"
+#include "ModelData.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -8,9 +10,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include "Material.h"
-#include "ModelType.h"
 
 struct Texture
 {

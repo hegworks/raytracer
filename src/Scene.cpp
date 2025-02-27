@@ -3,6 +3,7 @@
 #include "Scene.h"
 
 #define TINYBVH_IMPLEMENTATION
+#include "ModelData.h"
 #include "tiny_bvh.h"
 
 Scene::Scene()
