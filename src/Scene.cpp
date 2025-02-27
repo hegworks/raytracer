@@ -45,7 +45,7 @@ void Scene::LoadModels()
 	}
 }
 
-float3 Scene::SampleSky(const Ray& ray) const
+float3 Scene::SampleSky(const Ray& ray)
 {
 	// sample sky
 	float phi = atan2(ray.D.z, ray.D.x);
@@ -53,11 +53,28 @@ float3 Scene::SampleSky(const Ray& ray) const
 	uint v = (uint)(m_skyHeight * acos(ray.D.y) * INVPI - 0.5f);
 	uint skyIdx = (u + v * m_skyWidth) % (m_skyWidth * m_skyHeight);
 
+	m_skydomeBrightnessFactor = dbgSDBF;
 	return m_skydomeBrightnessFactor * float3(m_skyPixels[skyIdx * 3], m_skyPixels[skyIdx * 3 + 1], m_skyPixels[skyIdx * 3 + 2]);
 }
 
-void Scene::Intersect(Ray& ray)
+//TODO change to a list of all materials
+Material& Scene::GetMaterial()
 {
+	return m_dragonMat;
+}
+
+void Scene::Intersect(Ray& ray) const
+{
+	m_bvhList[0].Intersect(ray); //TODO
+}
+
+float3 Scene::GetNormal(Ray& ray) const
+{
+	float3 n0 = m_modelList[0].m_normals[ray.hit.prim * 3];
+	float3 n1 = m_modelList[0].m_normals[ray.hit.prim * 3 + 1];
+	float3 n2 = m_modelList[0].m_normals[ray.hit.prim * 3 + 2];
+	float w = 1.0f - ray.hit.u - ray.hit.v;
+	return float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2));
 }
 
 PointLight& Scene::CreatePointLight()

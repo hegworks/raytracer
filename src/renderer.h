@@ -26,7 +26,7 @@ public:
 	float3 CalcSpotLight(float3 p, float3 n, float3 brdf);
 	float3 CalcDirLight(float3 p, float3 n, float3 brdf);
 	float3 CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex);
-	float3 CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
+	float3 CalcLights(Ray& ray, float3 p, float3 n, const Material& mat, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 
 	// data members
 	int2 mousePos;
@@ -40,9 +40,8 @@ public:
 	inline static thread_local RNG threadRng;
 	int qlNumSamples = 1;
 	bool qlOneSided = true;
-	int acmMax = 1;
 	inline static int acmCounter;
-	bool useACMMax = true;
+	bool useACM = false;
 	int maxDepth = 5;
 	Scene scene;
 };

@@ -22,5 +22,5 @@
 #define RAD_TO_DEG(x)	((x)*57.2957795131f)
 #define SQRT_PI_INV		0.56418958355f
 #define LARGE_FLOAT		1e34f
-#define EPS				1e-4f
+//#define EPS				1e-4f
 const std::string ASSETDIR("../assets/");

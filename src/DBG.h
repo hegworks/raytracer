@@ -36,6 +36,11 @@ inline bool isDbgFixSeed = false;
 inline int2 dbgScrRangeX = {0,SCRWIDTH};
 inline int2 dbgScrRangeY = {0,SCRHEIGHT};
 
+inline float dbgSDBF = 0.6f;
+inline float EPS = 1e-3f;
+inline int epsInt = 2;
+inline float dbgFF = 10.f; /// FireFly
+
 static bool DBGCanPrint(const float2 pos)
 {
 	return !(pos.x < 0 || pos.x >= SCRWIDTH || pos.y < 0 || pos.y >= SCRHEIGHT - 10);

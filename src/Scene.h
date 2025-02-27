@@ -24,9 +24,10 @@ public:
 	std::vector<Model> m_modelList;
 	std::vector<tinybvh::BVH> m_bvhList;
 
-
-	void Intersect(Ray& ray);
-	float3 SampleSky(const tinybvh::Ray& ray) const;
+	void Intersect(Ray& ray) const;
+	float3 GetNormal(Ray& ray) const;
+	float3 SampleSky(const tinybvh::Ray& ray);
+	Material& GetMaterial();
 
 	PointLight& CreatePointLight();
 	SpotLight& CreateSpotLight();
@@ -43,5 +44,7 @@ private:
 	int m_skyWidth = 0;
 	int m_skyHeight = 0;
 	int m_skyBpp = 0;
-	float m_skydomeBrightnessFactor = 1.5f;
+	float m_skydomeBrightnessFactor = 0.8f;
+
+	Material m_dragonMat; //TODO change to a list of all materials
 };

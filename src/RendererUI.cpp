@@ -43,25 +43,26 @@ void Renderer::UI()
 	}
 
 	ImGui::Separator();
+
 	if(ImGui::SliderInt2("SCR RANGE X", &dbgScrRangeX.x, 0, SCRWIDTH) ||
 	   ImGui::SliderInt2("SCR RANGE Y", &dbgScrRangeY.x, 0, SCRHEIGHT))
 	{
 		screen->Clear(0);
 	}
 
-
 	ImGui::Separator();
 
-	ImGui::Checkbox("Animate", &animating);
-	ImGui::SameLine();
+	//ImGui::Checkbox("Animate", &animating);
 	ImGui::Checkbox("AA", &useAA);
+	ImGui::SameLine();
+	ImGui::Checkbox("ACM", &useACM);
 	ImGui::SameLine();
 	ImGui::Checkbox("TDD", &tdd);
 
 	// ray query on mouse
 	int2 coord = isDbgPixel ? dbgpixel : mousePos;
 	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
-	scene.m_bvhList[0].Intersect(r); //TODO
+	scene.Intersect(r);
 	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
 	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
 	if(isInScreen)
@@ -78,14 +79,30 @@ void Renderer::UI()
 	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, coord.x, coord.y, r.hit.prim);
 
 	ImGui::SliderInt("ndal", &ndal, 0, 3);
-
-	ImGui::Checkbox("ACM MAX", &useACMMax);
-	ImGui::SameLine();
-	ImGui::SliderInt(" ", &acmMax, 1, 1000);
-
 	ImGui::SliderInt("Depth", &maxDepth, 1, 20);
+	ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
+	ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 20.0f);
 
-	// credits to Okke for the idea of creating lights at runtime
+	const char* epsTypes[] =
+	{
+		"1e-1",
+		"1e-2",
+		"1e-3",
+		"1e-4",
+		"1e-5",
+		"1e-6",
+		"1e-7",
+	};
+	if(ImGui::Combo("EPS", &epsInt, epsTypes, IM_ARRAYSIZE(epsTypes)))
+	{
+		EPS = 1.0f;
+		for (int i = 0; i < epsInt; ++i)
+		{
+			EPS *= 0.1f;
+		}
+	}
+
+// credits to Okke for the idea of creating lights at runtime
 	if(ImGui::Button("+ PointL"))
 	{
 		scene.CreatePointLight();
@@ -306,6 +323,15 @@ void Renderer::UI()
 			ImGui::ColorEdit3("Albedo##3", &mat.m_albedo.x);
 			ImGui::DragFloat("Glossiness##3", &mat.m_glossiness, 0.01f, 0.0f, 30.0f);
 		}*/
+		if(ImGui::CollapsingHeader("Dragon"))
+		{
+			Material& mat = scene.GetMaterial();
+			int matInt = static_cast<int>(mat.m_type);
+			ImGui::Combo("Type##1", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
+			mat.m_type = static_cast<Material::Type>(matInt);
+			ImGui::ColorEdit3("Albedo##1", &mat.m_albedo.x);
+			ImGui::DragFloat("Glossiness##1", &mat.m_glossiness, 0.01f, 0.0f, 30.0f);
+		}
 
 		ImGui::End();
 	}

@@ -98,7 +98,7 @@ void Renderer::Tick(float deltaTime)
 	dfps = fps, drps = rps, davg = avg;
 	//printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps);
 	// handle user input
-	if(camera.HandleInput(deltaTime) || (useACMMax && acmCounter > acmMax))
+	if(camera.HandleInput(deltaTime) || !useACM)
 	{
 		memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);
 		acmCounter = 1;
@@ -120,38 +120,27 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		return 0; // or a fancy sky color
 	}
 
-
-	scene.m_bvhList[0].Intersect(ray);
+	scene.Intersect(ray);
 	bool hasHit = ray.hit.t < BVH_FAR;
 	if(!hasHit)
 	{
 		return scene.SampleSky(ray);
+		//return 0;
 	}
 
-	float3 rayDN = normalize(ray.D);
 	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
-	//float3 n = scene.m_modelList[0].m_meshes[0].m_triangles[ray.hit.prim * 3]; /// normal of the intersection point
-	float3 n0 = scene.m_modelList[0].m_normals[ray.hit.prim * 3]; /// normal of the intersection point
-	float3 n1 = scene.m_modelList[0].m_normals[ray.hit.prim * 3 + 1]; /// normal of the intersection point
-	float3 n2 = scene.m_modelList[0].m_normals[ray.hit.prim * 3 + 2]; /// normal of the intersection point
-
-	float u = ray.hit.u;
-	float v = ray.hit.v;
-	float w = 1.0f - u - v;
-	float3 n = float3((w * n0) + (u * n1) + (v * n2));
-	//float3 n = n0;
-
+	float3 n = scene.GetNormal(ray);
 
 	bool tddIsCameraY = tdd && IsCloseF(p.y, camera.camPos.y);
 	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 
 	float3 l(0);
-	Material mat = Material();
+	Material mat = scene.GetMaterial();
 	switch(mat.m_type)
 	{
 		case Material::Type::DIFFUSE:
 		{
-			l += CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			l += CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			break;
 		}
 		case Material::Type::DIFFUSE_PT:
@@ -175,20 +164,21 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			if(!isInCorrectHemisphere) randPoint = -randPoint;
 			float3 randDir = normalize(n + randPoint);
 			Ray r(p + randDir * EPS, randDir);
-			l += mat.m_albedo * mat.m_glossiness * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 contribution = mat.m_albedo * mat.m_glossiness * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			l += contribution;
 			break;
 		}
 		case Material::Type::REFLECTIVE:
 		{
-			float3 rrdir = reflect(rayDN, n);
+			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + rrdir * EPS, rrdir);
 			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 		case Material::Type::GLOSSY:
 		{
-			l += (1.0f - mat.m_glossiness) * CalcLights(ray, p, n, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
-			float3 rrdir = reflect(rayDN, n);
+			l += (1.0f - mat.m_glossiness) * CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + rrdir * EPS, rrdir);
 			l += mat.m_glossiness * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
@@ -196,32 +186,30 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case Material::Type::REFRACTIVE:
 		{
 			float fres;
-			fresnel(rayDN, n, dbgIor, fres);
+			fresnel(ray.D, n, dbgIor, fres);
 
 			float3 refracted(0);
 			if((1.0f - fres) > EPS)
 			{
-				float3 refracDir = refract(rayDN, n, dbgIor);
+				float3 refracDir = refract(ray.D, n, dbgIor);
 				Ray refracR(p + refracDir * EPS, refracDir);
-				//refracR.inside = !ray.inside; TODO
 				refracted = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			}
 
 			float3 reflected(0);
 			if(fres > EPS)
 			{
-				float3 reflecDir = reflect(rayDN, n);
+				float3 reflecDir = reflect(ray.D, n);
 				Ray reflecR(p + reflecDir * EPS, reflecDir);
-				//reflecR.inside = ray.inside; TODO
 				reflected = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			}
 
+			bool inside = dot(ray.D, n) > 0;
 			// here mat.m_glossiness is being used as density of the matter TODO
-			//float3 beer = ray.inside ? expf(-mat.m_albedo * mat.m_glossiness * ray.t) : 1.0f;
-			//float3 alb = dbgBeer ? beer : mat.m_albedo;
+			float3 beer = inside ? expf(-mat.m_albedo * mat.m_glossiness * ray.hit.t) : 1.0f;
+			float3 alb = dbgBeer ? beer : mat.m_albedo;
 
-			//l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
-			l += ((fres * reflected) + ((1.0f - fres) * refracted));
+			l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
 
 			break;
 		}
@@ -234,8 +222,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case 1:
 			return float3(ray.hit.t) * 0.1f;
 		case 2:
-			//return scene.GetAlbedo(ray.objIdx, ray.IntersectionPoint()); TODO
-			return {0};
+			return scene.GetMaterial().m_albedo;
 		case 3:
 			return l;
 		default:
@@ -243,11 +230,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 }
 
-float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
+float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, const Material& mat, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
 {
-	//float3 albedo = scene.GetAlbedo(ray.objIdx, p); /// albedo of the intersection point TODO
-	float3 albedo = {0.5};
-	//float3 wo = -ray.D; /// outgoing light direction
+	float3 albedo = mat.m_albedo;
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
 	float3 l(0); /// total outgoing radiance
