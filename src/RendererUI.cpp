@@ -15,213 +15,228 @@ void Renderer::UI()
 	ImGui::Text("avg	fps	rps");
 	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
 
-	if(ImGui::Button("ResetCam"))
+	if(ImGui::BeginTabBar("Main"))
 	{
-		tddResetCam = true;
-	}
-
-	ImGui::Checkbox("Fixed Seed", &isDbgFixSeed);
-	if(!isDbgPixel)
-	{
-		ImGui::SameLine();
-		if(ImGui::Button("DBG Pixel"))
+		if(ImGui::BeginTabItem("General"))
 		{
-			isDbgPixel = true;
-		}
-	}
-	else if(isDbgPixelClicked && !isDbgPixelEntered)
-	{
-		ImDrawList* drawList = ImGui::GetForegroundDrawList();
-		ImU32 color = IM_COL32(255, 0, 255, 255);
+			//ImGui::Checkbox("Animate", &animating);
+			ImGui::Checkbox("AA", &useAA);
+			ImGui::SameLine();
+			ImGui::Checkbox("ACM", &useACM);
+			ImGui::SameLine();
+			ImGui::Checkbox("TDD", &tdd);
 
-		float size = 20.0f; // Cursor size (change as needed)
-		ImVec2 pos = {static_cast<float>(dbgpixel.x),static_cast<float>(dbgpixel.y)};
-		drawList->AddRectFilled(pos, ImVec2(pos.x + size, pos.y + size), color);
 
-		//drawList->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + 1, pos.y + 1), color);
-
-	}
-
-	ImGui::Separator();
-
-	if(ImGui::SliderInt2("SCR RANGE X", &dbgScrRangeX.x, 0, SCRWIDTH) ||
-	   ImGui::SliderInt2("SCR RANGE Y", &dbgScrRangeY.x, 0, SCRHEIGHT))
-	{
-		screen->Clear(0);
-	}
-
-	ImGui::Separator();
-
-	//ImGui::Checkbox("Animate", &animating);
-	ImGui::Checkbox("AA", &useAA);
-	ImGui::SameLine();
-	ImGui::Checkbox("ACM", &useACM);
-	ImGui::SameLine();
-	ImGui::Checkbox("TDD", &tdd);
-
-	// ray query on mouse
-	int2 coord = isDbgPixel ? dbgpixel : mousePos;
-	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
-	scene.Intersect(r);
-	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
-	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
-	if(isInScreen)
-	{
-		pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
-		red = (pixel & 0xFF0000) >> 16;
-		green = (pixel & 0x00FF00) >> 8;
-		blue = pixel & 0x0000FF;
-	}
-	ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-	ImGui::ColorButton("", color);
-	ImGui::SameLine();
-
-	ImGui::Text("%u,%u,%u  %i,%i  %i", red, green, blue, coord.x, coord.y, r.hit.inst);
-
-	ImGui::SliderInt("ndal", &ndal, 0, 3);
-	ImGui::SliderInt("Depth", &maxDepth, 1, 20);
-	ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
-	ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 20.0f);
-
-	const char* epsTypes[] =
-	{
-		"1e-1",
-		"1e-2",
-		"1e-3",
-		"1e-4",
-		"1e-5",
-		"1e-6",
-		"1e-7",
-	};
-	if(ImGui::Combo("EPS", &epsInt, epsTypes, IM_ARRAYSIZE(epsTypes)))
-	{
-		EPS = 1.0f;
-		for (int i = 0; i < epsInt; ++i)
-		{
-			EPS *= 0.1f;
-		}
-	}
-
-// credits to Okke for the idea of creating lights at runtime
-	if(ImGui::Button("+ PointL"))
-	{
-		scene.CreatePointLight();
-	}
-	ImGui::SameLine();
-	if(ImGui::Button("+ SpotL"))
-	{
-		scene.CreateSpotLight();
-	}
-	ImGui::SameLine();
-	if(ImGui::Button("+ DirL"))
-	{
-		scene.CreateDirLight();
-	}
-	ImGui::SameLine();
-	if(ImGui::Button("+ QuadL"))
-	{
-		scene.CreateQuadLight();
-	}
-
-	if(!scene.m_pointLightList.empty())
-	{
-		if(ImGui::CollapsingHeader("PointLights"))
-		{
-			for(int i = 0; i < static_cast<int>(scene.m_pointLightList.size()); i++)
+			// ray query on mouse
+			int2 coord = isDbgPixel ? dbgpixel : mousePos;
+			Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
+			scene.Intersect(r);
+			bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
+			uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
+			if(isInScreen)
 			{
-				if(ImGui::TreeNode(("PL " + std::to_string(i)).c_str()))
-				{
-					ImGui::DragFloat3("Pos", &scene.m_pointLightList[i].m_pos.x, 0.01f);
-					ImGui::ColorEdit3("Color", &scene.m_pointLightList[i].m_color.x);
-					ImGui::DragFloat("Intensity", &scene.m_pointLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+				pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
+				red = (pixel & 0xFF0000) >> 16;
+				green = (pixel & 0x00FF00) >> 8;
+				blue = pixel & 0x0000FF;
+			}
+			ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+			ImGui::Text("%i  %i,%i", scene.m_blasList[r.hit.inst].blasIdx, coord.x, coord.y);
+			ImGui::SameLine();
+			ImGui::ColorButton("", color);
+			ImGui::SameLine();
+			ImGui::Text("%u,%u,%u", red, green, blue);
 
-					ImGui::TreePop();
+			ImGui::SliderInt("ndal", &ndal, 0, 3);
+			ImGui::SliderInt("Depth", &maxDepth, 1, 20);
+			ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
+			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 20.0f);
+
+			const char* epsTypes[] =
+			{
+				"1e-1",
+				"1e-2",
+				"1e-3",
+				"1e-4",
+				"1e-5",
+				"1e-6",
+				"1e-7",
+			};
+			if(ImGui::Combo("EPS", &epsInt, epsTypes, IM_ARRAYSIZE(epsTypes)))
+			{
+				EPS = 1.0f;
+				for(int i = 0; i < epsInt; ++i)
+				{
+					EPS *= 0.1f;
 				}
 			}
+
+			ImGui::EndTabItem();
 		}
-	}
-	if(!scene.m_spotLightList.empty())
-	{
-		if(ImGui::CollapsingHeader("SpotLights"))
+		if(ImGui::BeginTabItem("Debugger"))
 		{
-			for(int i = 0; i < static_cast<int>(scene.m_spotLightList.size()); i++)
+			if(ImGui::Button("ResetCam"))
 			{
-				if(ImGui::TreeNode(("SL " + std::to_string(i)).c_str()))
+				tddResetCam = true;
+			}
+			ImGui::SameLine();
+			ImGui::Checkbox("Fixed Seed", &isDbgFixSeed);
+			if(!isDbgPixel)
+			{
+				ImGui::SameLine();
+				if(ImGui::Button("DBG Pixel"))
 				{
-					ImGui::DragFloat3("Pos", &scene.m_spotLightList[i].m_pos.x, 0.01f);
-					ImGui::ColorEdit3("Color", &scene.m_spotLightList[i].m_color.x);
-					ImGui::DragFloat("Intensity", &scene.m_spotLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
-					float3 dir = scene.m_spotLightList[i].m_dir;
-					ImGui::DragFloat3("Dir", &dir.x, 0.001f, -1.0f, 1.0f);
-					scene.m_spotLightList[i].m_dir = normalize(dir);
-
-					ImGui::DragFloat("CosI", &scene.m_spotLightList[i].m_cosI, 0.001f, scene.m_spotLightList[i].m_cosO, 1.0f);
-					ImGui::SameLine();
-					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLightList[i].m_cosI)));
-
-					ImGui::DragFloat("CosO", &scene.m_spotLightList[i].m_cosO, 0.001f, 0.0f, scene.m_spotLightList[i].m_cosI);
-					ImGui::SameLine();
-					ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLightList[i].m_cosO)));
-
-					ImGui::TreePop();
+					isDbgPixel = true;
 				}
 			}
-		}
-	}
-	if(!scene.m_dirLightList.empty())
-	{
-		if(ImGui::CollapsingHeader("DirLights"))
-		{
-			for(int i = 0; i < static_cast<int>(scene.m_dirLightList.size()); i++)
+			else if(isDbgPixelClicked && !isDbgPixelEntered)
 			{
-				if(ImGui::TreeNode(("DL " + std::to_string(i)).c_str()))
-				{
-					DirLight& light = scene.m_dirLightList[i];
-					float3 dir = light.m_dir;
-					ImGui::DragFloat3("Dir", &dir.x, 0.01f);
-					light.m_dir = normalize(dir);
-					ImGui::ColorEdit3("Color", &light.m_color.x);
-					ImGui::DragFloat("Intensity", &light.m_intensity, 0.01f, 0.0f, 1000.0f);
+				ImDrawList* drawList = ImGui::GetForegroundDrawList();
+				ImU32 color = IM_COL32(255, 0, 255, 255);
 
-					ImGui::TreePop();
+				float size = 20.0f; // Cursor size (change as needed)
+				ImVec2 pos = {static_cast<float>(dbgpixel.x),static_cast<float>(dbgpixel.y)};
+				drawList->AddRectFilled(pos, ImVec2(pos.x + size, pos.y + size), color);
+			}
+
+			if(ImGui::SliderInt2("SCR RANGE X", &dbgScrRangeX.x, 0, SCRWIDTH) ||
+			   ImGui::SliderInt2("SCR RANGE Y", &dbgScrRangeY.x, 0, SCRHEIGHT))
+			{
+				screen->Clear(0);
+			}
+
+			ImGui::EndTabItem();
+		}
+		if(ImGui::BeginTabItem("Lights"))
+		{
+			// credits to Okke for the idea of creating lights at runtime
+			if(ImGui::Button("+ PointL"))
+			{
+				scene.CreatePointLight();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("+ SpotL"))
+			{
+				scene.CreateSpotLight();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("+ DirL"))
+			{
+				scene.CreateDirLight();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("+ QuadL"))
+			{
+				scene.CreateQuadLight();
+			}
+
+			if(!scene.m_pointLightList.empty())
+			{
+				if(ImGui::CollapsingHeader("PointLights"))
+				{
+					for(int i = 0; i < static_cast<int>(scene.m_pointLightList.size()); i++)
+					{
+						if(ImGui::TreeNode(("PL " + std::to_string(i)).c_str()))
+						{
+							ImGui::DragFloat3("Pos", &scene.m_pointLightList[i].m_pos.x, 0.01f);
+							ImGui::ColorEdit3("Color", &scene.m_pointLightList[i].m_color.x);
+							ImGui::DragFloat("Intensity", &scene.m_pointLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+
+							ImGui::TreePop();
+						}
+					}
 				}
 			}
-		}
-	}
-	if(!scene.m_quadLightList.empty())
-	{
-		if(ImGui::CollapsingHeader("QuadLights"))
-		{
-			ImGui::SliderInt("Samples", &qlNumSamples, 1, 32);
-			ImGui::Checkbox("1 Sided", &qlOneSided);
-
-			for(int i = 0; i < static_cast<int>(scene.m_quadLightList.size()); i++)
+			if(!scene.m_spotLightList.empty())
 			{
-				if(ImGui::TreeNode(("QL " + std::to_string(i)).c_str()))
+				if(ImGui::CollapsingHeader("SpotLights"))
 				{
-					QuadLight& light = scene.m_quadLightList[i];
+					for(int i = 0; i < static_cast<int>(scene.m_spotLightList.size()); i++)
+					{
+						if(ImGui::TreeNode(("SL " + std::to_string(i)).c_str()))
+						{
+							ImGui::DragFloat3("Pos", &scene.m_spotLightList[i].m_pos.x, 0.01f);
+							ImGui::ColorEdit3("Color", &scene.m_spotLightList[i].m_color.x);
+							ImGui::DragFloat("Intensity", &scene.m_spotLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+							float3 dir = scene.m_spotLightList[i].m_dir;
+							ImGui::DragFloat3("Dir", &dir.x, 0.001f, -1.0f, 1.0f);
+							scene.m_spotLightList[i].m_dir = normalize(dir);
 
-					ImGui::DragFloat3("Pos", &light.m_quad.m_pos.x, 0.01f);
-					ImGui::DragFloat3("Dir", &light.m_quad.m_dir.x, 1.0f);
-					mat4 baseMat = mat4::Identity();
-					baseMat = baseMat * mat4::RotateX(DEG_TO_RAD(light.m_quad.m_dir.x));
-					baseMat = baseMat * mat4::RotateY(DEG_TO_RAD(light.m_quad.m_dir.y));
-					baseMat = baseMat * mat4::RotateZ(DEG_TO_RAD(light.m_quad.m_dir.z));
-					light.m_quad.T = mat4::Translate(light.m_quad.m_pos) * baseMat;
-					light.m_quad.invT = light.m_quad.T.FastInvertedTransformNoScale();
+							ImGui::DragFloat("CosI", &scene.m_spotLightList[i].m_cosI, 0.001f, scene.m_spotLightList[i].m_cosO, 1.0f);
+							ImGui::SameLine();
+							ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLightList[i].m_cosI)));
 
-					ImGui::DragFloat("Size", &light.m_quad.size, 0.01f, 0.0f, 100.0f);
+							ImGui::DragFloat("CosO", &scene.m_spotLightList[i].m_cosO, 0.001f, 0.0f, scene.m_spotLightList[i].m_cosI);
+							ImGui::SameLine();
+							ImGui::Text("%.2f", RAD_TO_DEG(acos(scene.m_spotLightList[i].m_cosO)));
 
-					ImGui::ColorEdit3("Color", &light.m_color.x);
-					ImGui::DragFloat("Intensity", &light.m_intensity, 0.01f, 0.0f, 1000.0f);
-
-					ImGui::TreePop();
+							ImGui::TreePop();
+						}
+					}
 				}
 			}
+			if(!scene.m_dirLightList.empty())
+			{
+				if(ImGui::CollapsingHeader("DirLights"))
+				{
+					for(int i = 0; i < static_cast<int>(scene.m_dirLightList.size()); i++)
+					{
+						if(ImGui::TreeNode(("DL " + std::to_string(i)).c_str()))
+						{
+							DirLight& light = scene.m_dirLightList[i];
+							float3 dir = light.m_dir;
+							ImGui::DragFloat3("Dir", &dir.x, 0.01f);
+							light.m_dir = normalize(dir);
+							ImGui::ColorEdit3("Color", &light.m_color.x);
+							ImGui::DragFloat("Intensity", &light.m_intensity, 0.01f, 0.0f, 1000.0f);
+
+							ImGui::TreePop();
+						}
+					}
+				}
+			}
+			if(!scene.m_quadLightList.empty())
+			{
+				if(ImGui::CollapsingHeader("QuadLights"))
+				{
+					ImGui::SliderInt("Samples", &qlNumSamples, 1, 32);
+					ImGui::Checkbox("1 Sided", &qlOneSided);
+
+					for(int i = 0; i < static_cast<int>(scene.m_quadLightList.size()); i++)
+					{
+						if(ImGui::TreeNode(("QL " + std::to_string(i)).c_str()))
+						{
+							QuadLight& light = scene.m_quadLightList[i];
+
+							ImGui::DragFloat3("Pos", &light.m_quad.m_pos.x, 0.01f);
+							ImGui::DragFloat3("Dir", &light.m_quad.m_dir.x, 1.0f);
+							mat4 baseMat = mat4::Identity();
+							baseMat = baseMat * mat4::RotateX(DEG_TO_RAD(light.m_quad.m_dir.x));
+							baseMat = baseMat * mat4::RotateY(DEG_TO_RAD(light.m_quad.m_dir.y));
+							baseMat = baseMat * mat4::RotateZ(DEG_TO_RAD(light.m_quad.m_dir.z));
+							light.m_quad.T = mat4::Translate(light.m_quad.m_pos) * baseMat;
+							light.m_quad.invT = light.m_quad.T.FastInvertedTransformNoScale();
+
+							ImGui::DragFloat("Size", &light.m_quad.size, 0.01f, 0.0f, 100.0f);
+
+							ImGui::ColorEdit3("Color", &light.m_color.x);
+							ImGui::DragFloat("Intensity", &light.m_intensity, 0.01f, 0.0f, 1000.0f);
+
+							ImGui::TreePop();
+						}
+					}
+				}
+			}
+
+			ImGui::EndTabItem();
 		}
+		if(ImGui::BeginTabItem("Objects"))
+		{
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
 	}
 	ImGui::End();
-
 
 	if(tdd)
 	{

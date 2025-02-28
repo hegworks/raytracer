@@ -48,11 +48,12 @@ private:
 	int m_skyBpp = 0;
 	float m_skydomeBrightnessFactor = 0.8f;
 
-	std::vector<Model> m_modelList;
 	std::vector<tinybvh::BVH> m_bvhList;
 	std::vector<tinybvh::BVHBase*> m_bvhBaseList;
-	std::vector<tinybvh::BLASInstance> m_blasList;
 	tinybvh::BVH m_tlas;
+public: //TODO temporary public for debugging
+	std::vector<Model> m_modelList;
+	std::vector<tinybvh::BLASInstance> m_blasList;
 
 	Material m_dragonMat; //TODO change to a list of all materials
 };

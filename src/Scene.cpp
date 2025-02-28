@@ -35,7 +35,7 @@ void Scene::LoadModels()
 {
 	m_modelList.reserve(20);
 	m_bvhList.reserve(20);
-	m_blasList.reserve(20);
+	//m_blasList.reserve(20);
 	int y = 0;
 	int z = 0;
 	int x = 0;
@@ -44,7 +44,7 @@ void Scene::LoadModels()
 		CreateModel(ModelType::SPHERE);
 		{
 			mat4 t = mat4::Translate(x, y, z);
-			x+=3;
+			x += 3;
 			SetBlasTransform(m_blasList.back(), t);
 		}
 		if(i % 4 == 0)
@@ -61,7 +61,7 @@ void Scene::LoadModels()
 		CreateModel(ModelType::DRAGON);
 		{
 			mat4 t = mat4::Translate(x, y, z);
-			y+=2;
+			y += 2;
 			SetBlasTransform(m_blasList.back(), t);
 		}
 		if(i % 4 == 0)
@@ -128,12 +128,12 @@ Model& Scene::CreateModel(ModelType modelType)
 	}
 	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType));
 	model.m_modelData.m_type = modelType;
-	tinybvh::BVH& bvh = m_bvhList.emplace_back(model.m_vertices.data(), model.m_vertices.size() / 3);
+	tinybvh::BVH& bvh = m_bvhList.emplace_back(model.m_modelData.m_vertices.data(), model.m_modelData.m_vertices.size() / 3);
 	m_bvhBaseList.push_back(&bvh);
 	m_blasList.emplace_back(m_modelList.size() - 1);
 	BuildTlas();
 
-	printf("NumVertices: %i\n", model.m_vertices.size());
+	printf("NumVertices: %i\n", model.m_modelData.m_vertices.size());
 	printf("NumMeshes: %i\n", model.m_modelData.m_meshVertexBorderList.size());
 
 	return model;

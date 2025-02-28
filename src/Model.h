@@ -41,20 +41,22 @@ public:
 		}
 	}
 
-	struct ALIGNED(16) VertexData
+	struct ALIGNED(32) VertexData
 	{
-		float4 m_pos = 0;
 		float3 m_normal = 0;
+		float dummy0 = 0;
 		float2 m_texCoord = 0;
+		float2 dummy1 = 0;
 	};
 
 	struct ALIGNED(64) ModelData
 	{
-		alignas(64) std::vector<Material> m_meshMaterialIdxList; /// idx of material of each mesh
+		alignas(64) std::vector<Material> m_meshMaterialList; /// idx of material of each mesh
 		alignas(64) std::vector<int> m_meshVertexBorderList; /// last idx of m_vertices of each mesh
-		alignas(64) std::vector<Texture> m_textures;
+		alignas(64) std::vector<Texture> m_textureList;
 		alignas(64) std::vector<VertexData> m_vertexDataList;
-		ModelType m_type;
+		alignas(64) std::vector<float4> m_vertices;
+		alignas(64) ModelType m_type;
 	};
 
 	ModelData m_modelData;
@@ -62,7 +64,6 @@ public:
 	float2 m_textureCoordScale = 1;
 	std::string m_directory;
 	std::vector<Texture> m_texturesLoaded;
-	std::vector<float4> m_vertices;
 
 	std::string GetStrippedFileName() const;
 
@@ -122,24 +123,21 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 			int idx = face.mIndices[j];
 
 			VertexData& newVertexData = m_modelData.m_vertexDataList.emplace_back();
-			newVertexData.m_pos = float4(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
 			newVertexData.m_normal = float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z);
+			m_modelData.m_vertices.emplace_back(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
 			if(mesh->mTextureCoords[0])
 				newVertexData.m_texCoord = float2(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);
 			else
 				newVertexData.m_texCoord = float2(0);
-
-			m_vertices.emplace_back(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
-
 		}
 	}
-	m_modelData.m_meshVertexBorderList.emplace_back(m_vertices.size() - 1);
-	m_modelData.m_meshMaterialIdxList.emplace_back(); //TODO read from file
+	m_modelData.m_meshVertexBorderList.emplace_back(m_modelData.m_vertices.size() - 1);
+	m_modelData.m_meshMaterialList.emplace_back(); //TODO read from file
 
 	// process material
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-	m_modelData.m_textures.insert(m_modelData.m_textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+	m_modelData.m_textureList.insert(m_modelData.m_textureList.end(), diffuseMaps.begin(), diffuseMaps.end());
 }
 
 inline unsigned int Model::TextureFromFile(const char* path, const std::string& directory)
