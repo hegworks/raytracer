@@ -25,7 +25,7 @@ public:
 	bool IsOccluded(const Ray& ray);
 	float3 GetNormal(Ray& ray) const;
 	float3 SampleSky(const Ray& ray);
-	Material& GetMaterial();
+	Material& GetMaterial(Ray& ray);
 
 	Model& CreateModel(ModelType modelType);
 

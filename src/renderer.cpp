@@ -26,16 +26,16 @@ void Renderer::Init()
 
 	acmCounter = 1;
 
-	//PointLight& pl = scene.CreatePointLight();
-	//pl.m_pos.y = 1.0f;
-	//pl.m_intensity = 10.0f;
+	PointLight& pl = scene.CreatePointLight();
+	pl.m_pos = float3(1, 15, 5);
+	pl.m_intensity = 150;
 
-	QuadLight& ql = scene.CreateQuadLight();
+	/*QuadLight& ql = scene.CreateQuadLight();
 	ql.m_quad.size = 5;
 	ql.m_intensity = 5;
 	ql.m_quad.m_pos = {0,5,0};
 	ql.m_quad.T = mat4::Translate(ql.m_quad.m_pos);
-	ql.m_quad.invT = ql.m_quad.T.FastInvertedTransformNoScale();
+	ql.m_quad.invT = ql.m_quad.T.FastInvertedTransformNoScale();*/
 
 #if _DEBUG
 	dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
@@ -136,7 +136,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 
 	float3 l(0);
-	Material mat = scene.GetMaterial();
+	Material mat = scene.GetMaterial(ray);
 	switch(mat.m_type)
 	{
 		case Material::Type::DIFFUSE:
@@ -223,7 +223,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case 1:
 			return float3(ray.hit.t) * 0.1f;
 		case 2:
-			return scene.GetMaterial().m_albedo;
+			return scene.GetMaterial(ray).m_albedo;
 		case 3:
 			return l;
 		default:

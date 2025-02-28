@@ -66,6 +66,7 @@ public:
 	std::vector<Texture> m_texturesLoaded;
 
 	std::string GetStrippedFileName() const;
+	int VertexToMeshIdx(int prim);
 
 private:
 	void loadModel(std::string path);
@@ -94,6 +95,22 @@ inline std::string Model::GetStrippedFileName() const
 	std::string result = m_directory.substr(m_directory.find_last_of('/') + 1);
 	result = result.substr(result.find_last_of('\\') + 1);
 	return result;
+}
+
+inline int Model::VertexToMeshIdx(int prim)
+{
+	int numMeshes = m_modelData.m_meshVertexBorderList.size();
+	if(numMeshes == 1) return 0;
+	for(int i = 0; i < numMeshes; ++i)
+	{
+		int borderVertexIdx = m_modelData.m_meshVertexBorderList[i];
+		if(prim <= borderVertexIdx)
+		{
+			return i;
+		}
+	}
+	throw runtime_error("Prim idx is bigger than all the vertex borders ids");
+
 }
 
 inline void Model::processNode(aiNode* node, const aiScene* scene)

@@ -230,8 +230,41 @@ void Renderer::UI()
 
 			ImGui::EndTabItem();
 		}
+
+		const char* materialTypes[] =
+		{
+			"DIFFUSE",
+			"DIFFUSE_PT",
+			"REFLECTIVE",
+			"GLOSSY",
+			"REFRACTIVE"
+		};
+
 		if(ImGui::BeginTabItem("Objects"))
 		{
+			for(int i = 0; i < scene.m_blasList.size(); ++i)
+			{
+				tinybvh::BLASInstance& blas = scene.m_blasList[i];
+				Model& model = scene.m_modelList[blas.blasIdx];
+				if(ImGui::TreeNode((model.m_directory + " " + std::to_string(i)).c_str()))
+				{
+					if(ImGui::CollapsingHeader(("Materials##" + std::to_string(i)).c_str()))
+					{
+						for(int j = 0; j < model.m_modelData.m_meshMaterialList.size(); j++)
+						{
+							Material& mat = model.m_modelData.m_meshMaterialList[j];
+							int matInt = static_cast<int>(mat.m_type);
+							ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
+							mat.m_type = static_cast<Material::Type>(matInt);
+							ImGui::ColorEdit3(("Albedo##" + std::to_string(j)).c_str(), &mat.m_albedo.x);
+							ImGui::DragFloat(("Factor##" + std::to_string(j)).c_str(), &mat.m_factor, 0.01f, 0.0f, 30.0f);
+						}
+					}
+
+					ImGui::TreePop();
+				}
+			}
+
 			ImGui::EndTabItem();
 		}
 		ImGui::EndTabBar();
@@ -298,55 +331,6 @@ void Renderer::UI()
 		ImGui::DragFloat("ior", &dbgIor, 0.01f, 1.0, 10.0);
 		ImGui::SameLine();
 		ImGui::Checkbox("Beer", &dbgBeer);
-
-		const char* materialTypes[] =
-		{
-			"DIFFUSE",
-			"DIFFUSE_PT",
-			"REFLECTIVE",
-			"GLOSSY",
-			"REFRACTIVE"
-		};
-
-		//TODO
-		/*if(ImGui::CollapsingHeader("Sphere"))
-		{
-			Material& mat = scene.sphere.m_material;
-			int matInt = static_cast<int>(mat.m_type);
-			ImGui::Combo("Type##1", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
-			mat.m_type = static_cast<Material::Type>(matInt);
-			ImGui::ColorEdit3("Albedo##1", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##1", &mat.m_factor, 0.01f, 0.0f, 30.0f);
-		}
-		//TODO
-		if(ImGui::CollapsingHeader("Torus"))
-		{
-			Material& mat = scene.torus.m_material;
-			int matInt = static_cast<int>(mat.m_type);
-			ImGui::Combo("Type##2", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
-			mat.m_type = static_cast<Material::Type>(matInt);
-			ImGui::ColorEdit3("Albedo##2", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##2", &mat.m_factor, 0.01f, 0.0f, 30.0f);
-		}
-		//TODO
-		if(ImGui::CollapsingHeader("Cube"))
-		{
-			Material& mat = scene.cube.m_material;
-			int matInt = static_cast<int>(mat.m_type);
-			ImGui::Combo("Type##3", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
-			mat.m_type = static_cast<Material::Type>(matInt);
-			ImGui::ColorEdit3("Albedo##3", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##3", &mat.m_factor, 0.01f, 0.0f, 30.0f);
-		}*/
-		if(ImGui::CollapsingHeader("Dragon"))
-		{
-			Material& mat = scene.GetMaterial();
-			int matInt = static_cast<int>(mat.m_type);
-			ImGui::Combo("Type##1", &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
-			mat.m_type = static_cast<Material::Type>(matInt);
-			ImGui::ColorEdit3("Albedo##1", &mat.m_albedo.x);
-			ImGui::DragFloat("Glossiness##1", &mat.m_factor, 0.01f, 0.0f, 30.0f);
-		}
 
 		ImGui::End();
 	}

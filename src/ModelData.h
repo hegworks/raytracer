@@ -22,7 +22,7 @@ public:
 			case ModelType::PLANE:
 				return ASSETDIR + "Models/Primitives/Plane/Plane.obj";
 			case ModelType::DRAGON:
-				return ASSETDIR + "Models/dragon.glb";
+				return ASSETDIR + "Models/dragon2.glb";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

@@ -36,10 +36,11 @@ void Scene::LoadModels()
 	m_modelList.reserve(20);
 	m_bvhList.reserve(20);
 	//m_blasList.reserve(20);
+	CreateModel(ModelType::DRAGON);
 	int y = 0;
 	int z = 0;
 	int x = 0;
-	for(int i = 1; i < 21; ++i)
+	/*for(int i = 1; i < 21; ++i)
 	{
 		CreateModel(ModelType::SPHERE);
 		{
@@ -69,32 +70,8 @@ void Scene::LoadModels()
 			y = 2;
 			x += 2;
 		}
-	}
+	}*/
 	BuildTlas();
-
-	//Model& model = m_modelList.emplace_back(ASSETDIR + "Models/Primitives/Sphere/Sphere.obj");
-	//Model& model = m_modelList.emplace_back(ASSETDIR + "Models/Primitives/SphereSmooth/SphereSmooth.glb");
-	/*{
-		Model& model = m_modelList.emplace_back(ASSETDIR + "Models/dragon.glb");
-		printf(model.GetStrippedFileName().c_str());
-		printf("\n");
-		printf("NumVertices: %i\n", model.m_vertices.size());
-		printf("NumTriangles: %i\n", model.m_numTriangles);
-		printf("NumNormals: %i\n", model.m_normals.size());
-		tinybvh::BVH& bvh = m_bvhList.emplace_back();
-		bvh.Build(model.m_vertices.data(), model.m_numTriangles);
-	}*/
-
-	/*{
-		Model& model = m_modelList.emplace_back(ASSETDIR + "Models/dragon.glb");
-		printf(model.GetStrippedFileName().c_str());
-		printf("\n");
-		printf("NumVertices: %i\n", model.m_vertices.size());
-		printf("NumTriangles: %i\n", model.m_numTriangles);
-		printf("NumNormals: %i\n", model.m_normals.size());
-		tinybvh::BVH& bvh = m_bvhList.emplace_back();
-		bvh.Build(model.m_vertices.data(), model.m_numTriangles);
-	}*/
 }
 
 float3 Scene::SampleSky(const Ray& ray)
@@ -109,10 +86,11 @@ float3 Scene::SampleSky(const Ray& ray)
 	return m_skydomeBrightnessFactor * float3(m_skyPixels[skyIdx * 3], m_skyPixels[skyIdx * 3 + 1], m_skyPixels[skyIdx * 3 + 2]);
 }
 
-//TODO change to a list of all materials
-Material& Scene::GetMaterial()
+Material& Scene::GetMaterial(Ray& ray)
 {
-	return m_dragonMat;
+	Model& model = m_modelList[m_blasList[ray.hit.inst].blasIdx];
+	int matIdx = model.VertexToMeshIdx(ray.hit.prim * 3);
+	return model.m_modelData.m_meshMaterialList[matIdx];
 }
 
 Model& Scene::CreateModel(ModelType modelType)
@@ -141,17 +119,16 @@ Model& Scene::CreateModel(ModelType modelType)
 
 void Scene::Intersect(Ray& ray) const
 {
-	m_tlas.Intersect(ray); //TODO
+	m_tlas.Intersect(ray);
 }
 
 bool Scene::IsOccluded(const Ray& ray)
 {
-	return m_tlas.IsOccluded(ray); //TODO 
+	return m_tlas.IsOccluded(ray);
 }
 
 float3 Scene::GetNormal(Ray& ray) const
 {
-
 	float3 n0 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3].m_normal;
 	float3 n1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
 	float3 n2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
