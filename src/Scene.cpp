@@ -37,6 +37,7 @@ void Scene::LoadModels()
 	m_bvhList.reserve(20);
 	//m_blasList.reserve(20);
 	CreateModel(ModelType::DRAGON);
+	CreateModel(ModelType::SPHERE);
 	int y = 0;
 	int z = 0;
 	int x = 0;

@@ -227,44 +227,70 @@ void Renderer::UI()
 					}
 				}
 			}
-
 			ImGui::EndTabItem();
 		}
 
-		const char* materialTypes[] =
-		{
-			"DIFFUSE",
-			"DIFFUSE_PT",
-			"REFLECTIVE",
-			"GLOSSY",
-			"REFRACTIVE"
-		};
-
 		if(ImGui::BeginTabItem("Objects"))
 		{
-			for(int i = 0; i < scene.m_blasList.size(); ++i)
+			ImGui::Button("+test0");
+			ImGui::SameLine();
+			ImGui::Button("+test1");
+			ImGui::SameLine();
+			ImGui::Button("+test2");
+
+			ImGui::Separator();
+
+			int numModels = scene.m_modelList.size();
+			int numBlases = scene.m_blasList.size();
+			ImGui::Text("NumModels: %i", numModels);
+			ImGui::Text("NumBlases: %i", numBlases);
+
+			if(ImGui::BeginTabBar("Objects"))
 			{
-				tinybvh::BLASInstance& blas = scene.m_blasList[i];
-				Model& model = scene.m_modelList[blas.blasIdx];
-				if(ImGui::TreeNode((model.m_directory + " " + std::to_string(i)).c_str()))
+				if(ImGui::BeginTabItem("Materials"))
 				{
-					if(ImGui::CollapsingHeader(("Materials##" + std::to_string(i)).c_str()))
+					for(int i = 0; i < numModels; ++i)
 					{
-						for(int j = 0; j < model.m_modelData.m_meshMaterialList.size(); j++)
+						Model& model = scene.m_modelList[i];
+						if(ImGui::TreeNode((std::to_string(i) + " " + model.m_directory).c_str()))
 						{
-							Material& mat = model.m_modelData.m_meshMaterialList[j];
-							int matInt = static_cast<int>(mat.m_type);
-							ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, materialTypes, IM_ARRAYSIZE(materialTypes));
-							mat.m_type = static_cast<Material::Type>(matInt);
-							ImGui::ColorEdit3(("Albedo##" + std::to_string(j)).c_str(), &mat.m_albedo.x);
-							ImGui::DragFloat(("Factor##" + std::to_string(j)).c_str(), &mat.m_factor, 0.01f, 0.0f, 30.0f);
+							for(int j = 0; j < model.m_modelData.m_meshMaterialList.size(); j++)
+							{
+								if(j > 0) ImGui::Separator();
+
+								Material& mat = model.m_modelData.m_meshMaterialList[j];
+								int matInt = static_cast<int>(mat.m_type);
+								ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, MATERIAL_STRING, IM_ARRAYSIZE(MATERIAL_STRING));
+								mat.m_type = static_cast<Material::Type>(matInt);
+								ImGui::ColorEdit3(("Albedo##" + std::to_string(j)).c_str(), &mat.m_albedo.x);
+								ImGui::DragFloat(("Factor##" + std::to_string(j)).c_str(), &mat.m_factor, 0.01f, 0.0f, 30.0f);
+							}
+							ImGui::TreePop();
 						}
 					}
-
-					ImGui::TreePop();
+					ImGui::EndTabItem();
 				}
+				if(ImGui::BeginTabItem("Transforms"))
+				{
+					for(int i = 0; i < numBlases; ++i)
+					{
+						tinybvh::BLASInstance& blas = scene.m_blasList[i];
+						Model& model = scene.m_modelList[blas.blasIdx];
+						if(ImGui::TreeNode((model.m_directory + " " + std::to_string(i)).c_str()))
+						{
+							float3 pos;
+							float3 rot;
+							float3 scl;
+							ImGui::DragFloat3("Pos", &pos.x, 0.1f);
+							ImGui::DragFloat3("Rot", &rot.x, 0.1f);
+							ImGui::DragFloat3("Scl", &scl.x, 0.1f);
+							ImGui::TreePop();
+						}
+					}
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar();
 			}
-
 			ImGui::EndTabItem();
 		}
 		ImGui::EndTabBar();

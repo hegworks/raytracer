@@ -1,5 +1,14 @@
 ﻿#pragma once
 
+inline const char* MATERIAL_STRING[] =
+{
+	"DIFFUSE",
+	"DIFFUSE_PT",
+	"REFLECTIVE",
+	"GLOSSY",
+	"REFRACTIVE"
+};
+
 struct ALIGNED(32) Material
 {
 	enum class Type : std::uint8_t
