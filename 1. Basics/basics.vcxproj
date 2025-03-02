@@ -180,6 +180,7 @@
     <ClInclude Include="..\src\RNG.h" />
     <ClInclude Include="..\src\Scene.h" />
     <ClInclude Include="..\src\SpotLight.h" />
+    <ClInclude Include="..\src\Transform.h" />
     <ClInclude Include="..\src\UknittyMath.h" />
     <ClInclude Include="..\template\camera.h" />
     <ClInclude Include="..\template\common.h" />

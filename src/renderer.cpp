@@ -28,7 +28,7 @@ void Renderer::Init()
 
 	PointLight& pl = scene.CreatePointLight();
 	pl.m_pos = float3(1, 15, 5);
-	pl.m_intensity = 150;
+	pl.m_intensity = 800;
 
 	/*QuadLight& ql = scene.CreateQuadLight();
 	ql.m_quad.size = 5;
@@ -66,6 +66,11 @@ void Renderer::Tick(float deltaTime)
 	}
 
 	if(tdd) screen->Clear(0);
+
+	scene.m_tranformList[0].m_rot.x += 0.001f * deltaTime;
+	scene.m_tranformList[0].m_scl.x = 2.0f;
+	scene.SetBlasTransform(scene.m_blasList[0], scene.m_tranformList[0]);
+	scene.BuildTlas();
 
 	// lines are executed as OpenMP parallel tasks (disabled in DEBUG)
 #pragma omp parallel for schedule(dynamic)

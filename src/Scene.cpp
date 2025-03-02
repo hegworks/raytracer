@@ -26,6 +26,20 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const mat4& mat)
 	}
 }
 
+void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const Transform& t)
+{
+	mat4 mat =
+		mat4::Translate(t.m_pos) *
+		mat4::RotateX(t.m_rot.x) *
+		mat4::RotateY(t.m_rot.y) *
+		mat4::RotateZ(t.m_rot.z) *
+		mat4::Scale(t.m_scl);
+	for(int i = 0; i < 15; ++i)
+	{
+		blas.transform[i] = mat.cell[i];
+	}
+}
+
 void Scene::BuildTlas()
 {
 	m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
@@ -33,9 +47,8 @@ void Scene::BuildTlas()
 
 void Scene::LoadModels()
 {
-	m_modelList.reserve(20);
-	m_bvhList.reserve(20);
-	//m_blasList.reserve(20);
+	m_modelList.reserve(NUM_MODEL_TYPES);
+	m_bvhList.reserve(NUM_MODEL_TYPES);
 	CreateModel(ModelType::DRAGON);
 	CreateModel(ModelType::SPHERE);
 	int y = 0;
@@ -110,6 +123,7 @@ Model& Scene::CreateModel(ModelType modelType)
 	tinybvh::BVH& bvh = m_bvhList.emplace_back(model.m_modelData.m_vertices.data(), model.m_modelData.m_vertices.size() / 3);
 	m_bvhBaseList.push_back(&bvh);
 	m_blasList.emplace_back(m_modelList.size() - 1);
+	m_tranformList.emplace_back();
 	BuildTlas();
 
 	printf("NumVertices: %i\n", model.m_modelData.m_vertices.size());

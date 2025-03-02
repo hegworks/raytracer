@@ -21,29 +21,22 @@ struct Texture
 class Model
 {
 public:
-	Model() = default;
 	Model(std::string const& path, float2 textureCoordScale = float2(1), bool shouldVerticallyFlipTexture = false)
 	{
 		stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 		m_textureCoordScale = textureCoordScale;
-
-		std::cout << "Loading Model: " << path << std::endl;
-
-		size_t pos = m_directory.find_last_of("/\\");
-		m_fileName = (pos != std::string::npos) ? m_directory.substr(pos + 1) : m_directory;
-
+		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
-
 		m_modelData.m_initialized = true;
 	}
-	/*~Model()
+	~Model()
 	{
 		std::cout << "Destroying Model: " << m_directory << std::endl;
 		for(unsigned int i = 0; i < m_texturesLoaded.size(); i++)
 		{
 			glDeleteTextures(1, &m_texturesLoaded[i].m_id);
 		}
-	}*/
+	}
 
 	struct ALIGNED(32) VertexData
 	{
@@ -99,8 +92,8 @@ inline void Model::loadModel(std::string path)
 
 inline std::string Model::GetStrippedFileName() const
 {
-	size_t pos = m_directory.find_last_of("/\\");
-	std::string result = (pos != std::string::npos) ? m_directory.substr(pos + 1) : m_directory;
+	std::string result = m_directory.substr(m_directory.find_last_of('/') + 1);
+	result = result.substr(result.find_last_of('\\') + 1);
 	return result;
 }
 

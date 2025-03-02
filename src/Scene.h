@@ -7,6 +7,7 @@
 #include "PointLight.h"
 #include "QuadLight.h"
 #include "SpotLight.h"
+#include "Transform.h"
 
 using ModelId = uint;
 using BvhId = uint;
@@ -34,11 +35,13 @@ public:
 	DirLight& CreateDirLight();
 	QuadLight& CreateQuadLight();
 
+	void SetBlasTransform(tinybvh::BLASInstance& blas, const Transform& t);
+	void BuildTlas();
+
 private:
 	void LoadModels();
 	void LoadSkydome();
 	void SetBlasTransform(tinybvh::BLASInstance& blas, const mat4& mat);
-	void BuildTlas();
 
 	int m_nextIdx = 0;
 
@@ -51,9 +54,8 @@ private:
 	std::vector<tinybvh::BVH> m_bvhList;
 	std::vector<tinybvh::BVHBase*> m_bvhBaseList;
 	tinybvh::BVH m_tlas;
-public: //TODO temporary public for debugging
+public:
 	std::vector<Model> m_modelList;
 	std::vector<tinybvh::BLASInstance> m_blasList;
-
-	Material m_dragonMat; //TODO change to a list of all materials
+	std::vector<Transform> m_tranformList;
 };
