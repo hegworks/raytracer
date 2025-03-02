@@ -30,9 +30,9 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const Transform& t)
 {
 	mat4 mat =
 		mat4::Translate(t.m_pos) *
-		mat4::RotateX(t.m_rot.x) *
-		mat4::RotateY(t.m_rot.y) *
-		mat4::RotateZ(t.m_rot.z) *
+		mat4::RotateX(DEG_TO_RAD(t.m_rot.x)) *
+		mat4::RotateY(DEG_TO_RAD(t.m_rot.y)) *
+		mat4::RotateZ(DEG_TO_RAD(t.m_rot.z)) *
 		mat4::Scale(t.m_scl);
 	for(int i = 0; i < 15; ++i)
 	{

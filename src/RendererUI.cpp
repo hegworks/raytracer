@@ -240,7 +240,7 @@ void Renderer::UI()
 
 			ImGui::Separator();
 
-			int numModels = NUM_MODEL_TYPES;
+			int numModels = scene.m_modelList.size();
 			int numBlases = scene.m_blasList.size();
 			ImGui::Text("NumModels: %i", numModels);
 			ImGui::Text("NumBlases: %i", numBlases);
@@ -278,12 +278,16 @@ void Renderer::UI()
 						Model& model = scene.m_modelList[blas.blasIdx];
 						if(ImGui::TreeNode((model.m_fileName + " " + std::to_string(i)).c_str()))
 						{
-							float3 pos(0);
-							float3 rot(0);
-							float3 scl(0);
-							ImGui::DragFloat3("Pos", &pos.x, 0.1f);
-							ImGui::DragFloat3("Rot", &rot.x, 0.1f);
-							ImGui::DragFloat3("Scl", &scl.x, 0.1f);
+							Transform& t = scene.m_tranformList[i];
+							bool changed = false;
+							if(ImGui::DragFloat3("Pos", &t.m_pos.x, 0.1f)) changed = true;
+							if(ImGui::DragFloat3("Rot", &t.m_rot.x, 0.1f)) changed = true;
+							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f)) changed = true;
+							if(changed)
+							{
+								scene.SetBlasTransform(blas, t);
+								scene.BuildTlas();
+							}
 							ImGui::TreePop();
 						}
 					}

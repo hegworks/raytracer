@@ -28,6 +28,8 @@ public:
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
 		m_modelData.m_initialized = true;
+		size_t pos = path.find_last_of("/\\");
+		m_fileName = (pos != std::string::npos) ? path.substr(pos + 1) : path;
 	}
 	~Model()
 	{
