@@ -26,7 +26,7 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const mat4& mat)
 	}
 }
 
-void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const Transform& t)
+void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t)
 {
 	mat4 mat =
 		mat4::Translate(t.m_pos) *
@@ -38,6 +38,7 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const Transform& t)
 	{
 		blas.transform[i] = mat.cell[i];
 	}
+	t.m_invT = mat.Inverted().Transposed();
 }
 
 void Scene::BuildTlas()
@@ -49,42 +50,9 @@ void Scene::LoadModels()
 {
 	m_modelList.reserve(NUM_MODEL_TYPES);
 	m_bvhList.reserve(NUM_MODEL_TYPES);
-	CreateModel(ModelType::DRAGON);
+	//CreateModel(ModelType::DRAGON);
+	//CreateModel(ModelType::PLANE);
 	CreateModel(ModelType::SPHERE);
-	int y = 0;
-	int z = 0;
-	int x = 0;
-	/*for(int i = 1; i < 21; ++i)
-	{
-		CreateModel(ModelType::SPHERE);
-		{
-			mat4 t = mat4::Translate(x, y, z);
-			x += 3;
-			SetBlasTransform(m_blasList.back(), t);
-		}
-		if(i % 4 == 0)
-		{
-			x = 0;
-			z += 2;
-		}
-	}
-	x = 0;
-	y = 2;
-	z = 0;
-	for(int i = 1; i < 21; ++i)
-	{
-		CreateModel(ModelType::DRAGON);
-		{
-			mat4 t = mat4::Translate(x, y, z);
-			y += 2;
-			SetBlasTransform(m_blasList.back(), t);
-		}
-		if(i % 4 == 0)
-		{
-			y = 2;
-			x += 2;
-		}
-	}*/
 	BuildTlas();
 }
 
@@ -92,8 +60,8 @@ float3 Scene::SampleSky(const Ray& ray)
 {
 	// sample sky
 	float phi = atan2(ray.D.z, ray.D.x);
-	uint u = (uint)(m_skyWidth * (phi > 0 ? phi : (phi + 2 * PI)) * INV2PI - 0.5f);
-	uint v = (uint)(m_skyHeight * acos(ray.D.y) * INVPI - 0.5f);
+	uint u = static_cast<uint>(m_skyWidth * (phi > 0 ? phi : (phi + 2 * PI)) * INV2PI - 0.5f);
+	uint v = static_cast<uint>(m_skyHeight * acos(ray.D.y) * INVPI - 0.5f);
 	uint skyIdx = (u + v * m_skyWidth) % (m_skyWidth * m_skyHeight);
 
 	m_skydomeBrightnessFactor = dbgSDBF;
@@ -134,11 +102,13 @@ Model& Scene::CreateModel(ModelType modelType)
 
 void Scene::Intersect(Ray& ray) const
 {
+	if(m_blasList.empty()) return;
 	m_tlas.Intersect(ray);
 }
 
 bool Scene::IsOccluded(const Ray& ray)
 {
+	if(m_blasList.empty()) return false;
 	return m_tlas.IsOccluded(ray);
 }
 
@@ -148,7 +118,7 @@ float3 Scene::GetNormal(Ray& ray) const
 	float3 n1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
 	float3 n2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
 	float w = 1.0f - ray.hit.u - ray.hit.v;
-	return float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2));
+	return float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2)) * m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT;
 }
 
 PointLight& Scene::CreatePointLight()

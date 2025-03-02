@@ -35,7 +35,7 @@ public:
 	DirLight& CreateDirLight();
 	QuadLight& CreateQuadLight();
 
-	void SetBlasTransform(tinybvh::BLASInstance& blas, const Transform& t);
+	void SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t);
 	void BuildTlas();
 
 private:
