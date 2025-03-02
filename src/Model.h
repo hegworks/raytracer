@@ -21,25 +21,29 @@ struct Texture
 class Model
 {
 public:
+	Model() = default;
 	Model(std::string const& path, float2 textureCoordScale = float2(1), bool shouldVerticallyFlipTexture = false)
 	{
 		stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 		m_textureCoordScale = textureCoordScale;
 
-		size_t pos = path.find_last_of("/\\");
-		m_directory = (pos != std::string::npos) ? path.substr(pos + 1) : path;
-		std::cout << "Loading Model: " << m_directory << std::endl;
+		std::cout << "Loading Model: " << path << std::endl;
+
+		size_t pos = m_directory.find_last_of("/\\");
+		m_fileName = (pos != std::string::npos) ? m_directory.substr(pos + 1) : m_directory;
 
 		loadModel(path);
+
+		m_modelData.m_initialized = true;
 	}
-	~Model()
+	/*~Model()
 	{
 		std::cout << "Destroying Model: " << m_directory << std::endl;
 		for(unsigned int i = 0; i < m_texturesLoaded.size(); i++)
 		{
 			glDeleteTextures(1, &m_texturesLoaded[i].m_id);
 		}
-	}
+	}*/
 
 	struct ALIGNED(32) VertexData
 	{
@@ -57,12 +61,14 @@ public:
 		alignas(64) std::vector<VertexData> m_vertexDataList;
 		alignas(64) std::vector<float4> m_vertices;
 		alignas(64) ModelType m_type;
+		bool m_initialized = false;
 	};
 
 	ModelData m_modelData;
 
 	float2 m_textureCoordScale = 1;
 	std::string m_directory;
+	std::string m_fileName;
 	std::vector<Texture> m_texturesLoaded;
 
 	std::string GetStrippedFileName() const;
@@ -86,14 +92,15 @@ inline void Model::loadModel(std::string path)
 		std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
 		return;
 	}
+	m_directory = path.substr(0, path.find_last_of('/'));
 
 	processNode(scene->mRootNode, scene);
 }
 
 inline std::string Model::GetStrippedFileName() const
 {
-	std::string result = m_directory.substr(m_directory.find_last_of('/') + 1);
-	result = result.substr(result.find_last_of('\\') + 1);
+	size_t pos = m_directory.find_last_of("/\\");
+	std::string result = (pos != std::string::npos) ? m_directory.substr(pos + 1) : m_directory;
 	return result;
 }
 

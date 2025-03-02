@@ -15,6 +15,27 @@ void Renderer::UI()
 	ImGui::Text("avg	fps	rps");
 	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
 
+	// ray query on mouse
+	int2 coord = isDbgPixel ? dbgpixel : mousePos;
+	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
+	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
+	if(isInScreen)
+	{
+		pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
+		red = (pixel & 0xFF0000) >> 16;
+		green = (pixel & 0x00FF00) >> 8;
+		blue = pixel & 0x0000FF;
+	}
+	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
+	scene.Intersect(r);
+	ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+	int debugInt = r.hit.t < BVH_FAR ? scene.m_blasList[r.hit.inst].blasIdx : -1;
+	ImGui::Text("%i  %i,%i", debugInt, coord.x, coord.y);
+	ImGui::SameLine();
+	ImGui::ColorButton("", color);
+	ImGui::SameLine();
+	ImGui::Text("%u,%u,%u", red, green, blue);
+
 	if(ImGui::BeginTabBar("Main"))
 	{
 		if(ImGui::BeginTabItem("General"))
@@ -25,27 +46,6 @@ void Renderer::UI()
 			ImGui::Checkbox("ACM", &useACM);
 			ImGui::SameLine();
 			ImGui::Checkbox("TDD", &tdd);
-
-
-			// ray query on mouse
-			int2 coord = isDbgPixel ? dbgpixel : mousePos;
-			Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
-			scene.Intersect(r);
-			bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
-			uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
-			if(isInScreen)
-			{
-				pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
-				red = (pixel & 0xFF0000) >> 16;
-				green = (pixel & 0x00FF00) >> 8;
-				blue = pixel & 0x0000FF;
-			}
-			ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-			ImGui::Text("%i  %i,%i", scene.m_blasList[r.hit.inst].blasIdx, coord.x, coord.y);
-			ImGui::SameLine();
-			ImGui::ColorButton("", color);
-			ImGui::SameLine();
-			ImGui::Text("%u,%u,%u", red, green, blue);
 
 			ImGui::SliderInt("ndal", &ndal, 0, 3);
 			ImGui::SliderInt("Depth", &maxDepth, 1, 20);
@@ -240,7 +240,7 @@ void Renderer::UI()
 
 			ImGui::Separator();
 
-			int numModels = scene.m_modelList.size();
+			int numModels = NUM_MODEL_TYPES;
 			int numBlases = scene.m_blasList.size();
 			ImGui::Text("NumModels: %i", numModels);
 			ImGui::Text("NumBlases: %i", numBlases);
@@ -252,7 +252,7 @@ void Renderer::UI()
 					for(int i = 0; i < numModels; ++i)
 					{
 						Model& model = scene.m_modelList[i];
-						if(ImGui::TreeNode((std::to_string(i) + " " + model.m_directory).c_str()))
+						if(ImGui::TreeNode((std::to_string(i) + " " + model.m_fileName).c_str()))
 						{
 							for(int j = 0; j < model.m_modelData.m_meshMaterialList.size(); j++)
 							{
@@ -276,11 +276,11 @@ void Renderer::UI()
 					{
 						tinybvh::BLASInstance& blas = scene.m_blasList[i];
 						Model& model = scene.m_modelList[blas.blasIdx];
-						if(ImGui::TreeNode((model.m_directory + " " + std::to_string(i)).c_str()))
+						if(ImGui::TreeNode((model.m_fileName + " " + std::to_string(i)).c_str()))
 						{
-							float3 pos;
-							float3 rot;
-							float3 scl;
+							float3 pos(0);
+							float3 rot(0);
+							float3 scl(0);
 							ImGui::DragFloat3("Pos", &pos.x, 0.1f);
 							ImGui::DragFloat3("Rot", &rot.x, 0.1f);
 							ImGui::DragFloat3("Scl", &scl.x, 0.1f);

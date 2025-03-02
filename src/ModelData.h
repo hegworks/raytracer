@@ -8,6 +8,7 @@ enum class ModelType : uint8_t
 	DRAGON,
 };
 
+constexpr int NUM_MODEL_TYPES = 4;
 class ModelData
 {
 public:

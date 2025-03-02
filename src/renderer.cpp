@@ -125,8 +125,8 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	bool hasHit = ray.hit.t < BVH_FAR;
 	if(!hasHit)
 	{
-		return scene.SampleSky(ray);
-		//return 0;
+		//return scene.SampleSky(ray);
+		return 0;
 	}
 
 	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
