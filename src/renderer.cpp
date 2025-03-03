@@ -26,9 +26,9 @@ void Renderer::Init()
 
 	acmCounter = 1;
 
-	PointLight& pl = scene.CreatePointLight();
+	/*PointLight& pl = scene.CreatePointLight();
 	pl.m_pos = float3(1, 15, 5);
-	pl.m_intensity = 800;
+	pl.m_intensity = 800;*/
 
 	/*QuadLight& ql = scene.CreateQuadLight();
 	ql.m_quad.size = 5;
@@ -125,8 +125,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	bool hasHit = ray.hit.t < BVH_FAR;
 	if(!hasHit)
 	{
-		return scene.SampleSky(ray);
-		//return 0;
+		if(useSD)
+			return scene.SampleSky(ray);
+		return 0;
 	}
 
 	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
@@ -165,7 +166,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			if(!isInCorrectHemisphere) randPoint = -randPoint;
 			float3 randDir = normalize(n + randPoint);
 			Ray r(p + randDir * EPS, randDir);
-			float3 contribution = mat.m_albedo * mat.m_factor * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 contribution = mat.m_albedo * mat.m_factor0 * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			l += contribution;
 			break;
 		}
@@ -173,27 +174,28 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		{
 			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + rrdir * EPS, rrdir);
-			l += mat.m_factor * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			l += mat.m_factor0 * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 		case Material::Type::GLOSSY:
 		{
-			l += (1.0f - mat.m_factor) * CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			l += (1.0f - mat.m_factor0) * CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			float3 rrdir = reflect(ray.D, n);
 			Ray rr(p + rrdir * EPS, rrdir);
-			l += mat.m_factor * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			l += mat.m_factor0 * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 		case Material::Type::REFRACTIVE:
 		{
 			float fres;
-			fresnel(ray.D, n, dbgIor, fres);
+			fresnel(ray.D, n, mat.m_factor1, fres);
 
 			float3 refracted(0);
 			if((1.0f - fres) > EPS)
 			{
-				float3 refracDir = refract(ray.D, n, dbgIor);
+				float3 refracDir = refract(ray.D, n, mat.m_factor1);
 				Ray refracR(p + refracDir * EPS, refracDir);
+				refracR.dummy1 = refracR.dummy1 == 0 ? 1 : 0;
 				refracted = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			}
 
@@ -202,12 +204,13 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			{
 				float3 reflecDir = reflect(ray.D, n);
 				Ray reflecR(p + reflecDir * EPS, reflecDir);
+				reflecR.dummy1 = ray.dummy1;
 				reflected = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			}
 
 			bool inside = dot(ray.D, n) > 0;
-			// here mat.m_factor is being used as density of the matter TODO
-			float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor * ray.hit.t) : 1.0f;
+			// here mat.m_factor0 is being used as density of the matter
+			float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor0 * ray.hit.t) : 1.0f;
 			float3 alb = dbgBeer ? beer : mat.m_albedo;
 
 			l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
@@ -259,7 +262,7 @@ float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixel
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.IsOccluded(shadowRay);
 
 		if(isTddPixelX && isTddPixelY)
 		{
@@ -320,7 +323,7 @@ float3 Renderer::CalcSpotLight(float3 p, float3 n, float3 brdf)
 		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
 
 		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.IsOccluded(shadowRay);
 		if(isInShadow)
 		{
 			continue;
@@ -360,7 +363,7 @@ float3 Renderer::CalcDirLight(float3 p, float3 n, float3 brdf)
 		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
 
 		Ray shadowRay(srPos, wi);
-		bool isInShadow = scene.IsOccluded(shadowRay); //TODO
+		bool isInShadow = scene.IsOccluded(shadowRay);
 		if(isInShadow)
 		{
 			continue;
@@ -406,7 +409,7 @@ float3 Renderer::CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex)
 
 			float3 srPos = p + wi * EPS;
 			Ray shadowRay(srPos, wi, tMax);
-			bool isInShadow = scene.IsOccluded(shadowRay); //TODO
+			bool isInShadow = scene.IsOccluded(shadowRay);
 			if(isInShadow)
 			{
 				continue;

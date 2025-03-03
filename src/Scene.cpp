@@ -8,6 +8,9 @@
 
 Scene::Scene()
 {
+	m_modelList.reserve(NUM_MODEL_TYPES);
+	m_bvhList.reserve(NUM_MODEL_TYPES);
+
 	LoadSkydome();
 	LoadModels();
 }
@@ -48,12 +51,10 @@ void Scene::BuildTlas()
 
 void Scene::LoadModels()
 {
-	m_modelList.reserve(NUM_MODEL_TYPES);
-	m_bvhList.reserve(NUM_MODEL_TYPES);
 	//CreateModel(ModelType::DRAGON);
 	//CreateModel(ModelType::PLANE);
-	CreateModel(ModelType::SPHERE);
-	BuildTlas();
+	//CreateModel(ModelType::SPHERE);
+	//BuildTlas();
 }
 
 float3 Scene::SampleSky(const Ray& ray)
@@ -119,7 +120,7 @@ float3 Scene::GetNormal(Ray& ray) const
 	float3 n1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
 	float3 n2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
 	float w = 1.0f - ray.hit.u - ray.hit.v;
-	return float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2)) * m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT;
+	return normalize(float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2)) * m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT);
 }
 
 PointLight& Scene::CreatePointLight()

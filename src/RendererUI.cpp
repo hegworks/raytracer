@@ -7,10 +7,12 @@
 // -----------------------------------------------------------
 void Renderer::UI()
 {
-	ImGui::Begin("General", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	ImGui::End();
 
-	ImGui::SetWindowPos(ImVec2(SCRWIDTH - 300, 0));
-	ImGui::SetWindowSize(ImVec2(300, SCRHEIGHT));
+	ImGui::SetNextWindowPos(ImVec2(SCRWIDTH - 300, 0));
+	ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT));
+	ImGui::SetNextWindowBgAlpha(0.2f);
+	ImGui::Begin("General", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
 	ImGui::Text("avg	fps	rps");
 	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
@@ -46,6 +48,8 @@ void Renderer::UI()
 			ImGui::Checkbox("ACM", &useACM);
 			ImGui::SameLine();
 			ImGui::Checkbox("TDD", &tdd);
+			ImGui::SameLine();
+			ImGui::Checkbox("SD", &useSD);
 
 			ImGui::SliderInt("ndal", &ndal, 0, 3);
 			ImGui::SliderInt("Depth", &maxDepth, 1, 20);
@@ -263,13 +267,16 @@ void Renderer::UI()
 							for(int j = 0; j < model.m_modelData.m_meshMaterialList.size(); j++)
 							{
 								if(j > 0) ImGui::Separator();
-
 								Material& mat = model.m_modelData.m_meshMaterialList[j];
+								if(mat.m_name[0] != '\0') ImGui::Text(mat.m_name);
 								int matInt = static_cast<int>(mat.m_type);
 								ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, MATERIAL_STRING, IM_ARRAYSIZE(MATERIAL_STRING));
 								mat.m_type = static_cast<Material::Type>(matInt);
 								ImGui::ColorEdit3(("Albedo##" + std::to_string(j)).c_str(), &mat.m_albedo.x);
-								ImGui::DragFloat(("Factor##" + std::to_string(j)).c_str(), &mat.m_factor, 0.01f, 0.0f, 30.0f);
+								ImGui::DragFloat(("Factor0##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 30.0f);
+								if(mat.m_type == Material::Type::REFRACTIVE)
+									ImGui::DragFloat(("IOR##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.01f, 0.0f, 30.0f);
+
 							}
 							ImGui::TreePop();
 						}
@@ -297,7 +304,9 @@ void Renderer::UI()
 
 							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f)) changed = true;
 							ImGui::SameLine();
-							if(ImGui::Button("reset##2")) t.m_scl = 1, changed = true;
+							if(ImGui::Button("0##0")) t.m_scl = 0, changed = true;
+							ImGui::SameLine();
+							if(ImGui::Button("1##0")) t.m_scl = 1, changed = true;
 
 							if(changed)
 							{
@@ -319,20 +328,21 @@ void Renderer::UI()
 
 	if(tdd)
 	{
-		ImGui::SetNextWindowPos(ImVec2(0, 360));
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT / 2.0f));
 		ImGui::SetNextWindowBgAlpha(0.2f);
 		ImGui::Begin("2D Debugger", nullptr, ImGuiWindowFlags_NoResize);
 
 		if(ImGui::Button("Reset"))
 		{
-			tddSceneScale = 1.3f;
-			tddOffset = tddOffset = int2(0, 130);
+			tddSceneScale = 2.0f;
+			tddOffset = tddOffset = int2(0, 0);
+			tddResetCam = true;
 		}
 		ImGui::SameLine();
 		ImGui::Checkbox("Black Background", &tddBBG);
 
-		ImGui::DragFloat("Scale", &tddSceneScale, 0.01f, 0.001f, 2.5f);
+		ImGui::DragFloat("Scale", &tddSceneScale, 0.01f, 0.001f, 10.0f);
 		ImGui::DragInt2("Offset", &tddOffset.x);
 		ImGui::DragInt("Ray Count", &tddrx, 0.5f, 1, 200);
 		ImGui::SliderInt("Font Size", &tddFS, 0, 4);
@@ -364,19 +374,6 @@ void Renderer::UI()
 		ImGui::Checkbox("Pos", &tddPLP);
 		ImGui::SameLine();
 		ImGui::Checkbox("Ray", &tddPLR);
-
-		ImGui::End();
-	}
-
-	{
-		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT / 2.0f));
-		ImGui::SetNextWindowBgAlpha(0.2f);
-		ImGui::Begin("Materials", nullptr, ImGuiWindowFlags_NoResize);
-
-		ImGui::DragFloat("ior", &dbgIor, 0.01f, 1.0, 10.0);
-		ImGui::SameLine();
-		ImGui::Checkbox("Beer", &dbgBeer);
 
 		ImGui::End();
 	}

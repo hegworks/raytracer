@@ -6,16 +6,18 @@ enum class ModelType : uint8_t
 	CUBE,
 	PLANE,
 	DRAGON,
+	CORNELL,
 };
 
-constexpr int NUM_MODEL_TYPES = 4;
+constexpr int NUM_MODEL_TYPES = 5;
 
 inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 {
 	ModelType::SPHERE,
 	ModelType::CUBE,
 	ModelType::PLANE,
-	ModelType::DRAGON
+	ModelType::DRAGON,
+	ModelType::CORNELL,
 };
 
 inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
@@ -24,6 +26,7 @@ inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
 	"CUBE",
 	"PLANE",
 	"DRAGON",
+	"CORNELL",
 };
 
 class ModelData
@@ -41,6 +44,8 @@ public:
 				return ASSETDIR + "Models/Primitives/Plane/Plane.obj";
 			case ModelType::DRAGON:
 				return ASSETDIR + "Models/dragon2.glb";
+			case ModelType::CORNELL:
+				return ASSETDIR + "Models/CornellBox-Original.obj";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

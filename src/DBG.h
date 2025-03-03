@@ -3,8 +3,8 @@
 
 inline bool tdd = false;
 inline bool tddResetCam = false;
-inline float tddSceneScale = 1.3f;
-inline int2 tddOffset = int2(0, 130);
+inline float tddSceneScale = 2.0f;
+inline int2 tddOffset = int2(0, 0);
 inline float tddy = 0.25f;
 inline int tddrx = 20;
 inline bool tddSXM = false; /// SingleXMode
@@ -36,7 +36,8 @@ inline bool isDbgFixSeed = false;
 inline int2 dbgScrRangeX = {0,SCRWIDTH};
 inline int2 dbgScrRangeY = {0,SCRHEIGHT};
 
-inline float dbgSDBF = 0.6f;
+inline bool useSD = true; /// UseSkyDome
+inline float dbgSDBF = 1.0f; /// SkyDomeBrightnessFactor
 inline float EPS = 1e-3f;
 inline int epsInt = 2;
 inline float dbgFF = 10.f; /// FireFly
@@ -83,10 +84,11 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 				if(colordepth == 1) color = 0x00ff00;
 				if(colordepth == 2) color = 0x0000ff;
 			}
-			//if(ray.inside) //TODO
-			//{
-				//color = 0xffff00;
-			//}
+			bool inside = dot(ray.D, n) > 0;
+			if(inside)
+			{
+				color = 0xffff00;
+			}
 			screen->Line(o.x, o.y, d.x, d.y, color);
 		}
 

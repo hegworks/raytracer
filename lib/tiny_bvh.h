@@ -565,7 +565,7 @@ struct ALIGNED( 64 ) Ray
 		O = origin, D = tinybvh_normalize( direction ), rD = tinybvh_safercp( D );
 		hit.t = t;
 	}
-	ALIGNED( 16 ) bvhvec3 O; uint32_t dummy1;
+	ALIGNED( 16 ) bvhvec3 O; uint32_t dummy1 = 0;
 	ALIGNED( 16 ) bvhvec3 D; uint32_t instIdx = 0;
 	ALIGNED( 16 ) bvhvec3 rD;
 #if INST_IDX_BITS != 32

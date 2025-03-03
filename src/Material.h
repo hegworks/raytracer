@@ -20,8 +20,9 @@ struct ALIGNED(32) Material
 		REFRACTIVE
 	};
 
+	char m_name[32];
 	float3 m_albedo = float3(1.0f);
-	float m_factor = 1.0f;
-	Type m_type = Type::DIFFUSE;
-	uint32_t dummy[3];
+	float m_factor0 = 1.0f;
+	float m_factor1 = 1.0f;
+	Type m_type = Type::DIFFUSE_PT;
 };

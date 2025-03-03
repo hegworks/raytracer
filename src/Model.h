@@ -151,10 +151,18 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		}
 	}
 	m_modelData.m_meshVertexBorderList.emplace_back(m_modelData.m_vertices.size() - 1);
-	m_modelData.m_meshMaterialList.emplace_back(); //TODO read from file
+	Material& mat = m_modelData.m_meshMaterialList.emplace_back(); //TODO read from file
 
 	// process material
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+	strcpy(mat.m_name, material->GetName().C_Str());
+
+	aiColor4D diffuse;
+	if(AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse))
+	{
+		mat.m_albedo = {diffuse.r,diffuse.g,diffuse.b};
+	}
+
 	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 	m_modelData.m_textureList.insert(m_modelData.m_textureList.end(), diffuseMaps.begin(), diffuseMaps.end());
 }
