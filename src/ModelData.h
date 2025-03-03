@@ -9,6 +9,23 @@ enum class ModelType : uint8_t
 };
 
 constexpr int NUM_MODEL_TYPES = 4;
+
+inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
+{
+	ModelType::SPHERE,
+	ModelType::CUBE,
+	ModelType::PLANE,
+	ModelType::DRAGON
+};
+
+inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
+{
+	"SPHERE",
+	"CUBE",
+	"PLANE",
+	"DRAGON",
+};
+
 class ModelData
 {
 public:

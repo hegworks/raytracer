@@ -232,11 +232,17 @@ void Renderer::UI()
 
 		if(ImGui::BeginTabItem("Objects"))
 		{
-			ImGui::Button("+test0");
-			ImGui::SameLine();
-			ImGui::Button("+test1");
-			ImGui::SameLine();
-			ImGui::Button("+test2");
+			for(int i = 0; i < NUM_MODEL_TYPES; ++i)
+			{
+				if(ImGui::Button(("+" + ALL_MODEL_NAMES[i]).c_str()))
+				{
+					scene.CreateModel(ALL_MODEL_TYPES[i]);
+				}
+				if(i != NUM_MODEL_TYPES - 1)
+				{
+					ImGui::SameLine();
+				}
+			}
 
 			ImGui::Separator();
 
@@ -280,9 +286,19 @@ void Renderer::UI()
 						{
 							Transform& t = scene.m_tranformList[i];
 							bool changed = false;
+
 							if(ImGui::DragFloat3("Pos", &t.m_pos.x, 0.1f)) changed = true;
+							ImGui::SameLine();
+							if(ImGui::Button("reset##0")) t.m_pos = 0, changed = true;
+
 							if(ImGui::DragFloat3("Rot", &t.m_rot.x, 0.1f)) changed = true;
+							ImGui::SameLine();
+							if(ImGui::Button("reset##1")) t.m_rot = 0, changed = true;
+
 							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f)) changed = true;
+							ImGui::SameLine();
+							if(ImGui::Button("reset##2")) t.m_scl = 1, changed = true;
+
 							if(changed)
 							{
 								scene.SetBlasTransform(blas, t);

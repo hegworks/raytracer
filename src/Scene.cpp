@@ -82,6 +82,7 @@ Model& Scene::CreateModel(ModelType modelType)
 		if(m_modelList[i].m_modelData.m_type == modelType)
 		{
 			m_blasList.emplace_back(i);
+			m_tranformList.emplace_back();
 			BuildTlas();
 			return m_modelList[i];
 		}

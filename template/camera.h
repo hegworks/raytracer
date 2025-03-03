@@ -63,11 +63,11 @@ public:
 	}
 	void Reset()
 	{
-		camPos = {-4.03572845f, 4.74554300f, -4.8441176f};
-		camTarget = {-3.48691559f, 4.21333361f, -4.19948006f};
-		topLeft = {-3.94675612f,4.52773714f,-1.99716520f};
-		topRight = {-1.23944438f, 4.52773714f, -4.30203772f};
-		bottomLeft = {-4.63676071f, 2.83451128f, -2.80764723f};
+		camPos = {0.00000000f,	7.12173700f, -11.5624228f};
+		camTarget = {0.00000000f,	6.55436277f, -10.7389631f};
+		topLeft = {-1.77777767f,	6.81044817f, -9.34812832f};
+		topRight = {1.77777767f,	6.81044817f, -9.34812832f};
+		bottomLeft = {-1.77777767f,	5.16352797f, -10.4828768f};
 	}
 	float aspect = (float)SCRWIDTH / (float)SCRHEIGHT;
 	float3 camPos, camTarget;
