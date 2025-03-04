@@ -37,7 +37,7 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t)
 		mat4::RotateY(DEG_TO_RAD(t.m_rot.y)) *
 		mat4::RotateZ(DEG_TO_RAD(t.m_rot.z)) *
 		mat4::Scale(t.m_scl);
-	for(int i = 0; i < 15; ++i)
+	for(int i = 0; i < 16; ++i)
 	{
 		blas.transform[i] = mat.cell[i];
 	}
@@ -120,7 +120,9 @@ float3 Scene::GetNormal(Ray& ray) const
 	float3 n1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
 	float3 n2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
 	float w = 1.0f - ray.hit.u - ray.hit.v;
-	return normalize(float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2)) * m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT);
+	float3 n = float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2));
+	n = tinybvh::tinybvh_transform_vector(n, m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT.cell);
+	return normalize(n);
 }
 
 PointLight& Scene::CreatePointLight()
