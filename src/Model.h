@@ -80,12 +80,13 @@ private:
 inline void Model::loadModel(std::string path)
 {
 	Assimp::Importer importer;
-	unsigned int flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
+	unsigned int flags = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
 	const aiScene* scene = importer.ReadFile(path, flags);
 	if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
-		std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
-		return;
+		std::string e = importer.GetErrorString();
+		std::cerr << "ERROR::ASSIMP::IMPORTER " << e;
+		throw std::runtime_error(importer.GetErrorString());
 	}
 	m_directory = path.substr(0, path.find_last_of('/'));
 

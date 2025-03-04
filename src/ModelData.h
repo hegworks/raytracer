@@ -45,7 +45,7 @@ public:
 			case ModelType::DRAGON:
 				return ASSETDIR + "Models/dragon2.glb";
 			case ModelType::CORNELL:
-				return ASSETDIR + "Models/CornellBox-Original.obj";
+				return ASSETDIR + "Models/cornell-box.obj";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

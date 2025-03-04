@@ -242,7 +242,7 @@ void Renderer::UI()
 				{
 					scene.CreateModel(ALL_MODEL_TYPES[i]);
 				}
-				if(i != NUM_MODEL_TYPES - 1)
+				if(i % 3 != 2 && i != NUM_MODEL_TYPES - 1)
 				{
 					ImGui::SameLine();
 				}
