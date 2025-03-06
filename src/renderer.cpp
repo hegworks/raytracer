@@ -26,9 +26,12 @@ void Renderer::Init()
 
 	acmCounter = 1;
 
-	/*PointLight& pl = scene.CreatePointLight();
-	pl.m_pos = float3(1, 15, 5);
-	pl.m_intensity = 800;*/
+	//PointLight& pl = scene.CreatePointLight();
+	//pl.m_pos = float3(1, 15, 5);
+	//pl.m_intensity = 800;
+
+	DirLight& dl = scene.CreateDirLight();
+	dl.m_intensity = 2.0f;
 
 	/*QuadLight& ql = scene.CreateQuadLight();
 	ql.m_quad.size = 5;
