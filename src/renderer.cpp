@@ -238,7 +238,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 }
 
-float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, const Material& mat, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
+float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, const Material& mat, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
 {
 	float3 albedo = mat.m_albedo;
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
@@ -252,7 +252,7 @@ float3 Renderer::CalcLights(Ray& ray, float3 p, float3 n, const Material& mat, u
 	return l;
 }
 
-float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
+float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, [[maybe_unused]] bool isTddCameraY)
 {
 	float3 l(0);
 	int numPointLights = static_cast<int>(scene.m_pointLightList.size());

@@ -144,14 +144,16 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 			VertexData& newVertexData = m_modelData.m_vertexDataList.emplace_back();
 			newVertexData.m_normal = float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z);
-			m_modelData.m_vertices.emplace_back(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
+			float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
+			m_modelData.m_vertices.emplace_back(vert);
 			if(mesh->mTextureCoords[0])
 				newVertexData.m_texCoord = float2(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);
 			else
 				newVertexData.m_texCoord = float2(0);
 		}
 	}
-	m_modelData.m_meshVertexBorderList.emplace_back(m_modelData.m_vertices.size() - 1);
+	int verticesSize = static_cast<int>(m_modelData.m_vertices.size());
+	m_modelData.m_meshVertexBorderList.emplace_back(verticesSize - 1);
 
 	// process material
 	Material& mat = m_modelData.m_meshMaterialList.emplace_back();

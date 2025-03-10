@@ -46,7 +46,7 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t)
 
 void Scene::BuildTlas()
 {
-	m_tlas.Build(m_blasList.data(), m_blasList.size(), m_bvhBaseList.data(), m_bvhBaseList.size());
+	m_tlas.Build(m_blasList.data(), static_cast<int>(m_blasList.size()), m_bvhBaseList.data(), static_cast<int>(m_bvhBaseList.size()));
 }
 
 void Scene::LoadModels()
@@ -90,14 +90,16 @@ Model& Scene::CreateModel(ModelType modelType)
 	}
 	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType));
 	model.m_modelData.m_type = modelType;
-	tinybvh::BVH& bvh = m_bvhList.emplace_back(model.m_modelData.m_vertices.data(), model.m_modelData.m_vertices.size() / 3);
+	int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
+	tinybvh::BVH& bvh = m_bvhList.emplace_back(model.m_modelData.m_vertices.data(), verticesListSize / 3);
 	m_bvhBaseList.push_back(&bvh);
-	m_blasList.emplace_back(m_modelList.size() - 1);
+	int moddelListSize = static_cast<int>(m_modelList.size());
+	m_blasList.emplace_back(moddelListSize - 1);
 	m_tranformList.emplace_back();
 	BuildTlas();
 
-	printf("NumVertices: %i\n", model.m_modelData.m_vertices.size());
-	printf("NumMeshes: %i\n", model.m_modelData.m_meshVertexBorderList.size());
+	printf("NumVertices: %llu\n", model.m_modelData.m_vertices.size());
+	printf("NumMeshes: %llu\n", model.m_modelData.m_meshVertexBorderList.size());
 
 	return model;
 }

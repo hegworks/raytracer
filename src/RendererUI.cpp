@@ -54,7 +54,7 @@ void Renderer::UI()
 			ImGui::SliderInt("ndal", &ndal, 0, 3);
 			ImGui::SliderInt("Depth", &maxDepth, 1, 20);
 			ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
-			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 20.0f);
+			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 40.0f);
 
 			const char* epsTypes[] =
 			{
@@ -96,11 +96,11 @@ void Renderer::UI()
 			else if(isDbgPixelClicked && !isDbgPixelEntered)
 			{
 				ImDrawList* drawList = ImGui::GetForegroundDrawList();
-				ImU32 color = IM_COL32(255, 0, 255, 255);
+				ImU32 imColor = IM_COL32(255, 0, 255, 255);
 
 				float size = 20.0f; // Cursor size (change as needed)
 				ImVec2 pos = {static_cast<float>(dbgpixel.x),static_cast<float>(dbgpixel.y)};
-				drawList->AddRectFilled(pos, ImVec2(pos.x + size, pos.y + size), color);
+				drawList->AddRectFilled(pos, ImVec2(pos.x + size, pos.y + size), imColor);
 			}
 
 			if(ImGui::SliderInt2("SCR RANGE X", &dbgScrRangeX.x, 0, SCRWIDTH) ||
@@ -250,8 +250,8 @@ void Renderer::UI()
 
 			ImGui::Separator();
 
-			int numModels = scene.m_modelList.size();
-			int numBlases = scene.m_blasList.size();
+			int numModels = static_cast<int>(scene.m_modelList.size());
+			int numBlases = static_cast<int>(scene.m_blasList.size());
 			ImGui::Text("NumModels: %i", numModels);
 			ImGui::Text("NumBlases: %i", numBlases);
 
