@@ -57,9 +57,9 @@ void Scene::LoadModels()
 	//BuildTlas();
 }
 
+// this function is based on https://jacco.ompf2.com/2022/06/03/how-to-build-a-bvh-part-9a-to-the-gpu/
 float3 Scene::SampleSky(const Ray& ray)
 {
-	// sample sky
 	float phi = atan2(ray.D.z, ray.D.x);
 	uint u = static_cast<uint>(m_skyWidth * (phi > 0 ? phi : (phi + 2 * PI)) * INV2PI - 0.5f);
 	uint v = static_cast<uint>(m_skyHeight * acos(ray.D.y) * INVPI - 0.5f);
