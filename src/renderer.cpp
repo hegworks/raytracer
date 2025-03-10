@@ -87,11 +87,12 @@ void Renderer::Tick(float deltaTime)
 			const float yOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset);
 			float3 traced = Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY);
-			if(dot(traced, traced) > dbgFF * dbgFF) traced = dbgFF * normalize(traced);
+			if(dot(traced, traced) > dbgFF * dbgFF) traced = dbgFF * normalize(traced); // firefly suppressor
 			accumulator[pixelIndex] += float4(traced, 0);
 			float4 avg = accumulator[pixelIndex] * scale;
+			float4 gammaCorrected = float4(pow(avg.x, 1.0f / dbgGC), pow(avg.y, 1.0f / dbgGC), pow(avg.z, 1.0f / dbgGC), 1);
 			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
-			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&avg);
+			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&gammaCorrected);
 			if(isDbgFixSeed) pixelSeeds[pixelIndex] = lastPixelSeeds[pixelIndex];
 		}
 	}

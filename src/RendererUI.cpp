@@ -55,6 +55,7 @@ void Renderer::UI()
 			ImGui::SliderInt("Depth", &maxDepth, 1, 20);
 			ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
 			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 40.0f);
+			ImGui::SliderFloat("Gamma", &dbgGC, 0.01f, 5.0f);
 
 			const char* epsTypes[] =
 			{
