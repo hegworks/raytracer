@@ -152,12 +152,11 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		}
 	}
 	m_modelData.m_meshVertexBorderList.emplace_back(m_modelData.m_vertices.size() - 1);
-	Material& mat = m_modelData.m_meshMaterialList.emplace_back(); //TODO read from file
 
 	// process material
+	Material& mat = m_modelData.m_meshMaterialList.emplace_back();
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	strcpy(mat.m_name, material->GetName().C_Str());
-
 	aiColor4D diffuse;
 	if(AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse))
 	{
