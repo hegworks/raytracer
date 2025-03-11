@@ -51,7 +51,8 @@ private:
 	int m_skyBpp = 0;
 	float m_skydomeBrightnessFactor = 0.8f;
 
-	std::vector<tinybvh::BVH> m_bvhList;
+private:
+	std::vector<tinybvh::BVH8_CPU> m_bvhList;
 	std::vector<tinybvh::BVHBase*> m_bvhBaseList;
 	tinybvh::BVH m_tlas;
 public:

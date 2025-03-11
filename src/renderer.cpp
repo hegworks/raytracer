@@ -12,6 +12,8 @@
 // -----------------------------------------------------------
 void Renderer::Init()
 {
+	printf("using tiny_bvh version %i.%i.%i", TINY_BVH_VERSION_MINOR, TINY_BVH_VERSION_MAJOR, TINY_BVH_VERSION_SUB);
+
 	// create fp32 rgb pixel buffer to render to
 	accumulator = (float4*)MALLOC64(SCRWIDTH * SCRHEIGHT * 16);
 	memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);

@@ -91,7 +91,8 @@ Model& Scene::CreateModel(ModelType modelType)
 	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType));
 	model.m_modelData.m_type = modelType;
 	int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
-	tinybvh::BVH& bvh = m_bvhList.emplace_back(model.m_modelData.m_vertices.data(), verticesListSize / 3);
+	tinybvh::BVH8_CPU& bvh = m_bvhList.emplace_back();
+	bvh.BuildHQ(model.m_modelData.m_vertices.data(), verticesListSize / 3);
 	m_bvhBaseList.push_back(&bvh);
 	int moddelListSize = static_cast<int>(m_modelList.size());
 	m_blasList.emplace_back(moddelListSize - 1);
