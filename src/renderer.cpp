@@ -12,8 +12,6 @@
 // -----------------------------------------------------------
 void Renderer::Init()
 {
-	printf("using tiny_bvh version %i.%i.%i\n", TINY_BVH_VERSION_MAJOR, TINY_BVH_VERSION_MINOR, TINY_BVH_VERSION_SUB);
-
 	// create fp32 rgb pixel buffer to render to
 	accumulator = (float4*)MALLOC64(SCRWIDTH * SCRHEIGHT * 16);
 	memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);
@@ -200,31 +198,31 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			if(inside) localN = -n;
 			float fres;
 			fresnel(ray.D, localN, mat.m_factor1, fres);
+			float oneMinusFres = 1.0f - fres;
 
-			float3 refracted(0);
-			if((1.0f - fres) > EPS)
+			if(fres > EPS || oneMinusFres > EPS)
 			{
-				float3 refracDir = refract(ray.D, localN, mat.m_factor1);
-				Ray refracR(p + refracDir * EPS, refracDir);
-				refracR.dummy1 = refracR.dummy1 == 0 ? 1 : 0;
-				refracted = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+				bool reflectTrueRefractFalse = threadRng.RandomFloat(pixelSeeds[pixelIndex]) < fres;
+
+				float3 localL(0);
+				if(reflectTrueRefractFalse && fres > EPS)
+				{
+					float3 reflecDir = reflect(ray.D, localN);
+					Ray reflecR(p + reflecDir * EPS, reflecDir);
+					localL = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+				}
+				else if(!reflectTrueRefractFalse && oneMinusFres > EPS)
+				{
+					float3 refracDir = refract(ray.D, localN, mat.m_factor1);
+					Ray refracR(p + refracDir * EPS, refracDir);
+					localL = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+				}
+				// here mat.m_factor0 is being used as density of the matter
+				float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor0 * ray.hit.t) : 1.0f;
+				float3 alb = dbgBeer ? beer : mat.m_albedo;
+
+				l += alb * localL;
 			}
-
-			float3 reflected(0);
-			if(fres > EPS)
-			{
-				float3 reflecDir = reflect(ray.D, localN);
-				Ray reflecR(p + reflecDir * EPS, reflecDir);
-				reflecR.dummy1 = ray.dummy1;
-				reflected = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-			}
-
-			// here mat.m_factor0 is being used as density of the matter
-			float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor0 * ray.hit.t) : 1.0f;
-			float3 alb = dbgBeer ? beer : mat.m_albedo;
-
-			l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
-
 			break;
 		}
 	}

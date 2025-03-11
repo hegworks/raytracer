@@ -42,6 +42,10 @@ void Renderer::UI()
 	{
 		if(ImGui::BeginTabItem("General"))
 		{
+			if(ImGui::Button("ResetCam")) tddResetCam = true;
+			ImGui::SameLine();
+			ImGui::Checkbox("Fixed Seed", &isDbgFixSeed);
+
 			//ImGui::Checkbox("Animate", &animating);
 			ImGui::Checkbox("AA", &useAA);
 			ImGui::SameLine();

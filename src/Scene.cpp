@@ -1,18 +1,23 @@
 ﻿#include "precomp.h"
 
+#include "ModelData.h"
 #include "Scene.h"
 
 #define TINYBVH_IMPLEMENTATION
-#include "ModelData.h"
 #include "tiny_bvh.h"
 
 Scene::Scene()
 {
+	printf("using tiny_bvh version %i.%i.%i\n", TINY_BVH_VERSION_MAJOR, TINY_BVH_VERSION_MINOR, TINY_BVH_VERSION_SUB);
+
 	m_modelList.reserve(NUM_MODEL_TYPES);
 	m_bvhList.reserve(NUM_MODEL_TYPES);
 
 	LoadSkydome();
-	LoadModels();
+
+	Model& model = CreateModel(ModelType::DRAGON);
+	model.m_modelData.m_meshMaterialList[0].m_type = Material::Type::REFRACTIVE;
+	model.m_modelData.m_meshMaterialList[1].m_type = Material::Type::REFRACTIVE;
 }
 
 void Scene::LoadSkydome()
@@ -47,14 +52,6 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t)
 void Scene::BuildTlas()
 {
 	m_tlas.Build(m_blasList.data(), static_cast<int>(m_blasList.size()), m_bvhBaseList.data(), static_cast<int>(m_bvhBaseList.size()));
-}
-
-void Scene::LoadModels()
-{
-	//CreateModel(ModelType::DRAGON);
-	//CreateModel(ModelType::PLANE);
-	//CreateModel(ModelType::SPHERE);
-	//BuildTlas();
 }
 
 // this function is based on https://jacco.ompf2.com/2022/06/03/how-to-build-a-bvh-part-9a-to-the-gpu/

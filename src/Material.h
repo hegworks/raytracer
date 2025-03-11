@@ -23,6 +23,6 @@ struct ALIGNED(64) Material
 	char m_name[40];
 	float3 m_albedo = float3(1.0f);
 	float m_factor0 = 1.0f;
-	float m_factor1 = 1.0f;
+	float m_factor1 = 1.5f;
 	Type m_type = Type::DIFFUSE_PT;
 };
