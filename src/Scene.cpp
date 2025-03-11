@@ -69,10 +69,10 @@ float3 Scene::SampleSky(const Ray& ray)
 	return m_skydomeBrightnessFactor * float3(m_skyPixels[skyIdx * 3], m_skyPixels[skyIdx * 3 + 1], m_skyPixels[skyIdx * 3 + 2]);
 }
 
-Material& Scene::GetMaterial(Ray& ray)
+Material& Scene::GetMaterial(const Ray& ray)
 {
 	Model& model = m_modelList[m_blasList[ray.hit.inst].blasIdx];
-	int matIdx = model.VertexToMeshIdx(ray.hit.prim * 3);
+	const int matIdx = model.VertexToMeshIdx(ray.hit.prim * 3);
 	return model.m_modelData.m_meshMaterialList[matIdx];
 }
 
