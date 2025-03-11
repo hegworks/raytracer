@@ -90,8 +90,8 @@ void Renderer::Tick(float deltaTime)
 			if(dot(traced, traced) > dbgFF * dbgFF) traced = dbgFF * normalize(traced); // firefly suppressor
 			accumulator[pixelIndex] += float4(traced, 0);
 			float4 avg = accumulator[pixelIndex] * scale;
-			float4 gammaCorrected = float4(pow(avg.x, 1.0f / dbgGC), pow(avg.y, 1.0f / dbgGC), pow(avg.z, 1.0f / dbgGC), 1);
 			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
+			float4 gammaCorrected = float4(pow(avg.x, 1.0f / dbgGC), pow(avg.y, 1.0f / dbgGC), pow(avg.z, 1.0f / dbgGC), 1);
 			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&gammaCorrected);
 			if(isDbgFixSeed) pixelSeeds[pixelIndex] = lastPixelSeeds[pixelIndex];
 		}
