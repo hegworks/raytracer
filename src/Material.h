@@ -9,9 +9,9 @@ inline const char* MATERIAL_STRING[] =
 	"REFRACTIVE"
 };
 
-struct ALIGNED(32) Material
+struct ALIGNED(64) Material
 {
-	enum class Type : std::uint8_t
+	enum class Type : std::uint32_t
 	{
 		DIFFUSE,
 		DIFFUSE_PT,
@@ -20,7 +20,7 @@ struct ALIGNED(32) Material
 		REFRACTIVE
 	};
 
-	char m_name[32];
+	char m_name[40];
 	float3 m_albedo = float3(1.0f);
 	float m_factor0 = 1.0f;
 	float m_factor1 = 1.0f;
