@@ -169,13 +169,25 @@ bool Scene::IsOccluded(const Ray& ray)
 	return m_tlas.IsOccluded(ray);
 }
 
-float3 Scene::GetNormal(Ray& ray) const
+float3 Scene::GetSmoothNormal(Ray& ray) const
 {
 	float3 n0 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3].m_normal;
 	float3 n1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
 	float3 n2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
 	float w = 1.0f - ray.hit.u - ray.hit.v;
 	float3 n = float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2));
+	n = tinybvh::tinybvh_transform_vector(n, m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT.cell);
+	return normalize(n);
+}
+
+float3 Scene::GetRawNormal(Ray& ray) const
+{
+	float3 p0 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 0];
+	float3 p1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 1];
+	float3 p2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 2];
+	float3 v0 = p1 - p0;
+	float3 v1 = p2 - p0;
+	float3 n = cross(v0, v1);
 	n = tinybvh::tinybvh_transform_vector(n, m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT.cell);
 	return normalize(n);
 }
