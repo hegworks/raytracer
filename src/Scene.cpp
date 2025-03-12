@@ -15,9 +15,64 @@ Scene::Scene()
 
 	LoadSkydome();
 
-	Model& model = CreateModel(ModelType::DRAGON);
+	/*Model& model = CreateModel(ModelType::DRAGON);
 	model.m_modelData.m_meshMaterialList[0].m_type = Material::Type::REFRACTIVE;
-	model.m_modelData.m_meshMaterialList[1].m_type = Material::Type::REFRACTIVE;
+	model.m_modelData.m_meshMaterialList[1].m_type = Material::Type::REFRACTIVE;*/
+
+#pragma region Stochastic Light TestScene
+	Model& plane = CreateModel(ModelType::PLANE);
+	plane.m_modelData.m_meshMaterialList[0].m_type = Material::Type::DIFFUSE;
+	m_tranformList.back().m_scl = float3(40, 1, 60);
+	m_tranformList.back().m_pos = float3(0, -1, 20);
+	SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	BuildTlas();
+
+	float3 colors[3] = {float3(1,0,0),float3(0,1,0),float3(0,0,1)};
+	{
+		int numRows = 5;
+		int numColumns = 5;
+		for(int z = 0; z < numColumns; ++z)
+		{
+			for(int x = 0; x < numRows; ++x)
+			{
+				PointLight& light = CreatePointLight();
+				light.m_pos = float3(x * 2 - numRows, 0, z * 2 - numRows / 2);
+				light.m_color = colors[(x + z) % 3];
+				light.m_intensity = 3.0;
+			}
+		}
+	}
+	{
+		int numRows = 5;
+		int numColumns = 5;
+		for(int z = 0; z < numColumns; ++z)
+		{
+			for(int x = 0; x < numRows; ++x)
+			{
+				SpotLight& light = CreateSpotLight();
+				light.m_pos = float3((x * 2) - numRows + 1, 0, (z * 2) - (numRows / 2) + 1);
+				light.m_color = colors[(x + z) % 3];
+				light.m_intensity = 3.0;
+			}
+		}
+	}
+	{
+		int numRows = 5;
+		int numColumns = 5;
+		for(int z = 0; z < numColumns; ++z)
+		{
+			for(int x = 0; x < numRows; ++x)
+			{
+				QuadLight& light = CreateQuadLight();
+				light.m_quad.m_pos = float3((x * -2) - numRows + 2, 0, (z * -2) - (numRows / 2) + 2);
+				light.m_quad.T = mat4::Translate(light.m_quad.m_pos);
+				light.m_quad.invT = light.m_quad.T.FastInvertedTransformNoScale();
+				light.m_color = colors[(x + z) % 3];
+				light.m_intensity = 3.0;
+			}
+		}
+	}
+#pragma endregion
 }
 
 void Scene::LoadSkydome()

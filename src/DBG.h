@@ -42,6 +42,8 @@ inline float EPS = 1e-3f;
 inline int epsInt = 2;
 inline float dbgFF = 10.f; /// FireFly
 inline float dbgGC = 1.35f; /// GammaCorrection
+inline bool dbgSL = true; /// StochasticLights
+inline int dbgSLS = 10; /// StochasticLightsSamples
 
 static bool DBGCanPrint(const float2 pos)
 {

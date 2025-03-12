@@ -18,7 +18,7 @@ public:
 		s = s ^ (s >> 15);
 		return s;
 	}
-	uint InitSeed(uint seedBase)
+	uint InitSeed(const uint seedBase)
 	{
 		return WangHash((seedBase + 1) * 17);
 	}
@@ -31,10 +31,17 @@ public:
 		customSeed ^= customSeed << 5;
 		return customSeed;
 	}
+
 	float RandomFloat(uint& customSeed) { return RandomUInt(customSeed) * 2.3283064365387e-10f; }
 
-	float RandomFloat(uint& customSeed, float min, float max)
+	float RandomFloat(uint& customSeed, const float min, const float max)
 	{
 		return min + (RandomFloat(customSeed) * (max - min));
+	}
+
+	/// Inclusive min Exclusive max
+	uint RandomUInt(uint& customSeed, const int min, const int max)
+	{
+		return min + (RandomUInt(customSeed) % (max - min));
 	}
 };

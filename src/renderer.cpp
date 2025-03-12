@@ -30,8 +30,8 @@ void Renderer::Init()
 	//pl.m_pos = float3(1, 15, 5);
 	//pl.m_intensity = 800;
 
-	DirLight& dl = scene.CreateDirLight();
-	dl.m_intensity = 2.0f;
+	/*DirLight& dl = scene.CreateDirLight();
+	dl.m_intensity = 2.0f;*/
 
 	/*QuadLight& ql = scene.CreateQuadLight();
 	ql.m_quad.size = 5;
@@ -136,8 +136,8 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 
 	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
-	float3 n = scene.GetNormal(ray);
-	bool inside = dot(ray.D, n) > 0.0f;
+	float3 n = scene.GetSmoothNormal(ray);
+	bool inside = dot(ray.D, scene.GetRawNormal(ray)) > 0.0f;
 	if(inside) n = -n;
 
 	bool tddIsCameraY = tdd && IsCloseF(p.y, camera.camPos.y);
@@ -247,89 +247,233 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, const
 	float3 albedo = mat.m_albedo;
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 
-	float3 l(0); /// total outgoing radiance
-	l += CalcPointLight(p, n, brdf, isTddPixelX, isTddPixelY, isTddCameraY);
-	l += CalcSpotLight(p, n, brdf);
-	l += CalcDirLight(p, n, brdf);
-	l += CalcQuadLight(p, n, brdf, pixelIndex);
+	/*float totalIntesity(0);
+	for(const PointLight& light : scene.m_pointLightList) totalIntesity += light.m_intensity;
+	for(const SpotLight& light : scene.m_spotLightList) totalIntesity += light.m_intensity;
+	for(const DirLight& light : scene.m_dirLightList) totalIntesity += light.m_intensity;
+	for(const QuadLight& light : scene.m_quadLightList) totalIntesity += light.GetPDF();*/
 
-	return l;
+	// Stochastically choosing a light
+	if(dbgSL)
+	{
+		int numSamples = dbgSLS;
+		float3 stochasticL(0);
+		const uint numPointLights = static_cast<uint>(scene.m_pointLightList.size());
+		const uint numSpotLights = static_cast<uint>(scene.m_spotLightList.size());
+		const uint numDirLights = static_cast<uint>(scene.m_dirLightList.size());
+		const uint numQuadLights = static_cast<uint>(scene.m_quadLightList.size());
+		const uint numLights = numPointLights + numSpotLights + numDirLights + numQuadLights;
+		if(numLights == 0) return 0;
+		for(int i = 0; i < numSamples; ++i)
+		{
+			uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numLights);
+			if(randIdx >= numPointLights + numSpotLights + numDirLights) // QuadLight
+			{
+				QuadLight& light = scene.m_quadLightList[randIdx - numPointLights - numSpotLights - numDirLights];
+				float3 l = CalcQuadLight(light, p, n, brdf, pixelIndex);
+				stochasticL += l;
+			}
+			else if(randIdx >= numPointLights + numSpotLights) // DirLight
+			{
+				DirLight& light = scene.m_dirLightList[randIdx - numPointLights - numSpotLights];
+				float3 l = CalclDirLight(light, p, n, brdf);
+				stochasticL += l;
+			}
+			else if(randIdx >= numPointLights) // SpotLight
+			{
+				SpotLight& light = scene.m_spotLightList[randIdx - numPointLights];
+				float3 l = CalcSpotLight(light, p, n, brdf);
+				stochasticL += l;
+			}
+			else // PointLight
+			{
+				PointLight& light = scene.m_pointLightList[randIdx];
+				float3 l = CalcPointLight(light, p, n, brdf, isTddPixelX, isTddPixelY, isTddCameraY);
+				stochasticL += l;
+			}
+		}
+		return stochasticL * (float)numLights / (float)numSamples;
+	}
+	else // calclulating all the lights
+	{
+		float3 l(0); /// total outgoing radiance
+		l += CalcAllPointLights(p, n, brdf, isTddPixelX, isTddPixelY, isTddCameraY);
+		l += CalcAllSpotLights(p, n, brdf);
+		l += CalcAllDirLights(p, n, brdf);
+		l += CalcAllQuadLights(p, n, brdf, pixelIndex);
+
+		return l;
+	}
 }
 
-float3 Renderer::CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, [[maybe_unused]] bool isTddCameraY)
+
+float3 Renderer::CalcPointLight(const PointLight& light, float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
+{
+	float3 lPos = light.m_pos; /// LightPos
+	float3 vi = lPos - p; /// Light Vector
+	float3 wi = normalize(vi); /// incoming light direction
+	float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
+	float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
+
+	Ray shadowRay(srPos, wi, tMax);
+	bool isInShadow = scene.IsOccluded(shadowRay);
+
+	if(isTddPixelX && isTddPixelY)
+	{
+		// light pos
+		if(tddPLP)
+		{
+			int2 o = WTS(lPos); /// origin
+			screen->Box(o.x - 2, o.y - 2, o.x + 2, o.y + 2, 0x00ff00);
+		}
+
+		// shadow ray
+		if(tddPLR)
+		{
+			float2 o = WTS(srPos); /// origin
+			float2 d = WTS(lPos); /// destination
+
+			uint color = isInShadow ? 0xff00ff : 0xffff00;
+			if(isTddPixelY)
+			{
+				screen->Line(o.x, o.y, d.x, d.y, color);
+			}
+		}
+	}
+
+	if(isInShadow)
+	{
+		return 0;
+	}
+
+	float cosi = dot(n, wi); /// Lambert's cosine law
+	if(cosi <= 0)
+	{
+		return 0;
+	}
+
+	float falloff = 1.0f / (tMax * tMax); /// inverse square law
+	if(falloff < EPS)
+	{
+		return 0;
+	}
+
+	return brdf * light.m_color * light.m_intensity * cosi * falloff;
+}
+
+float3 Renderer::CalcAllPointLights(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, [[maybe_unused]] bool isTddCameraY)
 {
 	float3 l(0);
 	int numPointLights = static_cast<int>(scene.m_pointLightList.size());
 	for(int i = 0; i < numPointLights; ++i)
 	{
-		PointLight& light = scene.m_pointLightList[i];
-		float3 lPos = light.m_pos; /// LightPos
-		float3 vi = lPos - p; /// Light Vector
-		float3 wi = normalize(vi); /// incoming light direction
-		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
-		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
-
-		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.IsOccluded(shadowRay);
-
-		if(isTddPixelX && isTddPixelY)
-		{
-			// light pos
-			if(tddPLP)
-			{
-				int2 o = WTS(lPos); /// origin
-				screen->Box(o.x - 2, o.y - 2, o.x + 2, o.y + 2, 0x00ff00);
-			}
-
-			// shadow ray
-			if(tddPLR)
-			{
-				float2 o = WTS(srPos); /// origin
-				float2 d = WTS(lPos); /// destination
-
-				uint color = isInShadow ? 0xff00ff : 0xffff00;
-				if(isTddPixelY)
-				{
-					screen->Line(o.x, o.y, d.x, d.y, color);
-				}
-			}
-		}
-
-		if(isInShadow)
-		{
-			continue;
-		}
-
-		float cosi = dot(n, wi); /// Lambert's cosine law
-		if(cosi <= 0)
-		{
-			continue;
-		}
-
-		float falloff = 1.0f / (tMax * tMax); /// inverse square law
-		if(falloff < EPS)
-		{
-			continue;
-		}
-
-		l += brdf * light.m_color * light.m_intensity * cosi * falloff;
+		l += CalcPointLight(scene.m_pointLightList[i], p, n, brdf, isTddPixelX, isTddPixelY, isTddCameraY);
 	}
 	return l;
 }
 
-float3 Renderer::CalcSpotLight(float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcSpotLight(const SpotLight& light, float3 p, float3 n, float3 brdf)
+{
+	float3 lPos = light.m_pos; /// LightPos
+	float3 vi = lPos - p; /// Light Vector
+	float3 wi = normalize(vi); /// incoming light direction
+	float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
+	float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
+
+	Ray shadowRay(srPos, wi, tMax);
+	bool isInShadow = scene.IsOccluded(shadowRay);
+	if(isInShadow)
+	{
+		return 0;
+	}
+
+	float cosi = dot(n, wi); /// Lambert's cosine law.
+	if(cosi <= 0)
+	{
+		return 0;
+	}
+
+	float falloff = 1.0f / (tMax * tMax); /// inverse square law
+	if(falloff < EPS)
+	{
+		return 0;
+	}
+
+	float cutoff = clamp((-dot(wi, light.m_dir) - light.m_cosO) / (light.m_cosI - light.m_cosO), 0.0f, 1.0f); // lerp. NOTICE the minus before dot
+	if(cutoff <= 0)
+	{
+		return 0;
+	}
+
+	return brdf * light.m_color * light.m_intensity * cosi * falloff * cutoff * cutoff;
+}
+
+float3 Renderer::CalcAllSpotLights(float3 p, float3 n, float3 brdf)
 {
 	float3 l(0);
 	int numSpotLights = static_cast<int>(scene.m_spotLightList.size());
 	for(int i = 0; i < numSpotLights; ++i)
 	{
-		SpotLight& light = scene.m_spotLightList[i];
-		float3 lPos = light.m_pos; /// LightPos
-		float3 vi = lPos - p; /// Light Vector
-		float3 wi = normalize(vi); /// incoming light direction
-		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
-		float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
+		l += CalcSpotLight(scene.m_spotLightList[i], p, n, brdf);
+	}
+	return l;
+}
 
+float3 Renderer::CalclDirLight(const DirLight& light, float3 p, float3 n, float3 brdf)
+{
+	float3 wi = -light.m_dir; /// incoming light direction
+	float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
+
+	Ray shadowRay(srPos, wi);
+	bool isInShadow = scene.IsOccluded(shadowRay);
+	if(isInShadow)
+	{
+		return 0;
+	}
+
+	float cosi = dot(n, wi); /// Lambert's cosine law
+	if(cosi <= 0)
+	{
+		return 0;
+	}
+
+	return brdf * light.m_color * light.m_intensity * cosi;
+}
+
+float3 Renderer::CalcAllDirLights(float3 p, float3 n, float3 brdf)
+{
+	float3 l(0);
+	int numDirLights = static_cast<int>(scene.m_dirLightList.size());
+	for(int i = 0; i < numDirLights; ++i)
+	{
+		l += CalclDirLight(scene.m_dirLightList[i], p, n, brdf);
+	}
+	return l;
+}
+
+float3 Renderer::CalcQuadLight(const QuadLight& light, float3 p, float3 n, float3 brdf, uint pixelIndex)
+{
+	float3 lSamples = float3(0);
+	float3 lightDir = -light.m_quad.GetNormal();
+	float pdfEffect = 1 / light.GetPDF();
+
+	for(int j = 0; j < qlNumSamples; ++j)
+	{
+		float3 a = light.GetRandomPoint(pixelSeeds[pixelIndex]);
+		float3 vi = a - p;
+		float3 wi = normalize(vi);
+		float tMax = length(vi) - EPS * 2;
+
+		if(qlOneSided)
+		{
+			bool isOppositeSide = dot(lightDir, wi) <= 0;
+			if(isOppositeSide)
+			{
+				continue;
+			}
+		}
+
+		float3 srPos = p + wi * EPS;
 		Ray shadowRay(srPos, wi, tMax);
 		bool isInShadow = scene.IsOccluded(shadowRay);
 		if(isInShadow)
@@ -349,95 +493,18 @@ float3 Renderer::CalcSpotLight(float3 p, float3 n, float3 brdf)
 			continue;
 		}
 
-		float cutoff = clamp((-dot(wi, light.m_dir) - light.m_cosO) / (light.m_cosI - light.m_cosO), 0.0f, 1.0f); // lerp. NOTICE the minus before dot
-		if(cutoff <= 0)
-		{
-			continue;
-		}
-
-		l += brdf * light.m_color * light.m_intensity * cosi * falloff * cutoff * cutoff;
+		lSamples += brdf * light.m_color * light.m_intensity * cosi * falloff * pdfEffect;
 	}
-	return l;
+	return lSamples / static_cast<float>(qlNumSamples);
 }
 
-float3 Renderer::CalcDirLight(float3 p, float3 n, float3 brdf)
-{
-	float3 l(0);
-	int numDirLights = static_cast<int>(scene.m_dirLightList.size());
-	for(int i = 0; i < numDirLights; ++i)
-	{
-		DirLight& light = scene.m_dirLightList[i];
-		float3 wi = -light.m_dir; /// incoming light direction
-		float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
-
-		Ray shadowRay(srPos, wi);
-		bool isInShadow = scene.IsOccluded(shadowRay);
-		if(isInShadow)
-		{
-			continue;
-		}
-
-		float cosi = dot(n, wi); /// Lambert's cosine law
-		if(cosi <= 0)
-		{
-			continue;
-		}
-
-		l += brdf * light.m_color * light.m_intensity * cosi;
-	}
-	return l;
-}
-
-float3 Renderer::CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex)
+float3 Renderer::CalcAllQuadLights(float3 p, float3 n, float3 brdf, uint pixelIndex)
 {
 	float3 l(0);
 	int numQuadLights = static_cast<int>(scene.m_quadLightList.size());
 	for(int i = 0; i < numQuadLights; ++i)
 	{
-		QuadLight& light = scene.m_quadLightList[i];
-		float3 lSamples = float3(0);
-		float3 lightDir = -light.m_quad.GetNormal();
-		float pdfEffect = 1 / light.GetPDF();
-
-		for(int j = 0; j < qlNumSamples; ++j)
-		{
-			float3 a = light.GetRandomPoint(pixelSeeds[pixelIndex]);
-			float3 vi = a - p;
-			float3 wi = normalize(vi);
-			float tMax = length(vi) - EPS * 2;
-
-			if(qlOneSided)
-			{
-				bool isOppositeSide = dot(lightDir, wi) <= 0;
-				if(isOppositeSide)
-				{
-					continue;
-				}
-			}
-
-			float3 srPos = p + wi * EPS;
-			Ray shadowRay(srPos, wi, tMax);
-			bool isInShadow = scene.IsOccluded(shadowRay);
-			if(isInShadow)
-			{
-				continue;
-			}
-
-			float cosi = dot(n, wi); /// Lambert's cosine law.
-			if(cosi <= 0)
-			{
-				continue;
-			}
-
-			float falloff = 1.0f / (tMax * tMax); /// inverse square law
-			if(falloff < EPS)
-			{
-				continue;
-			}
-
-			lSamples += brdf * light.m_color * light.m_intensity * cosi * falloff * pdfEffect;
-		}
-		l += lSamples / static_cast<float>(qlNumSamples);
+		l += CalcQuadLight(scene.m_quadLightList[i], p, n, brdf, pixelIndex);
 	}
 	return l;
 }

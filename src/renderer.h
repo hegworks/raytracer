@@ -22,10 +22,14 @@ public:
 	void MouseWheel(float y) { /* implement if you want to handle the mouse wheel */ }
 	void KeyUp(int key) { /* implement if you want to handle keys */ }
 	void KeyDown(int key);
-	float3 CalcPointLight(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
-	float3 CalcSpotLight(float3 p, float3 n, float3 brdf);
-	float3 CalcDirLight(float3 p, float3 n, float3 brdf);
-	float3 CalcQuadLight(float3 p, float3 n, float3 brdf, uint pixelIndex);
+	float3 CalcAllPointLights(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
+	float3 CalcPointLight(const PointLight& light, float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
+	float3 CalcAllSpotLights(float3 p, float3 n, float3 brdf);
+	float3 CalcSpotLight(const SpotLight& light, float3 p, float3 n, float3 brdf);
+	float3 CalcAllDirLights(float3 p, float3 n, float3 brdf);
+	float3 CalclDirLight(const DirLight& light, float3 p, float3 n, float3 brdf);
+	float3 CalcAllQuadLights(float3 p, float3 n, float3 brdf, uint pixelIndex);
+	float3 CalcQuadLight(const QuadLight& light, float3 p, float3 n, float3 brdf, uint pixelIndex);
 	float3 CalcLights(Ray& ray, float3 p, float3 n, const Material& mat, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 
 	// data members

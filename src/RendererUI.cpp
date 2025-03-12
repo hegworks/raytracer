@@ -54,12 +54,15 @@ void Renderer::UI()
 			ImGui::Checkbox("TDD", &tdd);
 			ImGui::SameLine();
 			ImGui::Checkbox("SD", &useSD);
+			ImGui::SameLine();
+			ImGui::Checkbox("SL", &dbgSL);
 
 			ImGui::SliderInt("ndal", &ndal, 0, 3);
 			ImGui::SliderInt("Depth", &maxDepth, 1, 20);
 			ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
 			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 40.0f);
 			ImGui::SliderFloat("Gamma", &dbgGC, 0.01f, 5.0f);
+			ImGui::SliderInt("SLS", &dbgSLS, 1, 300);
 
 			const char* epsTypes[] =
 			{
