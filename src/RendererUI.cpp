@@ -66,6 +66,7 @@ void Renderer::UI()
 			ImGui::SliderInt("SLS", &dbgSLS, 1, 300);
 			ImGui::DragFloat("DOF angle", &defocusAngle, 0.1f, 0, 40);
 			ImGui::DragFloat("DOF distance", &focusDistance, 0.1f);
+			ImGui::SliderInt("DOF samples", &dbgSDOFS, 1, 30);
 
 			const char* epsTypes[] =
 			{

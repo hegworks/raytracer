@@ -48,6 +48,7 @@ inline int dbgSLS = 10; /// StochasticLightsSamples
 inline bool useDOF = false; /// DepthOfField
 inline float defocusAngle = 1;
 inline float focusDistance = 5;
+inline int dbgSDOFS = 1; /// StochasticDepthOfFieldSamples
 
 static bool DBGCanPrint(const float2 pos)
 {
