@@ -15,13 +15,34 @@ public:
 		topRight = {1.77777767f,	6.81044817f, -9.34812832f};
 		bottomLeft = {-1.77777767f,	5.16352797f, -10.4828768f};
 	}
-	Ray GetPrimaryRay(const float x, const float y)
+	Ray GetPrimaryRay(const float x, const float y, const bool useDOF, const float2 randOnUnitDisk)
 	{
-		// calculate pixel position on virtual screen plane
+		// pixel coord -> point on virutal screen plane
 		const float u = (float)x * (1.0f / SCRWIDTH);
 		const float v = (float)y * (1.0f / SCRHEIGHT);
-		const float3 P = topLeft + u * (topRight - topLeft) + v * (bottomLeft - topLeft);
-		return Ray(camPos, P - camPos);
+		float3 vsp = topLeft + u * (topRight - topLeft) + v * (bottomLeft - topLeft); /// VirtualScreenPoint
+
+		if(!useDOF) return Ray(camPos, vsp - camPos);
+
+#pragma region DepthOfField
+		// direction from camPos to vsp
+		float3 vspDir = normalize(vsp - camPos);
+
+		// Point on focal plane
+		float3 fpp = camPos + vspDir * focusDistance; /// FocalPlanePoint
+
+		// Calculate defocus radius
+		float apertureRadius = focusDistance * tan(DEG_TO_RAD(defocusAngle / 2.0f));
+
+		// Create orthonormal basis around the ray direction
+		float3 w = vspDir;
+		float3 apertureU = normalize(cross(w, float3(0, 1, 0)));
+		float3 apertureV = cross(w, apertureU);
+
+		float3 randOrigin = camPos + (randOnUnitDisk.x * apertureRadius * apertureU) + (randOnUnitDisk.y * apertureRadius * apertureV);
+
+		return Ray(randOrigin, fpp - randOrigin);
+#pragma endregion
 	}
 	bool HandleInput(const float t)
 	{

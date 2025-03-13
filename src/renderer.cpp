@@ -26,13 +26,6 @@ void Renderer::Init()
 
 	acmCounter = 1;
 
-	//PointLight& pl = scene.CreatePointLight();
-	//pl.m_pos = float3(1, 15, 5);
-	//pl.m_intensity = 800;
-
-	/*DirLight& dl = scene.CreateDirLight();
-	dl.m_intensity = 2.0f;*/
-
 	/*QuadLight& ql = scene.CreateQuadLight();
 	ql.m_quad.size = 5;
 	ql.m_intensity = 5;
@@ -83,9 +76,10 @@ void Renderer::Tick(float deltaTime)
 			bool tddIsPixelX = tdd && ((!tddSXM && x % tddrx == 0) || (tddSXM && x == tddSXX));
 			int pixelIndex = x + yTimesSCRWDTH;
 			if(isDbgFixSeed) lastPixelSeeds[pixelIndex] = pixelSeeds[pixelIndex];
-			const float xOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
-			const float yOffset = useAA ? RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
-			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset);
+			const float xOffset = useAA ? threadRng.RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
+			const float yOffset = useAA ? threadRng.RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
+			float2 defocusRand = threadRng.RandomPointOnCircle(pixelSeeds[pixelIndex]);
+			Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset, useDOF, defocusRand);
 			float3 traced = Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY);
 			if(dot(traced, traced) > dbgFF * dbgFF) traced = dbgFF * normalize(traced); // firefly suppressor
 			accumulator[pixelIndex] += float4(traced, 0);

@@ -45,6 +45,10 @@ inline float dbgGC = 1.35f; /// GammaCorrection
 inline bool dbgSL = true; /// StochasticLights
 inline int dbgSLS = 10; /// StochasticLightsSamples
 
+inline bool useDOF = false; /// DepthOfField
+inline float defocusAngle = 1;
+inline float focusDistance = 5;
+
 static bool DBGCanPrint(const float2 pos)
 {
 	return !(pos.x < 0 || pos.x >= SCRWIDTH || pos.y < 0 || pos.y >= SCRHEIGHT - 10);

@@ -15,11 +15,26 @@ Scene::Scene()
 
 	LoadSkydome();
 
-	/*Model& model = CreateModel(ModelType::DRAGON);
-	model.m_modelData.m_meshMaterialList[0].m_type = Material::Type::REFRACTIVE;
-	model.m_modelData.m_meshMaterialList[1].m_type = Material::Type::REFRACTIVE;*/
+#pragma region DepthOfField TestScene
+	for(int z = 0; z < 20; ++z)
+	{
+		for(int x = 0; x < 5; ++x)
+		{
+			Model& model = CreateModel(ModelType::DRAGON);
+			model.m_modelData.m_meshMaterialList[0].m_type = Material::Type::DIFFUSE;
+			model.m_modelData.m_meshMaterialList[1].m_type = Material::Type::DIFFUSE;
+			m_tranformList.back().m_pos.x = x * 2 - 2.5;
+			m_tranformList.back().m_pos.z = z - 10;
+			m_tranformList.back().m_pos.y = 2;
+			SetBlasTransform(m_blasList.back(), m_tranformList.back());
+		}
+	}
+	BuildTlas();
+	CreateDirLight();
+#pragma endregion
 
-#pragma region Stochastic Light TestScene
+#pragma region StochasticLight TestScene
+	/*
 	Model& plane = CreateModel(ModelType::PLANE);
 	plane.m_modelData.m_meshMaterialList[0].m_type = Material::Type::DIFFUSE;
 	m_tranformList.back().m_scl = float3(40, 1, 60);
@@ -72,7 +87,9 @@ Scene::Scene()
 			}
 		}
 	}
+	*/
 #pragma endregion
+
 }
 
 void Scene::LoadSkydome()

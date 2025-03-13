@@ -44,4 +44,11 @@ public:
 	{
 		return min + (RandomUInt(customSeed) % (max - min));
 	}
+
+	float2 RandomPointOnCircle(uint& customSeed)
+	{
+		float angle = RandomFloat(customSeed) * 2.0f * PI;
+		float2 pointOnCircle = float2(cos(angle), sin(angle));
+		return pointOnCircle * sqrt(RandomFloat(customSeed));
+	}
 };

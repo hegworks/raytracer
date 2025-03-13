@@ -28,7 +28,7 @@ void Renderer::UI()
 		green = (pixel & 0x00FF00) >> 8;
 		blue = pixel & 0x0000FF;
 	}
-	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y);
+	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, false, 0);
 	scene.Intersect(r);
 	ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
 	int debugInt = r.hit.t < BVH_FAR ? scene.m_blasList[r.hit.inst].blasIdx : -1;
@@ -55,14 +55,17 @@ void Renderer::UI()
 			ImGui::SameLine();
 			ImGui::Checkbox("SD", &useSD);
 			ImGui::SameLine();
-			ImGui::Checkbox("SL", &dbgSL);
+			ImGui::Checkbox("DOF", &useDOF);
 
+			ImGui::Checkbox("StochasticLights", &dbgSL);
 			ImGui::SliderInt("ndal", &ndal, 0, 3);
 			ImGui::SliderInt("Depth", &maxDepth, 1, 20);
 			ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
 			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 40.0f);
 			ImGui::SliderFloat("Gamma", &dbgGC, 0.01f, 5.0f);
 			ImGui::SliderInt("SLS", &dbgSLS, 1, 300);
+			ImGui::DragFloat("DOF angle", &defocusAngle, 0.1f, 0, 40);
+			ImGui::DragFloat("DOF distance", &focusDistance, 0.1f);
 
 			const char* epsTypes[] =
 			{
