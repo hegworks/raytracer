@@ -79,13 +79,13 @@ void Renderer::Tick(float deltaTime)
 			const float xOffset = useAA ? threadRng.RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			const float yOffset = useAA ? threadRng.RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			float3 stochasticDOFTraced(0);
-			for(int s = 0; s < dbgSDOFS; ++s)
+			for(int s = 0; s < spp; ++s)
 			{
 				float2 defocusRand = threadRng.RandomPointOnCircle(pixelSeeds[pixelIndex]);
 				Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset, useDOF, defocusRand);
 				stochasticDOFTraced += Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY);
 			}
-			float3 traced = stochasticDOFTraced / (float)dbgSDOFS;
+			float3 traced = stochasticDOFTraced / (float)spp;
 			if(dot(traced, traced) > dbgFF * dbgFF) traced = dbgFF * normalize(traced); // firefly suppressor
 			accumulator[pixelIndex] += float4(traced, 0);
 			float4 avg = accumulator[pixelIndex] * scale;
@@ -201,26 +201,48 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 			if(fres > EPS || oneMinusFres > EPS)
 			{
-				bool reflectTrueRefractFalse = threadRng.RandomFloat(pixelSeeds[pixelIndex]) < fres;
-
-				float3 localL(0);
-				if(reflectTrueRefractFalse && fres > EPS)
+				if(dbgSF)
 				{
-					float3 reflecDir = reflect(ray.D, localN);
-					Ray reflecR(p + reflecDir * EPS, reflecDir);
-					localL = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+					bool reflectTrueRefractFalse = threadRng.RandomFloat(pixelSeeds[pixelIndex]) < fres;
+					float3 localL(0);
+					if(reflectTrueRefractFalse && fres > EPS)
+					{
+						float3 reflecDir = reflect(ray.D, localN);
+						Ray reflecR(p + reflecDir * EPS, reflecDir);
+						localL = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+					}
+					else if(!reflectTrueRefractFalse && oneMinusFres > EPS)
+					{
+						float3 refracDir = refract(ray.D, localN, mat.m_factor1);
+						Ray refracR(p + refracDir * EPS, refracDir);
+						localL = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+					}
+					// here mat.m_factor0 is being used as density of the matter
+					float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor0 * ray.hit.t) : 1.0f;
+					float3 alb = dbgBeer ? beer : mat.m_albedo;
+					l += alb * localL;
 				}
-				else if(!reflectTrueRefractFalse && oneMinusFres > EPS)
+				else
 				{
-					float3 refracDir = refract(ray.D, localN, mat.m_factor1);
-					Ray refracR(p + refracDir * EPS, refracDir);
-					localL = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+					float3 reflected(0);
+					if(fres > EPS)
+					{
+						float3 reflecDir = reflect(ray.D, localN);
+						Ray reflecR(p + reflecDir * EPS, reflecDir);
+						reflected = Trace(reflecR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+					}
+					float3 refracted(0);
+					if(oneMinusFres > EPS)
+					{
+						float3 refracDir = refract(ray.D, localN, mat.m_factor1);
+						Ray refracR(p + refracDir * EPS, refracDir);
+						refracted = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+					}
+					// here mat.m_factor0 is being used as density of the matter
+					float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor0 * ray.hit.t) : 1.0f;
+					float3 alb = dbgBeer ? beer : mat.m_albedo;
+					l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
 				}
-				// here mat.m_factor0 is being used as density of the matter
-				float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor0 * ray.hit.t) : 1.0f;
-				float3 alb = dbgBeer ? beer : mat.m_albedo;
-
-				l += alb * localL;
 			}
 			break;
 		}

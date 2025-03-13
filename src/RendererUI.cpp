@@ -52,21 +52,31 @@ void Renderer::UI()
 			ImGui::Checkbox("ACM", &useACM);
 			ImGui::SameLine();
 			ImGui::Checkbox("TDD", &tdd);
-			ImGui::SameLine();
-			ImGui::Checkbox("SD", &useSD);
-			ImGui::SameLine();
-			ImGui::Checkbox("DOF", &useDOF);
 
-			ImGui::Checkbox("StochasticLights", &dbgSL);
-			ImGui::SliderInt("ndal", &ndal, 0, 3);
-			ImGui::SliderInt("Depth", &maxDepth, 1, 50);
-			ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
-			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 40.0f);
-			ImGui::SliderFloat("Gamma", &dbgGC, 0.01f, 5.0f);
-			ImGui::SliderInt("SLS", &dbgSLS, 1, 300);
+			ImGui::Separator();
+
+			ImGui::Checkbox("Skydome", &useSD);
+			ImGui::SliderFloat("Brightness", &dbgSDBF, 0.0f, 5.0f);
+
+			ImGui::Separator();
+
+			ImGui::Checkbox("Depth of Field", &useDOF);
 			ImGui::DragFloat("DOF angle", &defocusAngle, 0.1f, 0, 40);
 			ImGui::DragFloat("DOF distance", &focusDistance, 0.1f);
-			ImGui::SliderInt("DOF samples", &dbgSDOFS, 1, 30);
+
+			ImGui::Separator();
+
+			ImGui::Checkbox("Stochastic Lights", &dbgSL);
+			ImGui::SliderInt("Samples", &dbgSLS, 1, 300);
+
+			ImGui::Separator();
+
+			ImGui::Checkbox("Stochastic Fresnel", &dbgSF);
+			ImGui::SliderInt("ndal", &ndal, 0, 3);
+			ImGui::SliderInt("SPP", &spp, 1, 30);
+			ImGui::SliderInt("Depth", &maxDepth, 1, 50);
+			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 40.0f);
+			ImGui::SliderFloat("Gamma", &dbgGC, 0.01f, 5.0f);
 
 			const char* epsTypes[] =
 			{

@@ -44,11 +44,12 @@ inline float dbgFF = 10.f; /// FireFly
 inline float dbgGC = 1.35f; /// GammaCorrection
 inline bool dbgSL = true; /// StochasticLights
 inline int dbgSLS = 10; /// StochasticLightsSamples
+inline bool dbgSF = true; /// StochasticFresnel
 
 inline bool useDOF = false; /// DepthOfField
 inline float defocusAngle = 1;
 inline float focusDistance = 5;
-inline int dbgSDOFS = 1; /// StochasticDepthOfFieldSamples
+inline int spp = 1; /// SamplesPerPixels
 
 static bool DBGCanPrint(const float2 pos)
 {
