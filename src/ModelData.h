@@ -8,9 +8,10 @@ enum class ModelType : uint8_t
 	TORUS,
 	DRAGON,
 	CORNELL,
+	GLASS,
 };
 
-constexpr int NUM_MODEL_TYPES = 6;
+constexpr int NUM_MODEL_TYPES = 7;
 
 inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 {
@@ -20,6 +21,7 @@ inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 	ModelType::TORUS,
 	ModelType::DRAGON,
 	ModelType::CORNELL,
+	ModelType::GLASS,
 };
 
 inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
@@ -30,6 +32,7 @@ inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
 	"TORUS",
 	"DRAGON",
 	"CORNELL",
+	"GLASS",
 };
 
 class ModelData
@@ -51,6 +54,8 @@ public:
 				return ASSETDIR + "Models/dragon2.glb";
 			case ModelType::CORNELL:
 				return ASSETDIR + "Models/cornell-box.obj";
+			case ModelType::GLASS:
+				return ASSETDIR + "Models/ikea_glass.glb";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

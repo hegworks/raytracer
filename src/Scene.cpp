@@ -16,6 +16,7 @@ Scene::Scene()
 	LoadSkydome();
 
 #pragma region DepthOfField TestScene
+	/*
 	for(int z = 0; z < 20; ++z)
 	{
 		for(int x = 0; x < 5; ++x)
@@ -31,6 +32,7 @@ Scene::Scene()
 	}
 	BuildTlas();
 	CreateDirLight();
+	*/
 #pragma endregion
 
 #pragma region StochasticLight TestScene

@@ -46,7 +46,7 @@ public:
 	bool qlOneSided = true;
 	inline static int acmCounter;
 	bool useACM = false;
-	int maxDepth = 5;
+	int maxDepth = 25;
 	Scene scene;
 };
 

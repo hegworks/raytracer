@@ -59,7 +59,7 @@ void Renderer::UI()
 
 			ImGui::Checkbox("StochasticLights", &dbgSL);
 			ImGui::SliderInt("ndal", &ndal, 0, 3);
-			ImGui::SliderInt("Depth", &maxDepth, 1, 20);
+			ImGui::SliderInt("Depth", &maxDepth, 1, 50);
 			ImGui::SliderFloat("SkyBri.", &dbgSDBF, 0.0f, 5.0f);
 			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 40.0f);
 			ImGui::SliderFloat("Gamma", &dbgGC, 0.01f, 5.0f);
@@ -314,9 +314,12 @@ void Renderer::UI()
 							ImGui::SameLine();
 							if(ImGui::Button("reset##1")) t.m_rot = 0, changed = true;
 
-							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f)) changed = true;
+							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f, 0.01f, 99999.0f)) changed = true;
+							if(t.m_scl.x < EPS) t.m_scl.x = EPS;
+							if(t.m_scl.y < EPS) t.m_scl.y = EPS;
+							if(t.m_scl.z < EPS) t.m_scl.z = EPS;
 							ImGui::SameLine();
-							if(ImGui::Button("0##0")) t.m_scl = 0, changed = true;
+							if(ImGui::Button("0##0")) t.m_scl = EPS, changed = true;
 							ImGui::SameLine();
 							if(ImGui::Button("1##0")) t.m_scl = 1, changed = true;
 
