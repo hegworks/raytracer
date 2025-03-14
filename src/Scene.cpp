@@ -15,6 +15,27 @@ Scene::Scene()
 
 	LoadSkydome();
 
+#pragma region SkydomeIllumination TestScene
+	/*
+	CreateModel(ModelType::PLANE);
+	m_tranformList.back().m_scl = float3(40, 1, 40);
+	m_tranformList.back().m_pos = float3(5, -2, 5);
+	SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	for(int z = 0; z < 10; ++z)
+	{
+		for(int x = 0; x < 5; ++x)
+		{
+			Model& model = CreateModel(ModelType::DRAGON);
+			m_tranformList.back().m_pos.x = x * 3 - 2.5;
+			m_tranformList.back().m_pos.z = z * 2 - 5;
+			m_tranformList.back().m_pos.y = 2;
+			SetBlasTransform(m_blasList.back(), m_tranformList.back());
+		}
+	}
+	BuildTlas();
+	*/
+#pragma endregion
+
 #pragma region DepthOfField TestScene
 	/*
 	for(int z = 0; z < 20; ++z)
@@ -24,8 +45,8 @@ Scene::Scene()
 			Model& model = CreateModel(ModelType::DRAGON);
 			model.m_modelData.m_meshMaterialList[0].m_type = Material::Type::DIFFUSE;
 			model.m_modelData.m_meshMaterialList[1].m_type = Material::Type::DIFFUSE;
-			m_tranformList.back().m_pos.x = x * 2 - 2.5;
-			m_tranformList.back().m_pos.z = z - 10;
+			m_tranformList.back().m_pos.x = x * 3 - 2.5;
+			m_tranformList.back().m_pos.z = z * 2 - 10;
 			m_tranformList.back().m_pos.y = 2;
 			SetBlasTransform(m_blasList.back(), m_tranformList.back());
 		}
@@ -91,7 +112,6 @@ Scene::Scene()
 	}
 	*/
 #pragma endregion
-
 }
 
 void Scene::LoadSkydome()

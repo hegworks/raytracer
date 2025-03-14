@@ -45,6 +45,7 @@ public:
 		return min + (RandomUInt(customSeed) % (max - min));
 	}
 
+	// from Sebastian Lague https://youtu.be/Qz0KTGYJtUk?si=YTTg56J1Yi21FZYJ&t=1979
 	float2 RandomPointOnCircle(uint& customSeed)
 	{
 		float angle = RandomFloat(customSeed) * 2.0f * PI;

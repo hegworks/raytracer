@@ -62,7 +62,7 @@ void Renderer::UI()
 
 			ImGui::Checkbox("Depth of Field", &useDOF);
 			ImGui::DragFloat("DOF angle", &defocusAngle, 0.1f, 0, 40);
-			ImGui::DragFloat("DOF distance", &focusDistance, 0.1f);
+			ImGui::DragFloat("DOF distance", &focusDistance, 0.1f,0,9999);
 
 			ImGui::Separator();
 
