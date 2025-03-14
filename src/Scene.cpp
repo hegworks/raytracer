@@ -15,6 +15,19 @@ Scene::Scene()
 
 	LoadSkydome();
 
+#pragma region DIFFUSE_PT Lighting TestScene
+	/*
+	useSD = false;
+	Model& plane = CreateModel(ModelType::PLANE);
+	m_tranformList.back().m_scl = float3(30, 1, 30);
+	m_tranformList.back().m_pos = float3(0, -2, 0);
+	SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	BuildTlas();
+	SpotLight& spotLight = CreateSpotLight();
+	spotLight.m_intensity = 3.0f;
+	*/
+#pragma endregion
+
 #pragma region SkydomeIllumination TestScene
 	/*
 	CreateModel(ModelType::PLANE);

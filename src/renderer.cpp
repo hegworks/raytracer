@@ -172,8 +172,10 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			if(!isInCorrectHemisphere) randPoint = -randPoint;
 			float3 randDir = normalize(n + randPoint);
 			Ray r(p + randDir * EPS, randDir);
-			float3 contribution = mat.m_albedo * mat.m_factor0 * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-			l += contribution;
+			// here mat.factor0 is the absorbance
+			float3 indirectIllumination = mat.m_factor0 * mat.m_albedo * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 directIllumination = CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			l += indirectIllumination + directIllumination;
 			break;
 		}
 		case Material::Type::REFLECTIVE:
@@ -274,8 +276,7 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, const
 	for(const DirLight& light : scene.m_dirLightList) totalIntesity += light.m_intensity;
 	for(const QuadLight& light : scene.m_quadLightList) totalIntesity += light.GetPDF();*/
 
-	// Stochastically choosing a light
-	if(dbgSL)
+	if(dbgSL) // Stochastically choosing a light
 	{
 		int numSamples = dbgSLS;
 		float3 stochasticL(0);
