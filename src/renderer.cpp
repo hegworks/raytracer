@@ -153,52 +153,53 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		}
 		case Material::Type::DIFFUSE_PT:
 		{
-			float3 randPoint(0);
-			while(true)
-			{
-				randPoint =
-				{
-					threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
-					threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
-					threadRng.RandomFloat(pixelSeeds[pixelIndex],-1.0f,1.0f),
-				};
-				float len = length(randPoint);
-				if(len > 1e-160 && len <= 1.0f)
-				{
-					break;
-				}
-			}
+			float absorbance = mat.m_factor0;
+			float3 randPoint = threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]);
 			bool isInCorrectHemisphere = dot(randPoint, n) > 0.0f;
 			if(!isInCorrectHemisphere) randPoint = -randPoint;
 			float3 randDir = normalize(n + randPoint);
 			Ray r(p + randDir * EPS, randDir);
-			// here mat.factor0 is the absorbance
-			float3 indirectIllumination = mat.m_factor0 * mat.m_albedo * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 indirectIllumination = absorbance * mat.m_albedo * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			float3 directIllumination = CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			l += indirectIllumination + directIllumination;
 			break;
 		}
-		case Material::Type::REFLECTIVE:
-		{
-			float3 rrdir = reflect(ray.D, n);
-			Ray rr(p + rrdir * EPS, rrdir);
-			l += mat.m_factor0 * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-			break;
-		}
 		case Material::Type::GLOSSY:
 		{
-			l += (1.0f - mat.m_factor0) * CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
-			float3 rrdir = reflect(ray.D, n);
-			Ray rr(p + rrdir * EPS, rrdir);
-			l += mat.m_factor0 * Trace(rr, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 reflectDir = reflect(ray.D, n);
+			Ray reflectRay(p + reflectDir * EPS, reflectDir);
+			l += mat.m_albedo * Trace(reflectRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			break;
+		}
+		case Material::Type::GLOSSY_PT:
+		{
+			float fuzz = mat.m_factor0;
+			if(fuzz > EPS)
+			{
+				float3 randPoint = threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]);
+				float3 reflectDir = normalize(reflect(ray.D, n) + fuzz * randPoint);
+				Ray reflectRay(p + reflectDir * EPS, reflectDir);
+				if(dot(reflectDir, n) > 0)
+				{
+					l += mat.m_albedo * Trace(reflectRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+				} // else, fuzzed ray is inside the surface so it gets absorber (we add nothing to the l)
+			}
+			else // exact same as GLOSSY
+			{
+				float3 reflectDir = reflect(ray.D, n);
+				Ray reflectRay(p + reflectDir * EPS, reflectDir);
+				l += mat.m_albedo * Trace(reflectRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			}
 			break;
 		}
 		case Material::Type::REFRACTIVE:
 		{
+			float density = mat.m_factor0;
+			float ior = mat.m_factor1;
 			float3 localN = n;
 			if(inside) localN = -n;
 			float fres;
-			fresnel(ray.D, localN, mat.m_factor1, fres);
+			fresnel(ray.D, localN, ior, fres);
 			float oneMinusFres = 1.0f - fres;
 
 			if(fres > EPS || oneMinusFres > EPS)
@@ -215,12 +216,11 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 					}
 					else if(!reflectTrueRefractFalse && oneMinusFres > EPS)
 					{
-						float3 refracDir = refract(ray.D, localN, mat.m_factor1);
+						float3 refracDir = refract(ray.D, localN, ior);
 						Ray refracR(p + refracDir * EPS, refracDir);
 						localL = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 					}
-					// here mat.m_factor0 is being used as density of the matter
-					float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor0 * ray.hit.t) : 1.0f;
+					float3 beer = inside ? expf(-mat.m_albedo * density * ray.hit.t) : 1.0f;
 					float3 alb = dbgBeer ? beer : mat.m_albedo;
 					l += alb * localL;
 				}
@@ -236,12 +236,11 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 					float3 refracted(0);
 					if(oneMinusFres > EPS)
 					{
-						float3 refracDir = refract(ray.D, localN, mat.m_factor1);
+						float3 refracDir = refract(ray.D, localN, ior);
 						Ray refracR(p + refracDir * EPS, refracDir);
 						refracted = Trace(refracR, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 					}
-					// here mat.m_factor0 is being used as density of the matter
-					float3 beer = inside ? expf(-mat.m_albedo * mat.m_factor0 * ray.hit.t) : 1.0f;
+					float3 beer = inside ? expf(-mat.m_albedo * density * ray.hit.t) : 1.0f;
 					float3 alb = dbgBeer ? beer : mat.m_albedo;
 					l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
 				}

@@ -4,8 +4,8 @@ inline const char* MATERIAL_STRING[] =
 {
 	"DIFFUSE",
 	"DIFFUSE_PT",
-	"REFLECTIVE",
 	"GLOSSY",
+	"GLOSSY_PT",
 	"REFRACTIVE"
 };
 
@@ -15,8 +15,8 @@ struct ALIGNED(64) Material
 	{
 		DIFFUSE,
 		DIFFUSE_PT,
-		REFLECTIVE,
 		GLOSSY,
+		GLOSSY_PT,
 		REFRACTIVE
 	};
 

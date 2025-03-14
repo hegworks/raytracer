@@ -52,4 +52,23 @@ public:
 		float2 pointOnCircle = float2(cos(angle), sin(angle));
 		return pointOnCircle * sqrt(RandomFloat(customSeed));
 	}
+
+	float3 RandomPointOnSphere(uint& customSeed)
+	{
+		float3 randPoint(0);
+		while(true)
+		{
+			randPoint =
+			{
+				RandomFloat(customSeed,-1.0f,1.0f),
+				RandomFloat(customSeed,-1.0f,1.0f),
+				RandomFloat(customSeed,-1.0f,1.0f),
+			};
+			float len = length(randPoint);
+			if(len > 1e-160 && len <= 1.0f)
+			{
+				return normalize(randPoint);
+			}
+		}
+	}
 };

@@ -61,8 +61,8 @@ void Renderer::UI()
 			ImGui::Separator();
 
 			ImGui::Checkbox("Depth of Field", &useDOF);
-			ImGui::DragFloat("DOF angle", &defocusAngle, 0.1f, 0, 40);
-			ImGui::DragFloat("DOF distance", &focusDistance, 0.1f,0,9999);
+			ImGui::DragFloat("DOF angle", &defocusAngle, 0.1f, EPS, 40);
+			ImGui::DragFloat("DOF distance", &focusDistance, 0.1f, EPS, 9999);
 
 			ImGui::Separator();
 
@@ -295,10 +295,23 @@ void Renderer::UI()
 								ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, MATERIAL_STRING, IM_ARRAYSIZE(MATERIAL_STRING));
 								mat.m_type = static_cast<Material::Type>(matInt);
 								ImGui::ColorEdit3(("Albedo##" + std::to_string(j)).c_str(), &mat.m_albedo.x);
-								ImGui::DragFloat(("Factor0##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 30.0f);
-								if(mat.m_type == Material::Type::REFRACTIVE)
-									ImGui::DragFloat(("IOR##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.01f, 0.0f, 30.0f);
 
+								switch(mat.m_type)
+								{
+									case Material::Type::DIFFUSE:
+									case Material::Type::GLOSSY:
+										break;
+									case Material::Type::DIFFUSE_PT:
+										ImGui::DragFloat(("Absorbance##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0, 1);
+										break;
+									case Material::Type::GLOSSY_PT:
+										ImGui::DragFloat(("Fuzz##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0.0f, 999999.0f);
+										break;
+									case Material::Type::REFRACTIVE:
+										ImGui::DragFloat(("Density##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
+										ImGui::DragFloat(("IOR##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.01f, 0.0f, 999999.0f);
+										break;
+								}
 							}
 							ImGui::TreePop();
 						}

@@ -15,6 +15,44 @@ Scene::Scene()
 
 	LoadSkydome();
 
+#pragma region MultiObject TestScene
+
+	{
+		Model& model = CreateModel(ModelType::PLANE);
+		m_tranformList.back().m_scl = float3(30, 1, 30);
+		m_tranformList.back().m_pos = float3(0, -2, 0);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	{
+		Model& model = CreateModel(ModelType::SPHERE);
+		m_tranformList.back().m_pos = float3(0, 1, 0);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	{
+		Model& model = CreateModel(ModelType::CUBE);
+		model.m_modelData.m_meshMaterialList.front().m_type = Material::Type::GLOSSY_PT;
+		m_tranformList.back().m_pos = float3(-3, 0, 0);
+		m_tranformList.back().m_scl = float3(2);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	{
+		Model& model = CreateModel(ModelType::DRAGON);
+		m_tranformList.back().m_pos = float3(3, 0.5, 0);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	{
+		Model& model = CreateModel(ModelType::CORNELL);
+		m_tranformList.back().m_pos = float3(0, 0, 3);
+		m_tranformList.back().m_rot = float3(0, 180, 0);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	BuildTlas();
+	SpotLight& spotLight = CreateSpotLight();
+	spotLight.m_intensity = 64.0f;
+	spotLight.m_pos.y = 10;
+
+#pragma endregion
+
 #pragma region DIFFUSE_PT Lighting TestScene
 	/*
 	useSD = false;
