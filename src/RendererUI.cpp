@@ -311,6 +311,9 @@ void Renderer::UI()
 										ImGui::DragFloat(("Density##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
 										ImGui::DragFloat(("IOR##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.01f, 0.0f, 999999.0f);
 										break;
+									case Material::Type::EMISSIVE:
+										ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
+										break;
 								}
 							}
 							ImGui::TreePop();
@@ -337,7 +340,8 @@ void Renderer::UI()
 							ImGui::SameLine();
 							if(ImGui::Button("reset##1")) t.m_rot = 0, changed = true;
 
-							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f, 0.01f, 99999.0f)) changed = true;
+							bool uniformScaleChanged = false;
+							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f, EPS, 99999.0f)) changed = true;
 							if(t.m_scl.x < EPS) t.m_scl.x = EPS;
 							if(t.m_scl.y < EPS) t.m_scl.y = EPS;
 							if(t.m_scl.z < EPS) t.m_scl.z = EPS;
@@ -345,6 +349,13 @@ void Renderer::UI()
 							if(ImGui::Button("0##0")) t.m_scl = EPS, changed = true;
 							ImGui::SameLine();
 							if(ImGui::Button("1##0")) t.m_scl = 1, changed = true;
+							float uniformScale = t.m_scl.x;
+							if(ImGui::DragFloat("Uni.Scl", &uniformScale, 0.1f, EPS, 99999.0f)) changed = true, uniformScaleChanged = true;
+							if(uniformScaleChanged)
+							{
+								if(uniformScale < EPS) uniformScale = EPS;
+								t.m_scl = uniformScale;
+							}
 
 							if(changed)
 							{

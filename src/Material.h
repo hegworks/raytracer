@@ -6,7 +6,8 @@ inline const char* MATERIAL_STRING[] =
 	"DIFFUSE_PT",
 	"GLOSSY",
 	"GLOSSY_PT",
-	"REFRACTIVE"
+	"REFRACTIVE",
+	"EMISSIVE",
 };
 
 struct ALIGNED(64) Material
@@ -17,7 +18,8 @@ struct ALIGNED(64) Material
 		DIFFUSE_PT,
 		GLOSSY,
 		GLOSSY_PT,
-		REFRACTIVE
+		REFRACTIVE,
+		EMISSIVE,
 	};
 
 	char m_name[40];

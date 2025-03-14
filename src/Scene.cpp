@@ -25,12 +25,12 @@ Scene::Scene()
 	}
 	{
 		Model& model = CreateModel(ModelType::SPHERE);
+		model.m_modelData.m_meshMaterialList.front().m_type = Material::Type::EMISSIVE;
 		m_tranformList.back().m_pos = float3(0, 1, 0);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}
 	{
 		Model& model = CreateModel(ModelType::CUBE);
-		model.m_modelData.m_meshMaterialList.front().m_type = Material::Type::GLOSSY_PT;
 		m_tranformList.back().m_pos = float3(-3, 0, 0);
 		m_tranformList.back().m_scl = float3(2);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
@@ -47,9 +47,9 @@ Scene::Scene()
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}
 	BuildTlas();
-	SpotLight& spotLight = CreateSpotLight();
+	/*SpotLight& spotLight = CreateSpotLight();
 	spotLight.m_intensity = 64.0f;
-	spotLight.m_pos.y = 10;
+	spotLight.m_pos.y = 10;*/
 
 #pragma endregion
 

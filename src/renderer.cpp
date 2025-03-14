@@ -247,6 +247,12 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			}
 			break;
 		}
+		case Material::Type::EMISSIVE:
+		{
+			float intensity = mat.m_factor0;
+			l += mat.m_albedo * intensity;
+			break;
+		}
 	}
 
 	switch(ndal)
