@@ -29,8 +29,6 @@ public:
 	float3 CalcAllDirLights(float3 p, float3 n, float3 brdf);
 	float3 CalclDirLight(const DirLight& light, float3 p, float3 n, float3 brdf);
 	float3 CalcAllQuadLights(float3 p, float3 n, float3 brdf, uint pixelIndex);
-	void SampleLaserVolume(const Ray& ray, float3& accumColor, float& transmittance);
-	float GetInsideLaserFactor(const float3& point, const LaserLight& laser);
 	float3 CalcQuadLight(const QuadLight& light, float3 p, float3 n, float3 brdf, uint pixelIndex);
 	float3 CalcLights(Ray& ray, float3 p, float3 n, const Material& mat, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 
@@ -44,9 +42,8 @@ public:
 	uint pixelSeeds[SCRWIDTH * SCRHEIGHT];
 	uint lastPixelSeeds[SCRWIDTH * SCRHEIGHT];
 	inline static thread_local RNG threadRng;
-	int qlNumSamples = 1; /// QuadLightNumberOfSamples
-	bool qlOneSided = true; /// QuadLightOneSided
-	int llNumSamples = 1; /// LaserLightNumberOfSamples
+	int qlNumSamples = 1;
+	bool qlOneSided = true;
 	inline static int acmCounter;
 	bool useACM = false;
 	int maxDepth = 25;

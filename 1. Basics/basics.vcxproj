@@ -168,7 +168,6 @@
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
     <ClInclude Include="..\lib\tiny_bvh.h" />
     <ClInclude Include="..\src\DBG.h" />
-    <ClInclude Include="..\src\LaserLight.h" />
     <ClInclude Include="..\src\Model.h" />
     <ClInclude Include="..\src\ModelData.h" />
     <ClInclude Include="..\src\PointLight.h" />

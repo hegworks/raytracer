@@ -138,9 +138,6 @@
     <ClInclude Include="..\src\Transform.h">
       <Filter>Src</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\LaserLight.h">
-      <Filter>Src\Lights</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">

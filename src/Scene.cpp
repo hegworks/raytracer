@@ -15,23 +15,8 @@ Scene::Scene()
 
 	LoadSkydome();
 
-#pragma region LaserBeam TestScene
-
-	/*{
-		Model& model = CreateModel(ModelType::CORNELL);
-		m_tranformList.back().m_pos = float3(0, 0, -3.5);
-		m_tranformList.back().m_rot = float3(0, 180, 0);
-		SetBlasTransform(m_blasList.back(), m_tranformList.back());
-	}
-	BuildTlas();*/
-	useSD = false;
-	DirLight& dirLight = CreateDirLight();
-	dirLight.m_intensity = 0.1f;
-
-#pragma endregion
-
 #pragma region MultiObject TestScene
-/*
+
 	{
 		Model& model = CreateModel(ModelType::PLANE);
 		m_tranformList.back().m_scl = float3(30, 1, 30);
@@ -62,10 +47,10 @@ Scene::Scene()
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}
 	BuildTlas();
-	SpotLight& spotLight = CreateSpotLight();
+	/*SpotLight& spotLight = CreateSpotLight();
 	spotLight.m_intensity = 64.0f;
-	spotLight.m_pos.y = 10;
-*/
+	spotLight.m_pos.y = 10;*/
+
 #pragma endregion
 
 #pragma region DIFFUSE_PT Lighting TestScene
@@ -322,12 +307,5 @@ QuadLight& Scene::CreateQuadLight()
 {
 	m_quadLightList.emplace_back(m_nextIdx++);
 	QuadLight& light = m_quadLightList.back();
-	return light;
-}
-
-LaserLight& Scene::CreateLaserLight()
-{
-	m_laserLightList.emplace_back();
-	LaserLight& light = m_laserLightList.back();
 	return light;
 }

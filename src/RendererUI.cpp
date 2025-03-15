@@ -155,11 +155,6 @@ void Renderer::UI()
 			{
 				scene.CreateQuadLight();
 			}
-			ImGui::SameLine();
-			if(ImGui::Button("+ LaserL"))
-			{
-				scene.CreateLaserLight();
-			}
 
 			if(!scene.m_pointLightList.empty())
 			{
@@ -258,36 +253,6 @@ void Renderer::UI()
 					}
 				}
 			}
-			if(!scene.m_laserLightList.empty())
-			{
-				if(ImGui::CollapsingHeader("Lasers"))
-				{
-					ImGui::SliderInt("Samples", &llNumSamples, 1, 32);
-
-					for(int i = 0; i < static_cast<int>(scene.m_laserLightList.size()); i++)
-					{
-						if(ImGui::TreeNode(("LL " + std::to_string(i)).c_str()))
-						{
-							LaserLight& light = scene.m_laserLightList[i];
-
-							ImGui::DragFloat3("Pos", &light.m_pos.x, 0.01f);
-
-							ImGui::DragFloat3("Dir", &light.m_dir.x, 1.0f);
-							mat4 baseMat = mat4::Identity();
-							baseMat = baseMat * mat4::RotateX(DEG_TO_RAD(light.m_dir.x));
-							baseMat = baseMat * mat4::RotateY(DEG_TO_RAD(light.m_dir.y));
-							baseMat = baseMat * mat4::RotateZ(DEG_TO_RAD(light.m_dir.z));
-
-							ImGui::ColorEdit3("Color", &light.m_color.x);
-							ImGui::DragFloat("Intensity", &light.m_intensity, 0.01f, 0.0f, 1000.0f);
-							ImGui::DragFloat("Radius", &light.m_radius, 0.01f, 0.0f, 100.0f);
-							ImGui::DragFloat("Range", &light.m_range, 0.01f, 0.0f, 100.0f);
-
-							ImGui::TreePop();
-						}
-					}
-				}
-			}
 			ImGui::EndTabItem();
 		}
 
@@ -348,10 +313,6 @@ void Renderer::UI()
 										break;
 									case Material::Type::EMISSIVE:
 										ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
-										break;
-									case Material::Type::VOLUMETRIC:
-										ImGui::DragFloat(("Density##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0.0f, 999999.0f);
-										ImGui::DragFloat(("Scatter##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0.0f, 999999.0f);
 										break;
 								}
 							}

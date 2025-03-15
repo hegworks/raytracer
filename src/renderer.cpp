@@ -125,18 +125,6 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		return 0; // or a fancy sky color
 	}
 
-	// First, check if we're in a volume with lasers
-	// This happens BEFORE checking for intersection with surfaces
-	float3 volumetricContribution(0);
-	float volumeTransmittance = 1.0f; // Start with full transmittance
-
-	// Only do volumetric sampling if we have lasers
-	if(!scene.m_laserLightList.empty())
-	{
-		// Sample the laser beams in the volume between ray origin and intersection
-		SampleLaserVolume(ray, volumetricContribution, volumeTransmittance);
-	}
-
 	scene.Intersect(ray);
 	bool hasHit = ray.hit.t < BVH_FAR;
 	if(!hasHit)
@@ -265,61 +253,6 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			l += mat.m_albedo * intensity;
 			break;
 		}
-		case Material::Type::VOLUMETRIC:
-		{
-			// Your existing volumetric code...
-			float density = mat.m_factor0;
-			float scatteringFactor = mat.m_factor1;
-
-			// First calculate what's behind the volume (by sending a ray through it)
-			Ray continuedRay(p + ray.D * EPS, ray.D);
-			float3 backgroundColor = Trace(continuedRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-
-			// Now sample the volume itself
-			float volumeThickness = ray.hit.t; // For a bounded volume model
-			const int SAMPLES = llNumSamples;
-			float stepSize = volumeThickness / SAMPLES;
-			float3 accumColor(0);
-			float transmittance = 1.0f;
-
-			// Sample points along the ray through the volume
-			for(int i = 0; i < SAMPLES; i++)
-			{
-				float t = (i + 0.5f) * stepSize;
-				float3 samplePoint = ray.O + ray.D * t;
-				float3 lightContribution(0);
-
-				// Sample laser contributions at this point
-				for(const auto& laser : scene.m_laserLightList)
-				{
-					float insideFactor = GetInsideLaserFactor(samplePoint, laser);
-					if(insideFactor > 0)
-					{
-						lightContribution += laser.m_color * laser.m_intensity * insideFactor;
-					}
-				}
-
-				// Sample regular light contributions
-				lightContribution += CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
-
-				// Beer's law for extinction
-				float extinction = expf(-density * stepSize);
-
-				// Accumulate color (in-scattering)
-				accumColor += transmittance * (1.0f - extinction) * mat.m_albedo * lightContribution * scatteringFactor;
-
-				// Update transmittance (out-scattering)
-				transmittance *= extinction;
-
-				// Early termination if transmittance is too low
-				if(transmittance < 0.01f)
-					break;
-			}
-
-			// Blend accumulated color with background based on final transmittance
-			l += accumColor + backgroundColor * transmittance;
-			break;
-		}
 	}
 
 	switch(ndal)
@@ -331,7 +264,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case 2:
 			return scene.GetMaterial(ray).m_albedo;
 		case 3:
-			return l * volumeTransmittance + volumetricContribution;
+			return l;
 		default:
 			throw std::runtime_error("Unhandled situation");
 	}
@@ -601,88 +534,4 @@ float3 Renderer::CalcAllQuadLights(float3 p, float3 n, float3 brdf, uint pixelIn
 		l += CalcQuadLight(scene.m_quadLightList[i], p, n, brdf, pixelIndex);
 	}
 	return l;
-}
-
-void Renderer::SampleLaserVolume(const Ray& ray, float3& accumColor, float& transmittance)
-{
-	// Use a fixed maximum distance if no intersection was found
-	float tMax = ray.hit.t > 0 ? ray.hit.t : 1000.0f;
-
-	// Parameters for sampling the volume
-	const int SAMPLES = llNumSamples;
-	const float tStart = 0.1f; // Start slightly ahead of the ray origin
-	const float stepSize = (tMax - tStart) / SAMPLES;
-
-	// Default medium properties (can be customized)
-	const float density = 0.05f;
-	const float scatteringFactor = 0.8f;
-
-	// Initialize accumColor and transmittance
-	accumColor = float3(0);
-	transmittance = 1.0f;
-
-	// Sample points along the ray
-	for(int i = 0; i < SAMPLES; i++)
-	{
-		float t = tStart + (i + 0.5f) * stepSize;
-
-		// Skip if we've gone past the intersection point
-		if(t >= tMax)
-			break;
-
-		float3 samplePoint = ray.O + ray.D * t;
-
-		// Sample all laser beams at this point
-		for(const auto& laser : scene.m_laserLightList)
-		{
-			float insideFactor = GetInsideLaserFactor(samplePoint, laser);
-
-			if(insideFactor > 0)
-			{
-				// Calculate scattered light contribution
-				float3 lightContribution = laser.m_color * laser.m_intensity * insideFactor * scatteringFactor;
-
-				// Beer's law for extinction
-				float extinction = expf(-density * stepSize);
-
-				// Accumulate color (in-scattering)
-				accumColor += transmittance * (1.0f - extinction) * lightContribution;
-
-				// Update transmittance (out-scattering)
-				transmittance *= extinction;
-			}
-		}
-
-		// Early termination if transmittance is too low
-		if(transmittance < 0.01f)
-			break;
-	}
-}
-
-float Renderer::GetInsideLaserFactor(const float3& point, const LaserLight& laser)
-{
-	// Calculate vector from laser origin to the point
-	float3 toPoint = point - laser.m_pos;
-
-	// Calculate projection of the point onto the laser direction
-	float projectionOnLaser = dot(toPoint, normalize(laser.m_dir));
-
-	// Check if point is within the length of the laser
-	if(projectionOnLaser < 0 || projectionOnLaser > laser.m_range)
-		return 0.0f;
-
-	// Calculate perpendicular distance from point to laser line
-	float3 projectedPoint = laser.m_pos + normalize(laser.m_dir) * projectionOnLaser;
-	float3 perp = point - projectedPoint;
-	float perpDistance = length(perp);
-
-	// Check if point is within the radius of the laser beam
-	if(perpDistance <= laser.m_radius)
-	{
-		// Calculate falloff from center of beam (stronger in center)
-		float falloff = 1.0f - (perpDistance / laser.m_radius);
-		return falloff * falloff;  // Squared for more natural falloff
-	}
-
-	return 0.0f; // Not inside the laser beam
 }
