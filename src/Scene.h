@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "DirLight.h"
+#include "LaserLight.h"
 #include "Model.h"
 #include "PointLight.h"
 #include "QuadLight.h"
@@ -21,6 +22,7 @@ public:
 	std::vector<SpotLight> m_spotLightList;
 	std::vector<DirLight> m_dirLightList;
 	std::vector<QuadLight> m_quadLightList;
+	std::vector<LaserLight> m_laserLightList;
 
 	void Intersect(Ray& ray) const;
 	bool IsOccluded(const Ray& ray);
@@ -35,6 +37,7 @@ public:
 	SpotLight& CreateSpotLight();
 	DirLight& CreateDirLight();
 	QuadLight& CreateQuadLight();
+	LaserLight& CreateLaserLight();
 
 	void SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t);
 	void BuildTlas();
