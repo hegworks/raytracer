@@ -192,6 +192,27 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			}
 			break;
 		}
+		case Material::Type::GLOSSY_PT2:
+		{
+			float smoothness = mat.m_factor0;
+			float specularProbability = mat.m_factor1;
+			float3 randPoint = threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]);
+			float3 diffuseDir = normalize(n + randPoint);
+
+			float3 specularDir = reflect(ray.D, n);
+
+			bool isSpeculareBounce = specularProbability > threadRng.RandomFloat(pixelSeeds[pixelIndex]);
+			float3 rayDir = lerp(diffuseDir, specularDir, smoothness * (int)isSpeculareBounce);
+			Ray r(p + rayDir * EPS, rayDir);
+
+			float3 specularColor = Color::WHITE;
+
+			l += lerp(mat.m_albedo, specularColor, isSpeculareBounce) * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+
+			l += CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+
+			break;
+		}
 		case Material::Type::REFRACTIVE:
 		{
 			float density = mat.m_factor0;
