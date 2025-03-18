@@ -238,7 +238,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 			float3 finalTrace = finalMatColor * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 
-			l += finalTrace;
+			float3 directLight = CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+
+			l += finalTrace + directLight;
 
 			break;
 		}
