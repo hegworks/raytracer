@@ -215,18 +215,28 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case Material::Type::PATH_TRACED:
 		{
 			float smoothness = mat.m_factor0;
+			float specularity = mat.m_factor1;
 
 			float3 diffuseDir = normalize(n + threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]));
-			Ray diffuseRay(p + diffuseDir * EPS, diffuseDir);
-			//float3 diffuseTrace = mat.m_albedo * Trace(diffuseRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 
-			float3 specularDir = reflect(ray.D, n);
-			//Ray specularRay(p + specularDir * EPS, specularDir);
+			float3 finalDir(0);
+			float3 finalMatColor(0);
+			bool isSpecularRay = specularity > threadRng.RandomFloat(pixelSeeds[pixelIndex]);
+			if(isSpecularRay)
+			{
+				float3 specularDir = reflect(ray.D, n);
+				finalDir = lerp(diffuseDir, specularDir, smoothness);
+				finalMatColor = 1.0f; // No Effect when multipiled by Trace()
+			}
+			else
+			{
+				finalDir = diffuseDir;
+				finalMatColor = albedo;
+			}
 
-			float3 finalDir = lerp(diffuseDir, specularDir, smoothness);
 			Ray finalRay(p + finalDir * EPS, finalDir);
 
-			float3 finalTrace = mat.m_albedo * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 finalTrace = finalMatColor * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 
 			l += finalTrace;
 

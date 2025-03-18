@@ -31,6 +31,7 @@ Scene::Scene()
 	{
 		Model& model = CreateModel(ModelType::CUBE);
 		model.m_modelData.m_meshMaterialList.front().m_type = Material::Type::EMISSIVE;
+		model.m_modelData.m_meshMaterialList.front().m_albedo = 1;
 		m_tranformList.back().m_pos = float3(-3, 0, 0);
 		m_tranformList.back().m_scl = float3(2);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());

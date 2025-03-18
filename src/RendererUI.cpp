@@ -318,7 +318,7 @@ void Renderer::UI()
 										break;
 									case Material::Type::PATH_TRACED:
 										ImGui::DragFloat(("Smoothness##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0, 1);
-										//ImGui::DragFloat(("SP##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
+										ImGui::DragFloat(("Specularity##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
 										break;
 								}
 							}
