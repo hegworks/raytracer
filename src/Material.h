@@ -3,13 +3,10 @@
 inline const char* MATERIAL_STRING[] =
 {
 	"DIFFUSE",
-	"DIFFUSE_PT",
 	"GLOSSY",
-	"GLOSSY_PT",
-	"GLOSSY_PT2",
 	"REFRACTIVE",
-	"EMISSIVE",
 	"PATH_TRACED",
+	"EMISSIVE",
 };
 
 struct ALIGNED(64) Material
@@ -17,13 +14,10 @@ struct ALIGNED(64) Material
 	enum class Type : std::uint32_t
 	{
 		DIFFUSE,
-		DIFFUSE_PT,
 		GLOSSY,
-		GLOSSY_PT,
-		GLOSSY_PT2,
 		REFRACTIVE,
-		EMISSIVE,
 		PATH_TRACED,
+		EMISSIVE,
 	};
 
 	char m_name[40];

@@ -153,95 +153,11 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			l += CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			break;
 		}
-		case Material::Type::DIFFUSE_PT:
-		{
-			float3 randPoint = threadRng.RandomPointOnHemisphere(pixelSeeds[pixelIndex], n);
-			float3 randDir = normalize(n + randPoint);
-			Ray r(p + randDir * EPS, randDir);
-			float3 indirectIllumination = brdf * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-			float3 directIllumination = CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
-			l += indirectIllumination + directIllumination;
-			break;
-		}
 		case Material::Type::GLOSSY:
 		{
 			float3 reflectDir = reflect(ray.D, n);
 			Ray reflectRay(p + reflectDir * EPS, reflectDir);
 			l += mat.m_albedo * Trace(reflectRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-			break;
-		}
-		case Material::Type::GLOSSY_PT:
-		{
-			float fuzz = mat.m_factor0;
-			if(fuzz > EPS)
-			{
-				float3 randPoint = threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]);
-				float3 reflectDir = normalize(reflect(ray.D, n) + fuzz * randPoint);
-				Ray reflectRay(p + reflectDir * EPS, reflectDir);
-				if(dot(reflectDir, n) > 0)
-				{
-					l += mat.m_albedo * Trace(reflectRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-				} // else, fuzzed ray is inside the surface so it gets absorber (we add nothing to the l)
-			}
-			else // exact same as GLOSSY
-			{
-				float3 reflectDir = reflect(ray.D, n);
-				Ray reflectRay(p + reflectDir * EPS, reflectDir);
-				l += mat.m_albedo * Trace(reflectRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-			}
-			break;
-		}
-		case Material::Type::GLOSSY_PT2:
-		{
-			float smoothness = mat.m_factor0;
-			float specularProbability = mat.m_factor1;
-			float3 randPoint = threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]);
-			float3 diffuseDir = normalize(n + randPoint);
-
-			float3 specularDir = reflect(ray.D, n);
-
-			bool isSpeculareBounce = specularProbability > threadRng.RandomFloat(pixelSeeds[pixelIndex]);
-			float3 rayDir = lerp(diffuseDir, specularDir, smoothness * (int)isSpeculareBounce);
-			Ray r(p + rayDir * EPS, rayDir);
-
-			float3 specularColor = Color::WHITE;
-
-			l += lerp(mat.m_albedo, specularColor, isSpeculareBounce) * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-
-			l += CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
-
-			break;
-		}
-		case Material::Type::PATH_TRACED:
-		{
-			float smoothness = mat.m_factor0;
-			float specularity = mat.m_factor1;
-
-			float3 diffuseDir = normalize(n + threadRng.RandomPointOnHemisphere(pixelSeeds[pixelIndex], n));
-
-			float3 finalDir(0);
-			float3 finalMatColor(0);
-			bool isSpecularRay = specularity > threadRng.RandomFloat(pixelSeeds[pixelIndex]);
-			if(isSpecularRay)
-			{
-				float3 specularDir = reflect(ray.D, n);
-				finalDir = lerp(diffuseDir, specularDir, smoothness);
-				finalMatColor = 1.0f; // No Effect when multipiled by Trace()
-			}
-			else
-			{
-				finalDir = diffuseDir;
-				finalMatColor = albedo;
-			}
-
-			Ray finalRay(p + finalDir * EPS, finalDir);
-
-			float3 finalTrace = finalMatColor * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-
-			float3 directLight = CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
-
-			l += finalTrace + directLight;
-
 			break;
 		}
 		case Material::Type::REFRACTIVE:
@@ -297,6 +213,38 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 					l += alb * ((fres * reflected) + ((1.0f - fres) * refracted));
 				}
 			}
+			break;
+		}
+		case Material::Type::PATH_TRACED:
+		{
+			float smoothness = mat.m_factor0;
+			float specularity = mat.m_factor1;
+
+			float3 diffuseDir = normalize(n + threadRng.RandomPointOnHemisphere(pixelSeeds[pixelIndex], n));
+
+			float3 finalDir(0);
+			float3 finalMatColor(0);
+			bool isSpecularRay = specularity > threadRng.RandomFloat(pixelSeeds[pixelIndex]);
+			if(isSpecularRay)
+			{
+				float3 specularDir = reflect(ray.D, n);
+				finalDir = lerp(diffuseDir, specularDir, smoothness);
+				finalMatColor = 1.0f; // No Effect when multipiled by Trace()
+			}
+			else
+			{
+				finalDir = diffuseDir;
+				finalMatColor = albedo;
+			}
+
+			Ray finalRay(p + finalDir * EPS, finalDir);
+
+			float3 finalTrace = finalMatColor * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+
+			float3 directLight = CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+
+			l += finalTrace + directLight;
+
 			break;
 		}
 		case Material::Type::EMISSIVE:

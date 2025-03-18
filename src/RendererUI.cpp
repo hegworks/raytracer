@@ -300,25 +300,17 @@ void Renderer::UI()
 								{
 									case Material::Type::DIFFUSE:
 									case Material::Type::GLOSSY:
-									case Material::Type::DIFFUSE_PT:
-										break;
-									case Material::Type::GLOSSY_PT:
-										ImGui::DragFloat(("Fuzz##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0.0f, 999999.0f);
-										break;
-									case Material::Type::GLOSSY_PT2:
-										ImGui::DragFloat(("Smoothness##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0.0f, 999999.0f);
-										ImGui::DragFloat(("SP##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
 										break;
 									case Material::Type::REFRACTIVE:
 										ImGui::DragFloat(("Density##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
 										ImGui::DragFloat(("IOR##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.01f, 0.0f, 999999.0f);
 										break;
-									case Material::Type::EMISSIVE:
-										ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
-										break;
 									case Material::Type::PATH_TRACED:
 										ImGui::DragFloat(("Smoothness##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0, 1);
 										ImGui::DragFloat(("Specularity##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
+										break;
+									case Material::Type::EMISSIVE:
+										ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
 										break;
 								}
 							}
