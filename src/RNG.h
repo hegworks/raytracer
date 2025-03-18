@@ -71,4 +71,10 @@ public:
 			}
 		}
 	}
+
+	float3 RandomPointOnHemisphere(uint& customSeed, const float3& normal)
+	{
+		float3 dir = RandomPointOnSphere(customSeed);
+		return dot(dir, normal) > 0.0f ? dir : -dir;
+	}
 };

@@ -25,7 +25,6 @@ Scene::Scene()
 	}
 	{
 		Model& model = CreateModel(ModelType::SPHERE);
-		model.m_modelData.m_meshMaterialList.front().m_type = Material::Type::GLOSSY_PT2;
 		m_tranformList.back().m_pos = float3(0, 1, 0);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}

@@ -144,23 +144,22 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 	float3 l(0);
 	Material mat = scene.GetMaterial(ray);
+	float3 albedo = mat.m_albedo;
+	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 	switch(mat.m_type)
 	{
 		case Material::Type::DIFFUSE:
 		{
-			l += CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			l += CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			break;
 		}
 		case Material::Type::DIFFUSE_PT:
 		{
-			float absorbance = mat.m_factor0;
-			float3 randPoint = threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]);
-			bool isInCorrectHemisphere = dot(randPoint, n) > 0.0f;
-			if(!isInCorrectHemisphere) randPoint = -randPoint;
+			float3 randPoint = threadRng.RandomPointOnHemisphere(pixelSeeds[pixelIndex], n);
 			float3 randDir = normalize(n + randPoint);
 			Ray r(p + randDir * EPS, randDir);
-			float3 indirectIllumination = absorbance * mat.m_albedo * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
-			float3 directIllumination = CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			float3 indirectIllumination = brdf * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 directIllumination = CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			l += indirectIllumination + directIllumination;
 			break;
 		}
@@ -209,7 +208,27 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 			l += lerp(mat.m_albedo, specularColor, isSpeculareBounce) * Trace(r, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 
-			l += CalcLights(ray, p, n, mat, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			l += CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+
+			break;
+		}
+		case Material::Type::PATH_TRACED:
+		{
+			float smoothness = mat.m_factor0;
+
+			float3 diffuseDir = normalize(n + threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]));
+			Ray diffuseRay(p + diffuseDir * EPS, diffuseDir);
+			//float3 diffuseTrace = mat.m_albedo * Trace(diffuseRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+
+			float3 specularDir = reflect(ray.D, n);
+			//Ray specularRay(p + specularDir * EPS, specularDir);
+
+			float3 finalDir = lerp(diffuseDir, specularDir, smoothness);
+			Ray finalRay(p + finalDir * EPS, finalDir);
+
+			float3 finalTrace = mat.m_albedo * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+
+			l += finalTrace;
 
 			break;
 		}
@@ -291,11 +310,8 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 }
 
-float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, const Material& mat, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
+float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, const Material& mat, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
 {
-	float3 albedo = mat.m_albedo;
-	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
-
 	/*float totalIntesity(0);
 	for(const PointLight& light : scene.m_pointLightList) totalIntesity += light.m_intensity;
 	for(const SpotLight& light : scene.m_spotLightList) totalIntesity += light.m_intensity;

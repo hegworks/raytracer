@@ -30,7 +30,7 @@ public:
 	float3 CalclDirLight(const DirLight& light, float3 p, float3 n, float3 brdf);
 	float3 CalcAllQuadLights(float3 p, float3 n, float3 brdf, uint pixelIndex);
 	float3 CalcQuadLight(const QuadLight& light, float3 p, float3 n, float3 brdf, uint pixelIndex);
-	float3 CalcLights(Ray& ray, float3 p, float3 n, const Material& mat, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
+	float3 CalcLights(Ray& ray, float3 p, float3 n, const Material& mat, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 
 	// data members
 	int2 mousePos;

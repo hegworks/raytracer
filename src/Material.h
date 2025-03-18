@@ -9,6 +9,7 @@ inline const char* MATERIAL_STRING[] =
 	"GLOSSY_PT2",
 	"REFRACTIVE",
 	"EMISSIVE",
+	"PATH_TRACED",
 };
 
 struct ALIGNED(64) Material
@@ -22,11 +23,12 @@ struct ALIGNED(64) Material
 		GLOSSY_PT2,
 		REFRACTIVE,
 		EMISSIVE,
+		PATH_TRACED,
 	};
 
 	char m_name[40];
 	float3 m_albedo = float3(1.0f);
 	float m_factor0 = 1.0f;
 	float m_factor1 = 1.5f;
-	Type m_type = Type::DIFFUSE_PT;
+	Type m_type = Type::PATH_TRACED;
 };
