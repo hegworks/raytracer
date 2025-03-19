@@ -107,7 +107,7 @@ struct float3
 	float halfArea() { return x < -1e30f ? 0 : (x * y + y * z + z * x); } // for SAH calculations
 	union { struct { float x, y, z; }; float cell[3]; };
 	float& operator [] (const int n) { return cell[n]; }
-	const float& operator [] ( const int n ) const { return cell[n]; }
+	const float& operator [] (const int n) const { return cell[n]; }
 };
 struct ALIGN(4) uchar4
 {
@@ -842,11 +842,19 @@ public:
 	float magnitude() const { return sqrtf(w * w + x * x + y * y + z * z); }
 	void normalize() { float m = magnitude(); *this = this->scale(1 / m); }
 	quat conjugate() const { return quat(w, -x, -y, -z); }
+	static quat identity() { return quat(1, 0, 0, 0); }
 	void fromAxisAngle(const float3& axis, float theta)
 	{
 		w = cosf(theta / 2);
 		const float s = sinf(theta / 2);
 		x = axis.x * s, y = axis.y * s, z = axis.z * s;
+	}
+	static quat FromAxisAngle(const float3& axis, float theta)
+	{
+		float w = cosf(theta / 2);
+		const float s = sinf(theta / 2);
+		float x = axis.x * s, y = axis.y * s, z = axis.z * s;
+		return quat(w, x, y, z);
 	}
 	void fromMatrix(const mat4& m)
 	{
@@ -876,6 +884,23 @@ public:
 			w = (m(1, 0) - m(0, 1)) / S, x = (m(0, 2) + m(2, 0)) / S;
 			y = (m(1, 2) + m(2, 1)) / S, z = 0.25f * S;
 		}
+	}
+	static quat fromEuler(const float3& euler)
+	{
+		// Convert Euler angles (in radians) to quaternion
+		float cx = cosf(euler.x * 0.5f);
+		float sx = sinf(euler.x * 0.5f);
+		float cy = cosf(euler.y * 0.5f);
+		float sy = sinf(euler.y * 0.5f);
+		float cz = cosf(euler.z * 0.5f);
+		float sz = sinf(euler.z * 0.5f);
+
+		return quat(
+			cx * cy * cz + sx * sy * sz,
+			sx * cy * cz - cx * sy * sz,
+			cx * sy * cz + sx * cy * sz,
+			cx * cy * sz - sx * sy * cz
+		);
 	}
 	void toAxisAngle(float3& axis, float& angle) const
 	{

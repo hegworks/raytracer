@@ -41,12 +41,12 @@ Scene::Scene()
 		m_tranformList.back().m_pos = float3(3, 0.5, 0);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}
-	{
-		Model& model = CreateModel(ModelType::CORNELL);
-		m_tranformList.back().m_pos = float3(0, 0, 3);
-		m_tranformList.back().m_rot = float3(0, 180, 0);
-		SetBlasTransform(m_blasList.back(), m_tranformList.back());
-	}
+	//{
+	//	Model& model = CreateModel(ModelType::CORNELL);
+	//	m_tranformList.back().m_pos = float3(0, 0, 3);
+	//	//m_tranformList.back().m_rot = float3(0, 180, 0);
+	//	SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	//}
 	BuildTlas();
 	/*SpotLight& spotLight = CreateSpotLight();
 	spotLight.m_intensity = 64.0f;
@@ -184,9 +184,7 @@ void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t)
 {
 	mat4 mat =
 		mat4::Translate(t.m_pos) *
-		mat4::RotateX(DEG_TO_RAD(t.m_rot.x)) *
-		mat4::RotateY(DEG_TO_RAD(t.m_rot.y)) *
-		mat4::RotateZ(DEG_TO_RAD(t.m_rot.z)) *
+		t.m_rot.toMatrix() *
 		mat4::Scale(t.m_scl);
 	for(int i = 0; i < 16; ++i)
 	{
