@@ -15,8 +15,21 @@ Scene::Scene()
 
 	LoadSkydome();
 
-#pragma region MultiObject TestScene
+#pragma region QuatRotation TestScene
+	{
+		Model& model = CreateModel(ModelType::DRAGON);
+	}
+	{
+		Model& model = CreateModel(ModelType::PLANE);
+		m_tranformList.back().m_scl = float3(30, 1, 30);
+		m_tranformList.back().m_pos = float3(0, -2, 0);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	BuildTlas();
+#pragma endregion
 
+#pragma region MultiObject TestScene
+	/*
 	{
 		Model& model = CreateModel(ModelType::PLANE);
 		m_tranformList.back().m_scl = float3(30, 1, 30);
@@ -48,10 +61,10 @@ Scene::Scene()
 	//	SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	//}
 	BuildTlas();
-	/*SpotLight& spotLight = CreateSpotLight();
+	SpotLight& spotLight = CreateSpotLight();
 	spotLight.m_intensity = 64.0f;
-	spotLight.m_pos.y = 10;*/
-
+	spotLight.m_pos.y = 10;
+	*/
 #pragma endregion
 
 #pragma region DIFFUSE_PT Lighting TestScene

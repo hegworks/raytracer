@@ -3,7 +3,8 @@
 #include "renderer.h"
 
 
-void DecomposeQuaternionToEuler(const quat& q, float3& euler) {
+void DecomposeQuaternionToEuler(const quat& q, float3& euler)
+{
 // Extract Euler angles from quaternion
 // Note: This uses XYZ rotation order
 
@@ -67,6 +68,20 @@ void DecomposeQuaternionToEuler(const quat& q, float3& euler) {
 // -----------------------------------------------------------
 void Renderer::UI()
 {
+	bool rotChanged = false;
+	if(IsKeyDown(GLFW_KEY_U)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(1, 0, 0), 0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_I)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(0, 1, 0), 0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_O)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(0, 0, 1), 0.1f), rotChanged = true;
+
+	if(IsKeyDown(GLFW_KEY_J)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(1, 0, 0), -0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_K)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(0, 1, 0), -0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_L)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(0, 0, 1), -0.1f), rotChanged = true;
+	if(rotChanged)
+	{
+		scene.SetBlasTransform(scene.m_blasList.front(), scene.m_tranformList.front());
+		scene.BuildTlas();
+	}
+
 	ImGui::End();
 
 	ImGui::SetNextWindowPos(ImVec2(SCRWIDTH - 300, 0));
@@ -381,14 +396,6 @@ void Renderer::UI()
 				}
 				if(ImGui::BeginTabItem("Transforms"))
 				{
-					ImGui::Text("Rotation Axis:");
-					ImGui::SameLine();
-					if(ImGui::RadioButton("X", &dbgRotAxisInt, 0)) { rotAxis = float3(1, 0, 0); }
-					ImGui::SameLine();
-					if(ImGui::RadioButton("Y", &dbgRotAxisInt, 1)) { rotAxis = float3(0, 1, 0); }
-					ImGui::SameLine();
-					if(ImGui::RadioButton("Z", &dbgRotAxisInt, 2)) { rotAxis = float3(0, 0, 1); }
-
 					for(int i = 0; i < numBlases; ++i)
 					{
 						tinybvh::BLASInstance& blas = scene.m_blasList[i];
@@ -401,100 +408,11 @@ void Renderer::UI()
 							if(ImGui::DragFloat3("Pos", &t.m_pos.x, 0.1f)) changed = true;
 							ImGui::SameLine();
 							if(ImGui::Button("reset##0")) t.m_pos = 0, changed = true;
-
-
-#if 0
-							// Store the previous angles to calculate deltas
-							static float3 prevAngles = t.m_rotAngles;
-
-							bool rotChanged = false;
-							if(ImGui::DragFloat("Rotation X", &t.m_rotAngles.x, 0.5f)) rotChanged = true;
-							if(ImGui::DragFloat("Rotation Y", &t.m_rotAngles.y, 0.5f)) rotChanged = true;
-							if(ImGui::DragFloat("Rotation Z", &t.m_rotAngles.z, 0.5f)) rotChanged = true;
-
-							if(rotChanged)
-							{
-								// Calculate angle deltas
-								float deltaX = t.m_rotAngles.x - prevAngles.x;
-								float deltaY = t.m_rotAngles.y - prevAngles.y;
-								float deltaZ = t.m_rotAngles.z - prevAngles.z;
-
-								// Create incremental rotations based on local axes
-								if(deltaX != 0.0f)
-								{
-				// Create rotation around local X axis
-									float3 localXAxis = t.m_rot.rotateVector({1, 0, 0});
-									quat incRotX = quat::FromAxisAngle(localXAxis, DEG_TO_RAD(deltaX));
-									t.m_rot = incRotX * t.m_rot;
-								}
-
-								if(deltaY != 0.0f)
-								{
-				// Create rotation around local Y axis
-									float3 localYAxis = t.m_rot.rotateVector({0, 1, 0});
-									quat incRotY = quat::FromAxisAngle(localYAxis, DEG_TO_RAD(deltaY));
-									t.m_rot = incRotY * t.m_rot;
-								}
-
-								if(deltaZ != 0.0f)
-								{
-				// Create rotation around local Z axis
-									float3 localZAxis = t.m_rot.rotateVector({0, 0, 1});
-									quat incRotZ = quat::FromAxisAngle(localZAxis, DEG_TO_RAD(deltaZ));
-									t.m_rot = incRotZ * t.m_rot;
-								}
-
-								// Update previous angles
-								prevAngles = t.m_rotAngles;
-								changed = true;
-							}
-#endif
-
-
-							bool rotChanged = false;
-							float oldX = t.m_rotAngles.x;
-							float oldY = t.m_rotAngles.y;
-							float oldZ = t.m_rotAngles.z;
-
-							if(ImGui::DragFloat("Rotation X", &t.m_rotAngles.x, 0.5f)) rotChanged = true;
-							if(ImGui::DragFloat("Rotation Y", &t.m_rotAngles.y, 0.5f)) rotChanged = true;
-							if(ImGui::DragFloat("Rotation Z", &t.m_rotAngles.z, 0.5f)) rotChanged = true;
-
-							if(rotChanged)
-							{
-				// Calculate deltas from UI
-								float deltaX = t.m_rotAngles.x - oldX;
-								float deltaY = t.m_rotAngles.y - oldY;
-								float deltaZ = t.m_rotAngles.z - oldZ;
-
-								// Apply incremental rotations around global axes
-								if(deltaX != 0.0f)
-								{
-									quat incRotX = quat::FromAxisAngle({1, 0, 0}, DEG_TO_RAD(deltaX));
-									t.m_rot = t.m_rot * incRotX;
-								}
-
-								if(deltaY != 0.0f)
-								{
-									quat incRotY = quat::FromAxisAngle({0, 1, 0}, DEG_TO_RAD(deltaY));
-									t.m_rot = t.m_rot * incRotY;
-								}
-
-								if(deltaZ != 0.0f)
-								{
-									quat incRotZ = quat::FromAxisAngle({0, 0, 1}, DEG_TO_RAD(deltaZ));
-									t.m_rot = t.m_rot * incRotZ;
-								}
-
-								// Now decompose the final quaternion back to Euler angles
-								// This updates the UI to match the actual rotation
-								DecomposeQuaternionToEuler(t.m_rot, t.m_rotAngles);
-
-								changed = true;
-							}
-
 							ImGui::SameLine();
 							if(ImGui::Button("reset##1")) t.m_rot = quat::identity(), changed = true;
+
+							ImGui::Text("Rot: %.2f,%.2f,%.2f", t.m_rotAngles.x, t.m_rotAngles.y, t.m_rotAngles.z);
+							if(ImGui::Button("reset##2")) { t.m_rot = quat::identity(); changed = true; }
 
 							bool uniformScaleChanged = false;
 							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f, EPS, 99999.0f)) changed = true;
@@ -610,4 +528,11 @@ void Renderer::KeyDown(int key)
 			isDbgPixelEntered = true;
 		}
 	}
+}
+
+void Renderer::RotateAroundWorldAxis(Transform& transform, const float3& worldAxis, float angleRadians)
+{
+	quat worldRotation = quat::FromAxisAngle(worldAxis, angleRadians);
+	transform.m_rot = worldRotation * transform.m_rot;
+	transform.m_rotAngles += worldAxis * RAD_TO_DEG(angleRadians);
 }

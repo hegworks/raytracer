@@ -22,6 +22,7 @@ public:
 	void MouseWheel(float y) { /* implement if you want to handle the mouse wheel */ }
 	void KeyUp(int key) { /* implement if you want to handle keys */ }
 	void KeyDown(int key);
+	void RotateAroundWorldAxis(Transform& transform, const float3& worldAxis, float angleRadians);
 	float3 CalcAllPointLights(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 	float3 CalcPointLight(const PointLight& light, float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 	float3 CalcAllSpotLights(float3 p, float3 n, float3 brdf);
