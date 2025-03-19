@@ -423,10 +423,9 @@ void Renderer::UI()
 							if(ImGui::Button("reset##0")) t.m_pos = 0, changed = true;
 							ImGui::SameLine();
 							if(ImGui::Button("reset##1")) t.m_rot = quat::identity(), changed = true;
-
-							ImGui::Text("Rot: %.2f,%.2f,%.2f", t.m_rotAngles.x, t.m_rotAngles.y, t.m_rotAngles.z);
+							if(ImGui::DragFloat3("Rot", &t.m_rotAngles.x, 0.5f)) t.m_rot = quat::fromEuler(DEG_TO_RAD(t.m_rotAngles)), changed = true;
 							ImGui::SameLine();
-							if(ImGui::Button("reset##2")) { t.m_rot = quat::identity(); changed = true; }
+							if(ImGui::Button("reset##2")) { t.m_rotAngles = 0; t.m_rot = quat::identity(); changed = true; }
 
 							bool uniformScaleChanged = false;
 							if(ImGui::DragFloat3("Scl", &t.m_scl.x, 0.1f, EPS, 99999.0f)) changed = true;
