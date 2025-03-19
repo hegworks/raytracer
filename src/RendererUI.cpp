@@ -69,16 +69,16 @@ void DecomposeQuaternionToEuler(const quat& q, float3& euler)
 void Renderer::UI()
 {
 	bool rotChanged = false;
-	if(IsKeyDown(GLFW_KEY_U)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(1, 0, 0), 0.1f), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_I)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(0, 1, 0), 0.1f), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_O)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(0, 0, 1), 0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_U)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(1, 0, 0), 0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_I)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 1, 0), 0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_O)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 0, 1), 0.1f), rotChanged = true;
 
-	if(IsKeyDown(GLFW_KEY_J)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(1, 0, 0), -0.1f), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_K)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(0, 1, 0), -0.1f), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_L)) RotateAroundWorldAxis(scene.m_tranformList.front(), float3(0, 0, 1), -0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_J)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(1, 0, 0), -0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_K)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 1, 0), -0.1f), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_L)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 0, 1), -0.1f), rotChanged = true;
 	if(rotChanged)
 	{
-		scene.SetBlasTransform(scene.m_blasList.front(), scene.m_tranformList.front());
+		scene.SetBlasTransform(scene.m_blasList[selectedIdx], scene.m_tranformList[selectedIdx]);
 		scene.BuildTlas();
 	}
 
@@ -92,26 +92,39 @@ void Renderer::UI()
 	ImGui::Text("avg	fps	rps");
 	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
 
-	// ray query on mouse
-	int2 coord = isDbgPixel ? dbgpixel : mousePos;
-	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
-	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
-	if(isInScreen)
+	if(ImGui::CollapsingHeader("Hit Info"))
 	{
-		pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
-		red = (pixel & 0xFF0000) >> 16;
-		green = (pixel & 0x00FF00) >> 8;
-		blue = pixel & 0x0000FF;
+		// ray query on mouse
+		int2 coord = isDbgPixel ? dbgpixel : mousePos;
+		bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
+		uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
+		if(isInScreen)
+		{
+			pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
+			red = (pixel & 0xFF0000) >> 16;
+			green = (pixel & 0x00FF00) >> 8;
+			blue = pixel & 0x0000FF;
+		}
+		Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, false, 0);
+		scene.Intersect(r);
+		ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+		bool hit = r.hit.t < BVH_FAR;
+		int inst = hit ? r.hit.inst : -1;
+		int blasIdx = hit ? scene.m_blasList[inst].blasIdx : -1;
+		int prim = hit ? r.hit.prim : -1;
+		int tri = hit ? r.hit.prim * 3 : -1;
+		int mesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
+
+		ImGui::Text("selectedIdx %i", selectedIdx);
+		ImGui::Text("coord %i,%i", coord.x, coord.y);
+		ImGui::Text("inst %i", inst);
+		//ImGui::Text("blasIdx %i", blasIdx);
+		ImGui::Text("mesh %i", mesh);
+
+		ImGui::ColorButton("", color);
+		ImGui::SameLine();
+		ImGui::Text("%u,%u,%u", red, green, blue);
 	}
-	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, false, 0);
-	scene.Intersect(r);
-	ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-	int debugInt = r.hit.t < BVH_FAR ? scene.m_blasList[r.hit.inst].blasIdx : -1;
-	ImGui::Text("%i  %i,%i", debugInt, coord.x, coord.y);
-	ImGui::SameLine();
-	ImGui::ColorButton("", color);
-	ImGui::SameLine();
-	ImGui::Text("%u,%u,%u", red, green, blue);
 
 	if(ImGui::BeginTabBar("Main"))
 	{
@@ -412,6 +425,7 @@ void Renderer::UI()
 							if(ImGui::Button("reset##1")) t.m_rot = quat::identity(), changed = true;
 
 							ImGui::Text("Rot: %.2f,%.2f,%.2f", t.m_rotAngles.x, t.m_rotAngles.y, t.m_rotAngles.z);
+							ImGui::SameLine();
 							if(ImGui::Button("reset##2")) { t.m_rot = quat::identity(); changed = true; }
 
 							bool uniformScaleChanged = false;
@@ -509,6 +523,22 @@ void Renderer::MouseDown(int button)
 		if(button == GLFW_MOUSE_BUTTON_LEFT)
 		{
 			isDbgPixelClicked = true;
+		}
+	}
+	else
+	{
+		if(button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			int2 coord = mousePos;
+			bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
+			if(!isInScreen) return;
+			Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, false, 0);
+			scene.Intersect(r);
+			bool hit = r.hit.t < BVH_FAR;
+			if(hit)
+			{
+				selectedIdx = r.hit.inst;
+			}
 		}
 	}
 }
