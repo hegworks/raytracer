@@ -82,7 +82,7 @@ void Renderer::Tick(float deltaTime)
 			for(int s = 0; s < spp; ++s)
 			{
 				float2 defocusRand = threadRng.RandomPointOnCircle(pixelSeeds[pixelIndex]);
-				Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset, useDOF, defocusRand);
+				Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset, defocusRand);
 				stochasticDOFTraced += Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY);
 			}
 			float3 traced = stochasticDOFTraced / (float)spp;

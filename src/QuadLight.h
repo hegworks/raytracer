@@ -9,9 +9,9 @@ public:
 	float3 m_color = float3(1.0f);
 	float m_intensity = 1.0f;
 
-	QuadLight(int idx)
+	QuadLight()
 	{
-		m_quad = Quad(idx, 1.0f);
+		m_quad = Quad(1.0f);
 	}
 
 	/// returns a uniform pdf

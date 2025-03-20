@@ -16,7 +16,7 @@ public:
 	float3 m_dir = float3(0, 1, 0);
 
 	Quad() = default;
-	Quad(int idx, float s, mat4 transform = mat4::Identity())
+	Quad(float s, mat4 transform = mat4::Identity())
 	{
 		size = s * 0.5f;
 		T = transform, invT = transform.FastInvertedTransformNoScale();
@@ -34,7 +34,10 @@ public:
 			const float Dz = invT.cell[8] * ray.D.x + invT.cell[9] * ray.D.y + invT.cell[10] * ray.D.z;
 			const float Ix = Ox + t * Dx, Iz = Oz + t * Dz;
 			if(Ix > -size && Ix < size && Iz > -size && Iz < size)
-				ray.hit.t = t, ray.hit.prim = -1;
+			{
+				ray.hit.t = t;
+				//ray.hit.prim = -1;
+			}
 		}
 	}
 	bool IsOccluded(const Ray& ray) const
@@ -57,8 +60,8 @@ public:
 	{
 		return float3(-T.cell[1], -T.cell[5], -T.cell[9]);
 	}
-	float3& GetAlbedo(const float3 I)
+	/*float3& GetAlbedo(const float3 I)
 	{
 		return m_material.m_albedo;
-	}
+	}*/
 };

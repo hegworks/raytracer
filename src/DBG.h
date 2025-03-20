@@ -113,7 +113,7 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 			o += 5;
 			char t[50];
 			sprintf(t, "%.2f,%.2f,%.2f", p.x, p.y, p.z);
-			if(DBGCanPrint(o)) screen->Print(t, o.x, o.y, 0x00ff00, tddFS);
+			if(DBGCanPrint(o)) screen->Print(t, (int)o.x, (int)o.y, 0x00ff00, tddFS);
 		}
 
 		// ray length

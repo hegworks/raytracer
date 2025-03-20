@@ -50,13 +50,14 @@ public:
 
 	struct ALIGNED(64) ModelData
 	{
-		alignas(64) std::vector<Material> m_meshMaterialList; /// idx of material of each mesh
-		alignas(64) std::vector<int> m_meshVertexBorderList; /// last idx of m_vertices of each mesh
-		alignas(64) std::vector<Texture> m_textureList;
-		alignas(64) std::vector<VertexData> m_vertexDataList;
-		alignas(64) std::vector<float4> m_vertices;
-		alignas(64) ModelType m_type;
+		std::vector<Material> m_meshMaterialList; /// idx of material of each mesh
+		std::vector<int> m_meshVertexBorderList; /// last idx of m_vertices of each mesh
+		std::vector<Texture> m_textureList;
+		std::vector<VertexData> m_vertexDataList;
+		std::vector<float4> m_vertices;
+		ModelType m_type;
 		bool m_initialized = false;
+		char dummy[30];
 	};
 
 	ModelData m_modelData;
@@ -102,7 +103,7 @@ inline std::string Model::GetStrippedFileName() const
 
 inline int Model::VertexToMeshIdx(int prim)
 {
-	int numMeshes = m_modelData.m_meshVertexBorderList.size();
+	int numMeshes = static_cast<int>(m_modelData.m_meshVertexBorderList.size());
 	if(numMeshes == 1) return 0;
 	for(int i = 0; i < numMeshes; ++i)
 	{

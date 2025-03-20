@@ -319,7 +319,7 @@ DirLight& Scene::CreateDirLight()
 
 QuadLight& Scene::CreateQuadLight()
 {
-	m_quadLightList.emplace_back(m_nextIdx++);
+	m_quadLightList.emplace_back();
 	QuadLight& light = m_quadLightList.back();
 	return light;
 }

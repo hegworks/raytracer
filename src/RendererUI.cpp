@@ -44,7 +44,7 @@ void Renderer::UI()
 			green = (pixel & 0x00FF00) >> 8;
 			blue = pixel & 0x0000FF;
 		}
-		Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, false, 0);
+		Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, 0);
 		scene.Intersect(r);
 		ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
 		bool hit = r.hit.t < BVH_FAR;
@@ -470,7 +470,7 @@ void Renderer::MouseDown(int button)
 			int2 coord = mousePos;
 			bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
 			if(!isInScreen) return;
-			Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, false, 0);
+			Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, 0);
 			scene.Intersect(r);
 			bool hit = r.hit.t < BVH_FAR;
 			if(hit)

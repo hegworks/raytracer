@@ -15,7 +15,7 @@ public:
 		topRight = {1.77777767f,	6.81044817f, -9.34812832f};
 		bottomLeft = {-1.77777767f,	5.16352797f, -10.4828768f};
 	}
-	Ray GetPrimaryRay(const float x, const float y, const bool useDOF, const float2 randOnUnitDisk)
+	Ray GetPrimaryRay(const float x, const float y, const float2 randOnUnitDisk)
 	{
 		// pixel coord -> point on virutal screen plane
 		const float u = (float)x * (1.0f / SCRWIDTH);
