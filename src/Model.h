@@ -57,7 +57,11 @@ public:
 		std::vector<float4> m_vertices;
 		ModelType m_type;
 		bool m_initialized = false;
+#ifdef _DEBUG
+		char dummy[30];
+#else
 		char dummy[6];
+#endif
 	};
 
 	ModelData m_modelData;
