@@ -150,7 +150,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	{
 		case Material::Type::DIFFUSE:
 		{
-			l += CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			l += CalcLights(ray, p, n, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 			break;
 		}
 		case Material::Type::GLOSSY:
@@ -241,7 +241,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 			float3 finalTrace = finalMatColor * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 
-			float3 directLight = CalcLights(ray, p, n, mat, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			float3 directLight = CalcLights(ray, p, n, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 
 			l += finalTrace + directLight;
 
@@ -270,7 +270,8 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 }
 
-float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, const Material& mat, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
+float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool
+							isTddCameraY)
 {
 	/*float totalIntesity(0);
 	for(const PointLight& light : scene.m_pointLightList) totalIntesity += light.m_intensity;
@@ -312,7 +313,7 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, const
 			else // PointLight
 			{
 				PointLight& light = scene.m_pointLightList[randIdx];
-				float3 l = CalcPointLight(light, p, n, brdf, isTddPixelX, isTddPixelY, isTddCameraY);
+				float3 l = CalcPointLight(light, p, n, brdf, isTddPixelX, isTddPixelY);
 				stochasticL += l;
 			}
 		}
@@ -331,7 +332,7 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, const
 }
 
 
-float3 Renderer::CalcPointLight(const PointLight& light, float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
+float3 Renderer::CalcPointLight(const PointLight& light, float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY)
 {
 	float3 lPos = light.m_pos; /// LightPos
 	float3 vi = lPos - p; /// Light Vector
@@ -391,7 +392,7 @@ float3 Renderer::CalcAllPointLights(float3 p, float3 n, float3 brdf, bool isTddP
 	int numPointLights = static_cast<int>(scene.m_pointLightList.size());
 	for(int i = 0; i < numPointLights; ++i)
 	{
-		l += CalcPointLight(scene.m_pointLightList[i], p, n, brdf, isTddPixelX, isTddPixelY, isTddCameraY);
+		l += CalcPointLight(scene.m_pointLightList[i], p, n, brdf, isTddPixelX, isTddPixelY);
 	}
 	return l;
 }

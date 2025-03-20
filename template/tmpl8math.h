@@ -1,4 +1,4 @@
-// Template, 2024 IGAD Edition
+﻿// Template, 2024 IGAD Edition
 // Get the latest version from: https://github.com/jbikker/tmpl8
 // IGAD/NHTV/BUAS/UU - Jacco Bikker - 2006-2024
 
@@ -7,6 +7,14 @@
 // https://github.com/jbikker for examples.
 
 #pragma once
+
+#define DEG_TO_RAD(x)	((x)*0.01745329251f)
+#define RAD_TO_DEG(x)	((x)*57.2957795131f)
+#define PI				3.14159265358979323846264f
+#define INVPI			0.31830988618379067153777f
+#define INV2PI			0.15915494309189533576888f
+#define TWOPI			6.28318530717958647692528f
+#define SQRT_PI_INV		0.56418958355f
 
 namespace Tmpl8
 {
@@ -709,7 +717,7 @@ public:
 	{
 		mat4 r;
 #ifdef _MSC_VER
-	// use SSE to transpose the 3x3 part
+		// use SSE to transpose the 3x3 part
 		__m128& inM0 = (__m128&)cell[0], & outM0 = (__m128&)r.cell[0];
 		__m128& inM1 = (__m128&)cell[4], & outM1 = (__m128&)r.cell[4];
 		__m128& inM2 = (__m128&)cell[8], & outM2 = (__m128&)r.cell[8];
@@ -718,7 +726,7 @@ public:
 		outM1 = _mm_shuffle_ps(t0, inM2, 0b11011101);
 		outM2 = _mm_shuffle_ps(t1, inM2, 0b11101000);
 #else
-	// fallback for crossplatform compatibility
+		// fallback for crossplatform compatibility
 		r[0] = cell[0], r[1] = cell[4], r[2] = cell[8];
 		r[4] = cell[1], r[5] = cell[5], r[6] = cell[9];
 		r[8] = cell[2], r[9] = cell[6], r[10] = cell[10];
@@ -971,6 +979,67 @@ public:
 			r.z = (s1 * a.z + s2 * r.z) / s3;
 		}
 		return r;
+	}
+	/// <summary>
+	/// Extract Euler angles from quaternion
+	/// Note: This uses XYZ rotation order
+	/// </summary>
+	// This function is written by claude.ai
+	static void DecomposeQuaternionToEuler(const quat& q, float3& euler)
+	{
+		// Convert quaternion to rotation matrix first
+		float xx = q.x * q.x;
+		float xy = q.x * q.y;
+		float xz = q.x * q.z;
+		float xw = q.x * q.w;
+		float yy = q.y * q.y;
+		float yz = q.y * q.z;
+		float yw = q.y * q.w;
+		float zz = q.z * q.z;
+		float zw = q.z * q.w;
+
+		// Matrix elements
+		float m00 = 1 - 2 * (yy + zz);
+		float m01 = 2 * (xy - zw);
+		//float m02 = 2 * (xz + yw); // unused
+		float m10 = 2 * (xy + zw);
+		float m11 = 1 - 2 * (xx + zz);
+		//float m12 = 2 * (yz - xw); // unused
+		float m20 = 2 * (xz - yw);
+		float m21 = 2 * (yz + xw);
+		float m22 = 1 - 2 * (xx + yy);
+
+		// Extract angles (in radians)
+		// Note: atan2 returns values in [-π, π]
+		if(m20 < 0.999999)
+		{
+			if(m20 > -0.999999)
+			{
+				// Normal case
+				euler.x = atan2(-m21, m22);  // X rotation (pitch)
+				euler.y = asin(m20);         // Y rotation (yaw)
+				euler.z = atan2(-m10, m00);  // Z rotation (roll)
+			}
+			else
+			{
+				// m20 = -1 (north pole singularity)
+				euler.x = -atan2(m01, m11);
+				euler.y = -INV2PI;
+				euler.z = 0;
+			}
+		}
+		else
+		{
+			// m20 = 1 (south pole singularity)
+			euler.x = atan2(m01, m11);
+			euler.y = PI / 2;
+			euler.z = 0;
+		}
+
+		// Convert to degrees
+		euler.x = RAD_TO_DEG(euler.x);
+		euler.y = RAD_TO_DEG(euler.y);
+		euler.z = RAD_TO_DEG(euler.z);
 	}
 	quat operator + (const quat& q) const { return quat(w + q.w, x + q.x, y + q.y, z + q.z); }
 	quat operator - (const quat& q) const { return quat(w - q.w, x - q.x, y - q.y, z - q.z); }

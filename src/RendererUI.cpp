@@ -2,67 +2,6 @@
 
 #include "renderer.h"
 
-
-void DecomposeQuaternionToEuler(const quat& q, float3& euler)
-{
-// Extract Euler angles from quaternion
-// Note: This uses XYZ rotation order
-
-// Convert quaternion to rotation matrix first
-	float xx = q.x * q.x;
-	float xy = q.x * q.y;
-	float xz = q.x * q.z;
-	float xw = q.x * q.w;
-	float yy = q.y * q.y;
-	float yz = q.y * q.z;
-	float yw = q.y * q.w;
-	float zz = q.z * q.z;
-	float zw = q.z * q.w;
-
-	// Matrix elements
-	float m00 = 1 - 2 * (yy + zz);
-	float m01 = 2 * (xy - zw);
-	float m02 = 2 * (xz + yw);
-	float m10 = 2 * (xy + zw);
-	float m11 = 1 - 2 * (xx + zz);
-	float m12 = 2 * (yz - xw);
-	float m20 = 2 * (xz - yw);
-	float m21 = 2 * (yz + xw);
-	float m22 = 1 - 2 * (xx + yy);
-
-	// Extract angles (in radians)
-	// Note: atan2 returns values in [-π, π]
-	if(m20 < 0.999999)
-	{
-		if(m20 > -0.999999)
-		{
-// Normal case
-			euler.x = atan2(-m21, m22);  // X rotation (pitch)
-			euler.y = asin(m20);         // Y rotation (yaw)
-			euler.z = atan2(-m10, m00);  // Z rotation (roll)
-		}
-		else
-		{
-			 // m20 = -1 (north pole singularity)
-			euler.x = -atan2(m01, m11);
-			euler.y = -PI / 2;
-			euler.z = 0;
-		}
-	}
-	else
-	{
-	 // m20 = 1 (south pole singularity)
-		euler.x = atan2(m01, m11);
-		euler.y = PI / 2;
-		euler.z = 0;
-	}
-
-	// Convert to degrees
-	euler.x = RAD_TO_DEG(euler.x);
-	euler.y = RAD_TO_DEG(euler.y);
-	euler.z = RAD_TO_DEG(euler.z);
-}
-
 // -----------------------------------------------------------
 // Update user interface (imgui)
 // -----------------------------------------------------------
@@ -111,7 +50,7 @@ void Renderer::UI()
 		bool hit = r.hit.t < BVH_FAR;
 		int inst = hit ? r.hit.inst : -1;
 		int blasIdx = hit ? scene.m_blasList[inst].blasIdx : -1;
-		int prim = hit ? r.hit.prim : -1;
+		//int prim = hit ? r.hit.prim : -1; // unused
 		int tri = hit ? r.hit.prim * 3 : -1;
 		int mesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
 
