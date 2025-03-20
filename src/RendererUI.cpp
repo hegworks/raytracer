@@ -79,6 +79,8 @@ void Renderer::UI()
 			ImGui::Checkbox("ACM", &useACM);
 			ImGui::SameLine();
 			ImGui::Checkbox("TDD", &tdd);
+			ImGui::SameLine();
+			ImGui::Checkbox("BI", &useBI);
 
 			ImGui::Separator();
 

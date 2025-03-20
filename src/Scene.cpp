@@ -213,16 +213,43 @@ void Scene::BuildTlas()
 	m_tlas.Build(m_blasList.data(), static_cast<int>(m_blasList.size()), m_bvhBaseList.data(), static_cast<int>(m_bvhBaseList.size()));
 }
 
-// this function is based on https://jacco.ompf2.com/2022/06/03/how-to-build-a-bvh-part-9a-to-the-gpu/
-float3 Scene::SampleSky(const Ray& ray)
+float3 Scene::SampleSky(const Ray& ray) const
 {
-	float phi = atan2(ray.D.z, ray.D.x);
-	uint u = static_cast<uint>(m_skyWidth * (phi > 0 ? phi : (phi + 2 * PI)) * INV2PI - 0.5f);
-	uint v = static_cast<uint>(m_skyHeight * acos(ray.D.y) * INVPI - 0.5f);
-	uint skyIdx = (u + v * m_skyWidth) % (m_skyWidth * m_skyHeight);
+	const uint skySize = m_skyWidth * m_skyHeight;
+	const float phi = atan2(ray.D.z, ray.D.x);
+	const float u = 0.5f + (phi * INV2PI);
+	const float v = 0.5f - (asin(ray.D.y) * INVPI);
 
-	m_skydomeBrightnessFactor = dbgSDBF;
-	return m_skydomeBrightnessFactor * float3(m_skyPixels[skyIdx * 3], m_skyPixels[skyIdx * 3 + 1], m_skyPixels[skyIdx * 3 + 2]);
+	const float skyWidthF = (float)m_skyWidth;
+	const float skyHeightF = (float)m_skyHeight;
+
+	const uint x = (uint)(skyWidthF * u);
+	const uint y = (uint)(skyHeightF * v);
+
+	if(useBI) // Bilinear Interpolation
+	{
+		const uint skyIdx00 = (x + y * m_skyWidth) % (skySize);
+		const uint skyIdx10 = ((x + 1) + y * m_skyWidth) % (skySize);
+		const uint skyIdx01 = (x + (y + 1) * m_skyWidth) % (skySize);
+		const uint skyIdx11 = ((x + 1) + (y + 1) * m_skyWidth) % (skySize);
+		const float3 rgb00 = float3(m_skyPixels[skyIdx00 * 3 + 0], m_skyPixels[skyIdx00 * 3 + 1], m_skyPixels[skyIdx00 * 3 + 2]);
+		const float3 rgb10 = float3(m_skyPixels[skyIdx10 * 3 + 0], m_skyPixels[skyIdx10 * 3 + 1], m_skyPixels[skyIdx10 * 3 + 2]);
+		const float3 rgb01 = float3(m_skyPixels[skyIdx01 * 3 + 0], m_skyPixels[skyIdx01 * 3 + 1], m_skyPixels[skyIdx01 * 3 + 2]);
+		const float3 rgb11 = float3(m_skyPixels[skyIdx11 * 3 + 0], m_skyPixels[skyIdx11 * 3 + 1], m_skyPixels[skyIdx11 * 3 + 2]);
+		const float uRatio = u * skyWidthF - floor(u * skyWidthF);
+		const float vRatio = v * skyHeightF - floor(v * skyHeightF);
+		const float3 rgbHor = lerp(rgb00, rgb10, uRatio);
+		const float3 rgbVer = lerp(rgb01, rgb11, uRatio);
+		return lerp(rgbHor, rgbVer, vRatio);
+	}
+	else
+	{
+		const uint skyIdx00 = (x + y * m_skyWidth) % (skySize);
+		return float3(m_skyPixels[skyIdx00 * 3 + 0], m_skyPixels[skyIdx00 * 3 + 1], m_skyPixels[skyIdx00 * 3 + 2]);
+	}
+
+
+	//return dbgSDBF * color;
 }
 
 Material& Scene::GetMaterial(const Ray& ray)

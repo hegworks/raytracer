@@ -37,6 +37,7 @@ inline int2 dbgScrRangeX = {0,SCRWIDTH};
 inline int2 dbgScrRangeY = {0,SCRHEIGHT};
 
 inline bool useSD = true; /// UseSkyDome
+inline bool useBI = true; /// UseBilinearInterpolation
 inline float dbgSDBF = 1.0f; /// SkyDomeBrightnessFactor
 inline float EPS = 1e-3f;
 inline int epsInt = 2;
