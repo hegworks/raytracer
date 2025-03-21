@@ -271,12 +271,12 @@ float3 Scene::SampleSky(const Ray& ray) const
 		const float vRatio = v * skyHeightF - floor(v * skyHeightF);
 		const float3 rgbHor = lerp(rgb00, rgb10, uRatio);
 		const float3 rgbVer = lerp(rgb01, rgb11, uRatio);
-		return lerp(rgbHor, rgbVer, vRatio);
+		return dbgSDBF * lerp(rgbHor, rgbVer, vRatio);
 	}
 	else
 	{
 		const uint skyIdx00 = (x + y * m_skyWidth) % (skySize);
-		return float3(m_skyPixels[skyIdx00 * 3 + 0], m_skyPixels[skyIdx00 * 3 + 1], m_skyPixels[skyIdx00 * 3 + 2]);
+		return dbgSDBF * float3(m_skyPixels[skyIdx00 * 3 + 0], m_skyPixels[skyIdx00 * 3 + 1], m_skyPixels[skyIdx00 * 3 + 2]);
 	}
 
 
