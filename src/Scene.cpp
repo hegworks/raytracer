@@ -15,6 +15,7 @@ Scene::Scene()
 
 	LoadSkydome();
 
+#ifdef SPHERE_FLAKE
 	{
 		CreateSphreFlake(0, 0, 0, 1);
 
@@ -43,6 +44,7 @@ Scene::Scene()
 		printf("NumVertices: %i\n", vertices);
 		printf("NumMeshes: %i\n", 1);
 	}
+#endif
 
 #pragma region QuatRotation TestScene
 	/*
@@ -380,6 +382,7 @@ QuadLight& Scene::CreateQuadLight()
 	return light;
 }
 
+#ifdef SPHERE_FLAKE
 //void Scene::CreateSphreFlake(float x, float y, float z, float s, int d)
 //{
 //	// procedural tesselated sphere flake object
@@ -474,3 +477,4 @@ void Scene::CreateSphreFlake(float x, float y, float z, float s, int d)
 		CreateSphreFlake(x, y, z - s * 1.5f, s * 0.5f, d + 1);
 	}
 }
+#endif

@@ -9,6 +9,8 @@
 #include "SpotLight.h"
 #include "Transform.h"
 
+//#define SPHERE_FLAKE
+
 constexpr int vertexCount = 259 * 6 * 2 * 49 * 3;
 
 using ModelId = uint;
@@ -54,10 +56,13 @@ private:
 	int m_skyHeight = 0;
 	int m_skyBpp = 0;
 	float m_skydomeBrightnessFactor = 0.8f;
+
+#ifdef SPHERE_FLAKE
 	float4 vertices[259 * 6 * 2 * 49 * 3];
 	float3 normals[259 * 6 * 2 * 49 * 3];
 	int verts = 0;
 	int norms = 0;
+#endif
 
 private:
 	std::vector<tinybvh::BVH> m_bvhList;
