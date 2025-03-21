@@ -9,6 +9,7 @@
 #include <stb_image.h>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 struct Texture
@@ -63,6 +64,11 @@ public:
 		char dummy[6];
 #endif
 	};
+
+	Model(ModelData modelData)
+	{
+		m_modelData = std::move(modelData);
+	}
 
 	ModelData m_modelData;
 

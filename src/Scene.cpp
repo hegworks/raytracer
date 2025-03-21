@@ -15,6 +15,35 @@ Scene::Scene()
 
 	LoadSkydome();
 
+	{
+		CreateSphreFlake(0, 0, 0, 1);
+
+		Model::ModelData modelData;
+		modelData.m_type = ModelType::FLAKE;
+		modelData.m_initialized = true;
+		Material& mat = modelData.m_meshMaterialList.emplace_back();
+		modelData.m_meshVertexBorderList.emplace_back(vertexCount - 1);
+
+		for(int i = 0; i < vertexCount; ++i)
+		{
+			modelData.m_vertices.emplace_back(vertices[i]);
+			Model::VertexData& vertexData = modelData.m_vertexDataList.emplace_back();
+			vertexData.m_normal = normals[i];
+		}
+		Model& model = m_modelList.emplace_back(modelData);
+
+		tinybvh::BVH& bvh = m_bvhList.emplace_back();
+		bvh.Build(vertices, vertexCount / 3);
+		m_bvhBaseList.push_back(&bvh);
+		int moddelListSize = static_cast<int>(m_modelList.size());
+		m_blasList.emplace_back(moddelListSize - 1);
+		m_tranformList.emplace_back();
+		BuildTlas();
+
+		printf("NumVertices: %i\n", vertices);
+		printf("NumMeshes: %i\n", 1);
+	}
+
 #pragma region QuatRotation TestScene
 	/*
 	{
@@ -31,7 +60,7 @@ Scene::Scene()
 #pragma endregion
 
 #pragma region MultiObject TestScene
-
+	/*
 	{
 		CreateModel(ModelType::PLANE);
 		m_tranformList.back().m_scl = float3(30, 1, 30);
@@ -66,7 +95,7 @@ Scene::Scene()
 	SpotLight& spotLight = CreateSpotLight();
 	spotLight.m_intensity = 64.0f;
 	spotLight.m_pos.y = 10;
-
+	*/
 #pragma endregion
 
 #pragma region DIFFUSE_PT Lighting TestScene
@@ -274,7 +303,7 @@ Model& Scene::CreateModel(ModelType modelType)
 	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType));
 	model.m_modelData.m_type = modelType;
 	int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
-	tinybvh::BVH8_CPU& bvh = m_bvhList.emplace_back();
+	tinybvh::BVH& bvh = m_bvhList.emplace_back();
 	bvh.BuildHQ(model.m_modelData.m_vertices.data(), verticesListSize / 3);
 	m_bvhBaseList.push_back(&bvh);
 	int moddelListSize = static_cast<int>(m_modelList.size());
@@ -349,4 +378,99 @@ QuadLight& Scene::CreateQuadLight()
 	m_quadLightList.emplace_back();
 	QuadLight& light = m_quadLightList.back();
 	return light;
+}
+
+//void Scene::CreateSphreFlake(float x, float y, float z, float s, int d)
+//{
+//	// procedural tesselated sphere flake object
+//#define P(F,a,b,c) p[i+F*64]={(float)a ,(float)b,(float)c}
+//	float3 p[384], pos(x, y, z), ofs(3.5);
+//	for(int i = 0, u = 0; u < 8; u++) for(int v = 0; v < 8; v++, i++)
+//		P(0, u, v, 0), P(1, u, 0, v), P(2, 0, u, v),
+//		P(3, u, v, 7), P(4, u, 7, v), P(5, 7, u, v);
+//	for(int i = 0; i < 384; i++) p[i] = normalize(p[i] - ofs) * s + pos;
+//	for(int i = 0, side = 0; side < 6; side++, i += 8)
+//		for(int u = 0; u < 7; u++, i++) for(int v = 0; v < 7; v++, i++)
+//		{
+//			vertices[verts++] = p[i];
+//			vertices[verts++] = p[i + 8];
+//			vertices[verts++] = p[i + 1];
+//			vertices[verts++] = p[i + 1];
+//			vertices[verts++] = p[i + 9];
+//			vertices[verts++] = p[i + 8];
+//
+//			normals[norms++] = normalize(p[i] - pos);
+//			normals[norms++] = normalize(p[i + 8] - pos);
+//			normals[norms++] = normalize(p[i + 1] - pos);
+//			normals[norms++] = normalize(p[i + 1] - pos);
+//			normals[norms++] = normalize(p[i + 9] - pos);
+//			normals[norms++] = normalize(p[i + 8] - pos);
+//		}
+//	if(d < 3) CreateSphreFlake(x + s * 1.55f, y, z, s * 0.5f, d + 1);
+//	if(d < 3) CreateSphreFlake(x - s * 1.5f, y, z, s * 0.5f, d + 1);
+//	if(d < 3) CreateSphreFlake(x, y + s * 1.5f, z, s * 0.5f, d + 1);
+//	if(d < 3) CreateSphreFlake(x, y - s * 1.5f, z, s * 0.5f, d + 1);
+//	if(d < 3) CreateSphreFlake(x, y, z + s * 1.5f, s * 0.5f, d + 1);
+//	if(d < 3) CreateSphreFlake(x, y, z - s * 1.5f, s * 0.5f, d + 1);
+//}
+
+void Scene::CreateSphreFlake(float x, float y, float z, float s, int d)
+{
+	// procedural tesselated sphere flake object
+#define P(F,a,b,c) p[i+F*64]={(float)a ,(float)b,(float)c}
+
+	float3 p[384], pos(x, y, z), ofs(3.5);
+
+	// Generate the initial cube grid points
+	for(int i = 0, u = 0; u < 8; u++) for(int v = 0; v < 8; v++, i++)
+		P(0, u, v, 0), P(1, u, 0, v), P(2, 0, u, v),
+		P(3, u, v, 7), P(4, u, 7, v), P(5, 7, u, v);
+
+	// Project points onto sphere and scale/position
+	for(int i = 0; i < 384; i++)
+		p[i] = normalize(p[i] - ofs) * s + pos;
+
+	// Create triangles for the sphere surface
+	for(int i = 0, side = 0; side < 6; side++)
+	{
+		int baseIdx = side * 64;
+		for(int u = 0; u < 7; u++)
+		{
+			for(int v = 0; v < 7; v++)
+			{
+				int idx = baseIdx + u * 8 + v;
+
+				// First triangle (ensure correct winding order)
+				vertices[verts++] = p[idx];
+				vertices[verts++] = p[idx + 1];
+				vertices[verts++] = p[idx + 8];
+
+				// Normals for first triangle
+				normals[norms++] = normalize(p[idx] - pos);
+				normals[norms++] = normalize(p[idx + 1] - pos);
+				normals[norms++] = normalize(p[idx + 8] - pos);
+
+				// Second triangle (ensure correct winding order)
+				vertices[verts++] = p[idx + 1];
+				vertices[verts++] = p[idx + 9];
+				vertices[verts++] = p[idx + 8];
+
+				// Normals for second triangle
+				normals[norms++] = normalize(p[idx + 1] - pos);
+				normals[norms++] = normalize(p[idx + 9] - pos);
+				normals[norms++] = normalize(p[idx + 8] - pos);
+			}
+		}
+	}
+
+	// Recursively create smaller sphere flakes if depth allows
+	if(d < 3)
+	{
+		CreateSphreFlake(x + s * 1.55f, y, z, s * 0.5f, d + 1);
+		CreateSphreFlake(x - s * 1.5f, y, z, s * 0.5f, d + 1);
+		CreateSphreFlake(x, y + s * 1.5f, z, s * 0.5f, d + 1);
+		CreateSphreFlake(x, y - s * 1.5f, z, s * 0.5f, d + 1);
+		CreateSphreFlake(x, y, z + s * 1.5f, s * 0.5f, d + 1);
+		CreateSphreFlake(x, y, z - s * 1.5f, s * 0.5f, d + 1);
+	}
 }
