@@ -33,7 +33,7 @@ Scene::Scene()
 		}
 		Model& model = m_modelList.emplace_back(modelData);
 
-		tinybvh::BVH& bvh = m_bvhList.emplace_back();
+		auto& bvh = m_bvhList.emplace_back();
 		bvh.Build(vertices, vertexCount / 3);
 		m_bvhBaseList.push_back(&bvh);
 		int moddelListSize = static_cast<int>(m_modelList.size());
@@ -244,7 +244,7 @@ void Scene::BuildTlas()
 	m_tlas.Build(m_blasList.data(), static_cast<int>(m_blasList.size()), m_bvhBaseList.data(), static_cast<int>(m_bvhBaseList.size()));
 }
 
-float3 Scene::SampleSky(const Ray& ray) const
+float3 Scene::SampleSky(const Ray& ray)
 {
 	const uint skySize = m_skyWidth * m_skyHeight;
 	const float phi = atan2(ray.D.z, ray.D.x);
@@ -305,7 +305,7 @@ Model& Scene::CreateModel(ModelType modelType)
 	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType));
 	model.m_modelData.m_type = modelType;
 	int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
-	tinybvh::BVH& bvh = m_bvhList.emplace_back();
+	auto& bvh = m_bvhList.emplace_back();
 	bvh.BuildHQ(model.m_modelData.m_vertices.data(), verticesListSize / 3);
 	m_bvhBaseList.push_back(&bvh);
 	int moddelListSize = static_cast<int>(m_modelList.size());

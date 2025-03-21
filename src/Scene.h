@@ -31,7 +31,7 @@ public:
 	float3 GetSmoothNormal(Ray& ray) const;
 	float3 GetRawNormal(Ray& ray) const;
 	float3 CalculateSmoothNormal(Ray& ray) const;
-	float3 SampleSky(const Ray& ray) const;
+	float3 SampleSky(const Ray& ray);
 	Material& GetMaterial(const Ray& ray);
 
 	Model& CreateModel(ModelType modelType);
@@ -65,7 +65,7 @@ private:
 #endif
 
 private:
-	std::vector<tinybvh::BVH> m_bvhList;
+	std::vector<tinybvh::BVH8_CPU> m_bvhList;
 	std::vector<tinybvh::BVHBase*> m_bvhBaseList;
 	tinybvh::BVH m_tlas;
 public:
