@@ -215,6 +215,9 @@ Scene::Scene()
 void Scene::LoadSkydome()
 {
 	m_skyPixels = stbi_loadf((ASSETDIR + "Skydome/tears_of_steel_bridge_4k.hdr").c_str(), &m_skyWidth, &m_skyHeight, &m_skyBpp, 0);
+	m_skySize = m_skyWidth * m_skyHeight;
+	m_skyWidthF = static_cast<float>(m_skyWidth);
+	m_skyHeightF = static_cast<float>(m_skyHeight);
 	for(int i = 0; i < m_skyWidth * m_skyHeight * 3; i++) m_skyPixels[i] = sqrtf(m_skyPixels[i]);
 }
 
@@ -246,41 +249,33 @@ void Scene::BuildTlas()
 
 float3 Scene::SampleSky(const Ray& ray)
 {
-	const uint skySize = m_skyWidth * m_skyHeight;
 	const float phi = atan2(ray.D.z, ray.D.x);
 	const float u = 0.5f + (phi * INV2PI);
 	const float v = 0.5f - (asin(ray.D.y) * INVPI);
-
-	const float skyWidthF = (float)m_skyWidth;
-	const float skyHeightF = (float)m_skyHeight;
-
-	const uint x = (uint)(skyWidthF * u);
-	const uint y = (uint)(skyHeightF * v);
+	const uint x = static_cast<uint>(m_skyWidthF * u);
+	const uint y = static_cast<uint>(m_skyHeightF * v);
 
 	if(useBI) // Bilinear Interpolation
 	{
-		const uint skyIdx00 = (x + y * m_skyWidth) % (skySize);
-		const uint skyIdx10 = ((x + 1) + y * m_skyWidth) % (skySize);
-		const uint skyIdx01 = (x + (y + 1) * m_skyWidth) % (skySize);
-		const uint skyIdx11 = ((x + 1) + (y + 1) * m_skyWidth) % (skySize);
+		const uint skyIdx00 = (x + y * m_skyWidth) % (m_skySize);
+		const uint skyIdx10 = ((x + 1) + y * m_skyWidth) % (m_skySize);
+		const uint skyIdx01 = (x + (y + 1) * m_skyWidth) % (m_skySize);
+		const uint skyIdx11 = ((x + 1) + (y + 1) * m_skyWidth) % (m_skySize);
 		const float3 rgb00 = float3(m_skyPixels[skyIdx00 * 3 + 0], m_skyPixels[skyIdx00 * 3 + 1], m_skyPixels[skyIdx00 * 3 + 2]);
 		const float3 rgb10 = float3(m_skyPixels[skyIdx10 * 3 + 0], m_skyPixels[skyIdx10 * 3 + 1], m_skyPixels[skyIdx10 * 3 + 2]);
 		const float3 rgb01 = float3(m_skyPixels[skyIdx01 * 3 + 0], m_skyPixels[skyIdx01 * 3 + 1], m_skyPixels[skyIdx01 * 3 + 2]);
 		const float3 rgb11 = float3(m_skyPixels[skyIdx11 * 3 + 0], m_skyPixels[skyIdx11 * 3 + 1], m_skyPixels[skyIdx11 * 3 + 2]);
-		const float uRatio = u * skyWidthF - floor(u * skyWidthF);
-		const float vRatio = v * skyHeightF - floor(v * skyHeightF);
+		const float uRatio = u * m_skyWidthF - floor(u * m_skyWidthF);
+		const float vRatio = v * m_skyHeightF - floor(v * m_skyHeightF);
 		const float3 rgbHor = lerp(rgb00, rgb10, uRatio);
 		const float3 rgbVer = lerp(rgb01, rgb11, uRatio);
 		return dbgSDBF * lerp(rgbHor, rgbVer, vRatio);
 	}
 	else
 	{
-		const uint skyIdx00 = (x + y * m_skyWidth) % (skySize);
+		const uint skyIdx00 = (x + y * m_skyWidth) % (m_skySize);
 		return dbgSDBF * float3(m_skyPixels[skyIdx00 * 3 + 0], m_skyPixels[skyIdx00 * 3 + 1], m_skyPixels[skyIdx00 * 3 + 2]);
 	}
-
-
-	//return dbgSDBF * color;
 }
 
 Material& Scene::GetMaterial(const Ray& ray)

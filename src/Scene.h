@@ -54,7 +54,10 @@ private:
 	float* m_skyPixels = nullptr;
 	int m_skyWidth = 0;
 	int m_skyHeight = 0;
+	float m_skyWidthF = 0;
+	float m_skyHeightF = 0;
 	int m_skyBpp = 0;
+	uint m_skySize = 0;
 	float m_skydomeBrightnessFactor = 0.8f;
 
 #ifdef SPHERE_FLAKE
