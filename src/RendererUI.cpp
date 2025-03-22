@@ -25,44 +25,82 @@ void Renderer::UI()
 
 	ImGui::SetNextWindowPos(ImVec2(SCRWIDTH - 300, 0));
 	ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT));
-	ImGui::SetNextWindowBgAlpha(0.2f);
+	ImGui::SetNextWindowBgAlpha(0.55f);
 	ImGui::Begin("General", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-	ImGui::Text("avg	fps	rps");
-	ImGui::Text("%.1f	%.0f	%.0f", davg, dfps, drps);
-
-	if(ImGui::CollapsingHeader("Hit Info"))
+	if(ImGui::BeginTable("PerformanceTable", 5, ImGuiTableFlags_Borders))
 	{
-		// ray query on mouse
-		int2 coord = isDbgPixel ? dbgpixel : mousePos;
-		bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
-		uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
-		if(isInScreen)
-		{
-			pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
-			red = (pixel & 0xFF0000) >> 16;
-			green = (pixel & 0x00FF00) >> 8;
-			blue = pixel & 0x0000FF;
-		}
-		Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, 0);
-		scene.Intersect(r);
-		ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-		bool hit = r.hit.t < BVH_FAR;
-		int inst = hit ? r.hit.inst : -1;
-		int blasIdx = hit ? scene.m_blasList[inst].blasIdx : -1;
-		//int prim = hit ? r.hit.prim : -1; // unused
-		int tri = hit ? r.hit.prim * 3 : -1;
-		int mesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
+		ImGui::TableSetupColumn("avg");
+		ImGui::TableSetupColumn("fps");
+		ImGui::TableSetupColumn("rps");
+		ImGui::TableSetupColumn("acm");
+		ImGui::TableSetupColumn("sum");
+		ImGui::TableHeadersRow();
 
-		ImGui::Text("selectedIdx %i", selectedIdx);
-		ImGui::Text("coord %i,%i", coord.x, coord.y);
-		ImGui::Text("inst %i", inst);
-		//ImGui::Text("blasIdx %i", blasIdx);
-		ImGui::Text("mesh %i", mesh);
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0); ImGui::Text("%.1f", davg);
+		ImGui::TableSetColumnIndex(1); ImGui::Text("%.0f", dfps);
+		ImGui::TableSetColumnIndex(2); ImGui::Text("%.0f", drps);
+		ImGui::TableSetColumnIndex(3); ImGui::Text("%i", acmCounter);
+		ImGui::TableSetColumnIndex(4); ImGui::Text("%.1f", dbgCalcSum ? sum : NAN);
 
-		ImGui::ColorButton("", color);
-		ImGui::SameLine();
-		ImGui::Text("%u,%u,%u", red, green, blue);
+		ImGui::EndTable();
+	}
+
+	// ray query on mouse
+	int2 coord = isDbgPixel ? dbgpixel : mousePos;
+	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
+	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
+	float pixelLength = 0.0f;
+	if(isInScreen)
+	{
+		float4 illum = illuminations[coord.x + coord.y * SCRWIDTH];
+		pixelLength = length(float3(illum.x, illum.y, illum.z));
+		pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
+		red = (pixel & 0xFF0000) >> 16;
+		green = (pixel & 0x00FF00) >> 8;
+		blue = pixel & 0x0000FF;
+	}
+	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, 0);
+	scene.Intersect(r);
+	ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+	bool hit = r.hit.t < BVH_FAR;
+	int inst = hit ? r.hit.inst : -1;
+	int blasIdx = hit ? scene.m_blasList[inst].blasIdx : -1;
+	//int prim = hit ? r.hit.prim : -1; // unused
+	int tri = hit ? r.hit.prim * 3 : -1;
+	int mesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
+
+	if(ImGui::BeginTable("PerformanceTable", 4, ImGuiTableFlags_Borders))
+	{
+		ImGui::TableSetupColumn("selected");
+		ImGui::TableSetupColumn("coord");
+		ImGui::TableSetupColumn("inst");
+		ImGui::TableSetupColumn("mesh");
+		ImGui::TableHeadersRow();
+
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0); ImGui::Text("%i", selectedIdx);
+		ImGui::TableSetColumnIndex(1); ImGui::Text("%i,%i", coord.x, coord.y);
+		ImGui::TableSetColumnIndex(2); ImGui::Text("%i", inst);
+		ImGui::TableSetColumnIndex(3); ImGui::Text("%i", mesh);
+
+		ImGui::EndTable();
+	}
+
+	if(ImGui::BeginTable("ColorTable", 3, ImGuiTableFlags_Borders))
+	{
+		ImGui::TableSetupColumn("color");
+		ImGui::TableSetupColumn("length");
+		ImGui::TableSetupColumn("RGB");
+		ImGui::TableHeadersRow();
+
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0); ImGui::ColorButton("##color", color);
+		ImGui::TableSetColumnIndex(1); ImGui::Text("%.2f", pixelLength);
+		ImGui::TableSetColumnIndex(2); ImGui::Text("%u, %u, %u", red, green, blue);
+
+		ImGui::EndTable();
 	}
 
 	if(ImGui::BeginTabBar("Main"))
@@ -81,6 +119,8 @@ void Renderer::UI()
 			ImGui::Checkbox("TDD", &tdd);
 			ImGui::SameLine();
 			ImGui::Checkbox("BI", &useBI);
+			ImGui::SameLine();
+			ImGui::Checkbox("SUM", &dbgCalcSum);
 
 			ImGui::Separator();
 
@@ -104,8 +144,7 @@ void Renderer::UI()
 			ImGui::SliderInt("ndal", &ndal, 0, 3);
 			ImGui::SliderInt("SPP", &spp, 1, 30);
 			ImGui::SliderInt("Depth", &maxDepth, 1, 50);
-			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 40.0f);
-			ImGui::SliderFloat("Gamma", &dbgGC, 0.01f, 5.0f);
+			ImGui::SliderFloat("FireFly", &dbgFF, 0.0f, 100.0f);
 
 			const char* epsTypes[] =
 			{
