@@ -16,6 +16,9 @@ void Renderer::Init()
 	accumulator = (float4*)MALLOC64(SCRWIDTH * SCRHEIGHT * 16);
 	memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);
 
+	illuminations = (float4*)MALLOC64(SCRWIDTH * SCRHEIGHT * 16);
+	memset(illuminations, 0, SCRWIDTH * SCRHEIGHT * 16);
+
 	for(int y = 0; y < SCRHEIGHT; y++)
 	{
 		for(int x = 0; x < SCRWIDTH; x++)
@@ -92,9 +95,20 @@ void Renderer::Tick(float deltaTime)
 			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
 			float4 gammaCorrected = float4(sqrtf(avg.x), sqrtf(avg.y), sqrtf(avg.z), 1);
 			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&gammaCorrected);
+			illuminations[pixelIndex] = gammaCorrected;
 			if(isDbgFixSeed) pixelSeeds[pixelIndex] = lastPixelSeeds[pixelIndex];
 		}
 	}
+	if(dbgCalcSum)
+	{
+		sum = 0;
+		for(int i = 0; i < SCRWIDTH * SCRHEIGHT; ++i)
+		{
+			sum += (illuminations[i].x + illuminations[i].y + illuminations[i].z) / 3.0f;
+		}
+		sum /= 1000;
+	}
+
 	// performance report - running average - ms, MRays/s
 	static float avg = 10, alpha = 1;
 	avg = (1 - alpha) * avg + alpha * t.elapsed() * 1000;
@@ -258,7 +272,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	switch(ndal)
 	{
 		case 0:
-			return hasHit ? (n + 1) * 0.5f : 0;
+			return hasHit ? (n + 1.0f) * 0.5f : 0;
 		case 1:
 			return float3(ray.hit.t) * 0.1f;
 		case 2:

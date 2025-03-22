@@ -57,6 +57,9 @@ inline int selectedIdx = 0;
 inline int dbgRotAxisInt = 1; /// 0->X 1->Y 2->Z
 inline float3 rotAxis(0, 1, 0);
 
+inline float sum = 0; /// sum of all pixels rgb/3
+inline bool dbgCalcSum = false;
+
 static bool DBGCanPrint(const float2 pos)
 {
 	return !(pos.x < 0 || pos.x >= SCRWIDTH || pos.y < 0 || pos.y >= SCRHEIGHT - 10);

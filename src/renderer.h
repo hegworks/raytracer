@@ -36,6 +36,7 @@ public:
 	// data members
 	int2 mousePos;
 	float4* accumulator;
+	float4* illuminations;
 	Camera camera;
 	bool animating = false;
 	float anim_time = 0;
@@ -47,7 +48,7 @@ public:
 	bool qlOneSided = true;
 	inline static int acmCounter;
 	bool useACM = false;
-	int maxDepth = 25;
+	int maxDepth = 50;
 	Scene scene;
 };
 
