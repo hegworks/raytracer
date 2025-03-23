@@ -249,11 +249,10 @@ void Scene::BuildTlas()
 
 float3 Scene::SampleSky(const Ray& ray)
 {
-	const float phi = atan2(ray.D.z, ray.D.x);
-	const float u = 0.5f + (phi * INV2PI);
-	const float v = 0.5f - (asin(ray.D.y) * INVPI);
-	const uint x = static_cast<uint>(m_skyWidthF * u);
-	const uint y = static_cast<uint>(m_skyHeightF * v);
+	const float u = m_skyWidthF * (atan2f(ray.D.z, ray.D.x) * INV2PI) - 0.5f;
+	const uint x = static_cast<uint>(u);
+	const float v = m_skyHeightF * (acosf(ray.D.y) * INVPI) - 0.5f;
+	const uint y = static_cast<uint>(v);
 
 	if(useBI) // Bilinear Interpolation
 	{
