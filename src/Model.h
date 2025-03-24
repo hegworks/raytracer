@@ -14,7 +14,7 @@
 
 struct Texture
 {
-	unsigned int m_id;
+	size_t m_surfaceIndex;
 	std::string m_type;
 	aiString m_path;
 };
@@ -35,10 +35,6 @@ public:
 	~Model()
 	{
 		std::cout << "Destroying Model: " << m_directory << std::endl;
-		for(unsigned int i = 0; i < m_texturesLoaded.size(); i++)
-		{
-			glDeleteTextures(1, &m_texturesLoaded[i].m_id);
-		}
 		for(int i = 0; i < m_modelData.m_surfaceList.size(); ++i)
 		{
 			FREE64(m_modelData.m_surfaceList[i].pixelsF);
@@ -60,6 +56,7 @@ public:
 		std::vector<int> m_meshVertexBorderList; /// last idx of m_vertices of each mesh
 		std::vector<Texture> m_textureList;
 		std::vector<Surface> m_surfaceList;
+		std::vector<int> m_surfaceIndexList;
 		std::vector<VertexData> m_vertexDataList;
 		std::vector<float4> m_vertices;
 		ModelType m_type;
@@ -90,8 +87,9 @@ private:
 	void loadModel(std::string path);
 	void processNode(aiNode* node, const aiScene* scene);
 	void processMesh(aiMesh* mesh, const aiScene* scene);
-	unsigned int TextureFromFile(const char* path, const std::string& directory);
-	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+	void TextureFromFile(const std::string& path);
+	void TextureFromMemory(aiTexel* pcData, int mWidth);
+	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
 };
 
 inline void Model::loadModel(std::string path)
@@ -182,58 +180,11 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		mat.m_albedo = {diffuse.r,diffuse.g,diffuse.b};
 	}
 
-	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
 	m_modelData.m_textureList.insert(m_modelData.m_textureList.end(), diffuseMaps.begin(), diffuseMaps.end());
 }
 
-inline unsigned int Model::TextureFromFile(const char* path, const std::string& directory)
-{
-	unsigned int texture;
-	glGenTextures(1, &texture);
-
-	int width, height, nrChannels;
-	std::string fileName = directory + '/' + std::string(path);
-
-	Surface& surface = m_modelData.m_surfaceList.emplace_back(fileName.c_str());
-	surface.ownBuffer = false;
-
-	unsigned char* textureData = stbi_load(fileName.c_str(), &width, &height, &nrChannels, 0);
-	if(!textureData)
-	{
-		std::cout << "ERROR::STBI::LOAD at file " << fileName << std::endl;
-		throw std::runtime_error("ERROR::STBI::LOAD at file " + fileName);
-	}
-
-	GLenum format;
-	if(nrChannels == 1)
-		format = GL_RED;
-	else if(nrChannels == 3)
-		format = GL_RGB;
-	else if(nrChannels == 4)
-		format = GL_RGBA;
-	else
-	{
-		std::cout << "ERROR::TextureFromFile::InvalidNrChannels at file " << fileName << std::endl;
-		throw std::runtime_error("ERROR::TextureFromFile::InvalidNrChannels at file " + fileName);
-	}
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, textureData);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	stbi_image_free(textureData);
-
-	return texture;
-}
-
-inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene)
 {
 	std::vector<Texture> textures;
 	for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
@@ -246,6 +197,7 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 			if(std::strcmp(m_texturesLoaded[j].m_path.data, str.C_Str()) == 0)
 			{
 				textures.push_back(m_texturesLoaded[j]);
+				m_modelData.m_surfaceIndexList.emplace_back(m_texturesLoaded[j].m_surfaceIndex);
 				wasTextureLoadedBefore = true;
 				break;
 			}
@@ -262,12 +214,37 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 			std::cout << "Loading: " << m_directory << "/" << texturePath.c_str() << std::endl;
 
 			Texture texture;
-			texture.m_id = TextureFromFile(texturePath.c_str(), m_directory);
+			std::string path = m_directory + '/' + std::string(texturePath);
+
+			aiString textureFile;
+			mat->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureFile);
+			if(const aiTexture* tex = scene->GetEmbeddedTexture(textureFile.C_Str()))
+			{
+				TextureFromMemory(tex->pcData, tex->mWidth);
+			}
+			else
+			{
+				TextureFromFile(path);
+			}
 			texture.m_type = typeName;
 			texture.m_path = str.C_Str();
+			texture.m_surfaceIndex = m_modelData.m_surfaceList.size() - 1;
 			textures.push_back(texture);
 			m_texturesLoaded.push_back(texture);
+			m_modelData.m_surfaceIndexList.emplace_back(texture.m_surfaceIndex);
 		}
 	}
 	return textures;
+}
+
+inline void Model::TextureFromFile(const std::string& path)
+{
+	Surface& surface = m_modelData.m_surfaceList.emplace_back(path.c_str());
+	surface.ownBuffer = false;
+}
+
+inline void Model::TextureFromMemory(aiTexel* pcData, int mWidth)
+{
+	Surface& surface = m_modelData.m_surfaceList.emplace_back(pcData, mWidth);
+	surface.ownBuffer = false;
 }

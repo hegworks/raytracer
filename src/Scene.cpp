@@ -19,8 +19,8 @@ Scene::Scene()
 
 #pragma region Texture TestScene
 	{
-		CreateModel(ModelType::CUBE);
-		m_tranformList.back().m_pos = float3(0, 2, -5);
+		CreateModel(ModelType::KENNY);
+		//m_tranformList.back().m_pos = float3(0, 2, -5);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}
 	BuildTlas();
@@ -306,7 +306,9 @@ float3 Scene::GetAlbedo(const Ray& ray, Model& model)
 	const Model::VertexData& v0 = model.m_modelData.m_vertexDataList[tri + 0]; //tri
 	const Model::VertexData& v1 = model.m_modelData.m_vertexDataList[tri + 1]; //tri
 	const Model::VertexData& v2 = model.m_modelData.m_vertexDataList[tri + 2]; //tri
-	const Surface& tex0 = model.m_modelData.m_surfaceList[model.VertexToMeshIdx(ray.hit.prim * 3)];
+	int mesh = model.VertexToMeshIdx(tri);
+	int surfaceIndex = model.m_modelData.m_surfaceIndexList[mesh];
+	const Surface& tex0 = model.m_modelData.m_surfaceList[surfaceIndex];
 	float2 uv = // texcoord
 		ray.hit.u * v1.m_texCoord +
 		ray.hit.v * v2.m_texCoord +

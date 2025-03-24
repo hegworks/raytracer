@@ -31,12 +31,42 @@ Surface::Surface(const char* file) : pixels(0), width(0), height(0)
 	Surface::LoadFromFile(file);
 }
 
+Surface::Surface(aiTexel* pcData, int mWidth) : pixels(0), width(0), height(0)
+{
+	// use stb_image to load the image file
+	int n;
+	unsigned char* data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(pcData), mWidth, &width, &height, &n, 0);
+	if(!data) throw std::runtime_error("Error loading file from memory");
+	pixels = (uint*)MALLOC64(width * height * sizeof(uint));
+	pixelsF = (float3*)MALLOC64(width * height * sizeof(float3));
+	ownBuffer = true; // needs to be deleted in destructor
+	const int s = width * height;
+	if(n == 1) /* greyscale */ for(int i = 0; i < s; i++)
+	{
+		const unsigned char p = data[i];
+		pixels[i] = p + (p << 8) + (p << 16);
+	}
+	else
+	{
+		for(int i = 0; i < s; i++)
+		{
+			uint r = data[i * n + 0];
+			uint g = data[i * n + 1];
+			uint b = data[i * n + 2];
+			pixels[i] = (r << 16) + (g << 8) + b;
+			pixelsF[i] = make_float3(static_cast<float>(r), static_cast<float>(g), static_cast<float>(b)) / 255.0f;
+		}
+	}
+	// free stb_image data
+	stbi_image_free(data);
+}
+
 void Surface::LoadFromFile(const char* file)
 {
 	// use stb_image to load the image file
 	int n;
 	unsigned char* data = stbi_load(file, &width, &height, &n, 0);
-	if(!data) return; // load failed
+	if(!data) FatalError("Error loading file: %s", file);
 	pixels = (uint*)MALLOC64(width * height * sizeof(uint));
 	pixelsF = (float3*)MALLOC64(width * height * sizeof(float3));
 	ownBuffer = true; // needs to be deleted in destructor

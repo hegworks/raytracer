@@ -277,7 +277,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		case 1:
 			return float3(ray.hit.t) * 0.1f;
 		case 2:
-			return scene.GetMaterial(ray).m_albedo;
+			return albedo;
 		case 3:
 			return l;
 		default:
