@@ -248,7 +248,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			else
 			{
 				finalDir = diffuseDir;
-				finalMatColor = albedo;
+				finalMatColor = brdf;
 			}
 
 			Ray finalRay(p + finalDir * EPS, finalDir);
