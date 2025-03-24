@@ -32,7 +32,9 @@ public:
 	float3 GetRawNormal(Ray& ray) const;
 	float3 CalculateSmoothNormal(Ray& ray) const;
 	float3 SampleSky(const Ray& ray);
+	Model& GetModel(const Ray& ray);
 	Material& GetMaterial(const Ray& ray);
+	float3 GetAlbedo(const Ray& ray, const Model& model);
 
 	Model& CreateModel(ModelType modelType);
 

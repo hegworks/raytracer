@@ -24,7 +24,7 @@ class Model
 public:
 	Model(std::string const& path, float2 textureCoordScale = float2(1), bool shouldVerticallyFlipTexture = false)
 	{
-		stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
+		//stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 		m_textureCoordScale = textureCoordScale;
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
@@ -54,6 +54,7 @@ public:
 		std::vector<Material> m_meshMaterialList; /// idx of material of each mesh
 		std::vector<int> m_meshVertexBorderList; /// last idx of m_vertices of each mesh
 		std::vector<Texture> m_textureList;
+		std::vector<Surface> m_surfaceList;
 		std::vector<VertexData> m_vertexDataList;
 		std::vector<float4> m_vertices;
 		ModelType m_type;
@@ -78,7 +79,7 @@ public:
 	std::vector<Texture> m_texturesLoaded;
 
 	std::string GetStrippedFileName() const;
-	int VertexToMeshIdx(int prim);
+	int VertexToMeshIdx(uint prim);
 
 private:
 	void loadModel(std::string path);
@@ -111,9 +112,9 @@ inline std::string Model::GetStrippedFileName() const
 	return result;
 }
 
-inline int Model::VertexToMeshIdx(int prim)
+inline int Model::VertexToMeshIdx(uint prim)
 {
-	int numMeshes = static_cast<int>(m_modelData.m_meshVertexBorderList.size());
+	uint numMeshes = static_cast<int>(m_modelData.m_meshVertexBorderList.size());
 	if(numMeshes == 1) return 0;
 	for(int i = 0; i < numMeshes; ++i)
 	{
@@ -187,6 +188,8 @@ inline unsigned int Model::TextureFromFile(const char* path, const std::string& 
 
 	int width, height, nrChannels;
 	std::string fileName = directory + '/' + std::string(path);
+
+	m_modelData.m_surfaceList.emplace_back(fileName.c_str());
 
 	unsigned char* textureData = stbi_load(fileName.c_str(), &width, &height, &nrChannels, 0);
 	if(!textureData)

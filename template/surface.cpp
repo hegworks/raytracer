@@ -38,6 +38,7 @@ void Surface::LoadFromFile(const char* file)
 	unsigned char* data = stbi_load(file, &width, &height, &n, 0);
 	if(!data) return; // load failed
 	pixels = (uint*)MALLOC64(width * height * sizeof(uint));
+	pixelsF = (float3*)MALLOC64(width * height * sizeof(float3));
 	ownBuffer = true; // needs to be deleted in destructor
 	const int s = width * height;
 	if(n == 1) /* greyscale */ for(int i = 0; i < s; i++)
@@ -47,7 +48,14 @@ void Surface::LoadFromFile(const char* file)
 	}
 	else
 	{
-		for(int i = 0; i < s; i++) pixels[i] = (data[i * n + 0] << 16) + (data[i * n + 1] << 8) + data[i * n + 2];
+		for(int i = 0; i < s; i++)
+		{
+			uint r = data[i * n + 0];
+			uint g = data[i * n + 1];
+			uint b = data[i * n + 2];
+			pixels[i] = (r << 16) + (g << 8) + b;
+			pixelsF[i] = make_float3(static_cast<float>(r), static_cast<float>(g), static_cast<float>(b)) / 255.0f;
+		}
 	}
 	// free stb_image data
 	stbi_image_free(data);
@@ -133,9 +141,9 @@ void Surface::Circle(int x0, int y0, int radius, uint c)
 // Credits to Okke for the variable size print function
 void Surface::Print(std::string_view str, int x1, int y1, uint color, int size)
 {
-// can still be improved:
-// clipping based on letters. instead only checking on letters
-// if a letter is left of the screen the other letters will be also outside view
+	// can still be improved:
+	// clipping based on letters. instead only checking on letters
+	// if a letter is left of the screen the other letters will be also outside view
 	if(!fontInitialized)
 	{
 		InitCharset();
@@ -148,7 +156,7 @@ void Surface::Print(std::string_view str, int x1, int y1, uint color, int size)
 		long characterIndex = 0;
 		if((str[i] >= 'A') && (str[i] <= 'Z'))
 		{
-		// setting uppercase letters to be the same as lowercase
+			// setting uppercase letters to be the same as lowercase
 			characterIndex = transl[(unsigned short)(str[i] - ('A' - 'a'))];
 		}
 		else
@@ -166,7 +174,7 @@ void Surface::Print(std::string_view str, int x1, int y1, uint color, int size)
 
 			for(int w = 0; w < 5; w++)
 			{
-			// times 6 because each char array has a null terminator 
+				// times 6 because each char array has a null terminator 
 				if(characterArray[v * 6 + w] != 'o')
 					continue;
 

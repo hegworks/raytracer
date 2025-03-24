@@ -70,6 +70,7 @@ public:
 	void Circle(int x, int y, int radius, uint c);
 	// attributes
 	uint* pixels = 0;
+	float3* pixelsF = 0;
 	int width = 0, height = 0;
 	bool ownBuffer = false;
 	// static data for the hardcoded font

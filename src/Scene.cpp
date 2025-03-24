@@ -15,6 +15,17 @@ Scene::Scene()
 
 	LoadSkydome();
 
+#pragma region Texture TestScene
+	{
+		stbi_set_flip_vertically_on_load(true);
+		CreateModel(ModelType::CUBE);
+		stbi_set_flip_vertically_on_load(false);
+		m_tranformList.back().m_pos = float3(0, 2, -5);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	BuildTlas();
+#pragma endregion
+
 #ifdef SPHERE_FLAKE
 	{
 		CreateSphreFlake(0, 0, 0, 1);
@@ -277,11 +288,33 @@ float3 Scene::SampleSky(const Ray& ray)
 	}
 }
 
+Model& Scene::GetModel(const Ray& ray)
+{
+	return m_modelList[m_blasList[ray.hit.inst].blasIdx];
+}
+
 Material& Scene::GetMaterial(const Ray& ray)
 {
 	Model& model = m_modelList[m_blasList[ray.hit.inst].blasIdx];
-	const int matIdx = model.VertexToMeshIdx(ray.hit.prim * 3);
+	const uint matIdx = model.VertexToMeshIdx(ray.hit.prim * 3);
 	return model.m_modelData.m_meshMaterialList[matIdx];
+}
+
+float3 Scene::GetAlbedo(const Ray& ray, const Model& model)
+{
+	uint tri = ray.hit.prim * 3;
+	const Model::VertexData& v0 = model.m_modelData.m_vertexDataList[tri + 0]; //tri
+	const Model::VertexData& v1 = model.m_modelData.m_vertexDataList[tri + 1]; //tri
+	const Model::VertexData& v2 = model.m_modelData.m_vertexDataList[tri + 2]; //tri
+	const Surface& tex0 = model.m_modelData.m_surfaceList.front();
+	float2 uv = // texcoord
+		ray.hit.u * v1.m_texCoord +
+		ray.hit.v * v2.m_texCoord +
+		(1.0f - (ray.hit.u + ray.hit.v)) * v0.m_texCoord;
+	int iu = (int)(uv.x * tex0.width) % tex0.width;
+	int iv = (int)(uv.y * tex0.height) % tex0.height;
+	float3 texel = tex0.pixelsF[iu + iv * tex0.width];
+	return texel;
 }
 
 Model& Scene::CreateModel(ModelType modelType)

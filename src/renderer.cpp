@@ -157,8 +157,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 
 	float3 l(0);
+	Model& model = scene.GetModel(ray);
 	Material mat = scene.GetMaterial(ray);
-	float3 albedo = mat.m_albedo;
+	float3 albedo = model.m_modelData.m_surfaceList.empty() ? mat.m_albedo : scene.GetAlbedo(ray, model);
 	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 	switch(mat.m_type)
 	{
@@ -171,7 +172,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		{
 			float3 reflectDir = reflect(ray.D, n);
 			Ray reflectRay(p + reflectDir * EPS, reflectDir);
-			l += mat.m_albedo * Trace(reflectRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			l += albedo * Trace(reflectRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 			break;
 		}
 		case Material::Type::REFRACTIVE:
