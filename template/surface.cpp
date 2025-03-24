@@ -63,7 +63,7 @@ void Surface::LoadFromFile(const char* file)
 
 Surface::~Surface()
 {
-	if(ownBuffer) FREE64(pixels); // free only if we allocated the buffer ourselves
+	if(ownBuffer) FREE64(pixels), FREE64(pixelsF); // free only if we allocated the buffer ourselves
 }
 
 void Surface::Clear(uint c)

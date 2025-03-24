@@ -39,6 +39,11 @@ public:
 		{
 			glDeleteTextures(1, &m_texturesLoaded[i].m_id);
 		}
+		for(int i = 0; i < m_modelData.m_surfaceList.size(); ++i)
+		{
+			FREE64(m_modelData.m_surfaceList[i].pixelsF);
+			FREE64(m_modelData.m_surfaceList[i].pixels);
+		}
 	}
 
 	struct ALIGNED(32) VertexData
@@ -92,7 +97,7 @@ private:
 inline void Model::loadModel(std::string path)
 {
 	Assimp::Importer importer;
-	unsigned int flags = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
+	unsigned int flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
 	const aiScene* scene = importer.ReadFile(path, flags);
 	if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -189,7 +194,8 @@ inline unsigned int Model::TextureFromFile(const char* path, const std::string& 
 	int width, height, nrChannels;
 	std::string fileName = directory + '/' + std::string(path);
 
-	m_modelData.m_surfaceList.emplace_back(fileName.c_str());
+	Surface& surface = m_modelData.m_surfaceList.emplace_back(fileName.c_str());
+	surface.ownBuffer = false;
 
 	unsigned char* textureData = stbi_load(fileName.c_str(), &width, &height, &nrChannels, 0);
 	if(!textureData)

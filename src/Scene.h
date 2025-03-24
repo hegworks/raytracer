@@ -34,7 +34,7 @@ public:
 	float3 SampleSky(const Ray& ray);
 	Model& GetModel(const Ray& ray);
 	Material& GetMaterial(const Ray& ray);
-	float3 GetAlbedo(const Ray& ray, const Model& model);
+	float3 GetAlbedo(const Ray& ray, Model& model);
 
 	Model& CreateModel(ModelType modelType);
 

@@ -15,11 +15,11 @@ Scene::Scene()
 
 	LoadSkydome();
 
+	stbi_set_flip_vertically_on_load(false);
+
 #pragma region Texture TestScene
 	{
-		stbi_set_flip_vertically_on_load(true);
 		CreateModel(ModelType::CUBE);
-		stbi_set_flip_vertically_on_load(false);
 		m_tranformList.back().m_pos = float3(0, 2, -5);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}
@@ -300,13 +300,13 @@ Material& Scene::GetMaterial(const Ray& ray)
 	return model.m_modelData.m_meshMaterialList[matIdx];
 }
 
-float3 Scene::GetAlbedo(const Ray& ray, const Model& model)
+float3 Scene::GetAlbedo(const Ray& ray, Model& model)
 {
 	uint tri = ray.hit.prim * 3;
 	const Model::VertexData& v0 = model.m_modelData.m_vertexDataList[tri + 0]; //tri
 	const Model::VertexData& v1 = model.m_modelData.m_vertexDataList[tri + 1]; //tri
 	const Model::VertexData& v2 = model.m_modelData.m_vertexDataList[tri + 2]; //tri
-	const Surface& tex0 = model.m_modelData.m_surfaceList.front();
+	const Surface& tex0 = model.m_modelData.m_surfaceList[model.VertexToMeshIdx(ray.hit.prim * 3)];
 	float2 uv = // texcoord
 		ray.hit.u * v1.m_texCoord +
 		ray.hit.v * v2.m_texCoord +

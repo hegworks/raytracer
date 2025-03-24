@@ -12,9 +12,10 @@ enum class ModelType : uint8_t
 	FLAKE,
 	KENNY,
 	HAMBURGER,
+	SNAKE,
 };
 
-constexpr int NUM_MODEL_TYPES = 9;
+constexpr int NUM_MODEL_TYPES = 10;
 
 inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 {
@@ -27,6 +28,7 @@ inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 	ModelType::GLASS,
 	ModelType::KENNY,
 	ModelType::HAMBURGER,
+	ModelType::SNAKE,
 };
 
 inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
@@ -40,6 +42,7 @@ inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
 	"GLASS",
 	"KENNY",
 	"HAMBURGER",
+	"SNAKE",
 };
 
 class ModelData
@@ -67,6 +70,8 @@ public:
 				return ASSETDIR + "Models/kennyscene.glb";
 			case ModelType::HAMBURGER:
 				return ASSETDIR + "Models/Hamburger/Hamburger.fbx";
+			case ModelType::SNAKE:
+				return ASSETDIR + "Models/NakedSnake/Naked_Snake.obj";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}
