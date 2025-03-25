@@ -224,7 +224,7 @@ void Renderer::UI()
 				scene.CreateQuadLight();
 			}
 
-#ifndef NPLS
+#ifndef PLS
 			int numPointLights = scene.m_pointLightList.size();
 #else
 			int numPointLights = scene.plx.size();

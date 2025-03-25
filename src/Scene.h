@@ -10,7 +10,7 @@
 #include "Transform.h"
 
 //#define SPHERE_FLAKE
-#define NPLS // NOT PointLight SIMD
+#define PLS // PointLightSIMD
 
 constexpr int vertexCount = 259 * 6 * 2 * 49 * 3;
 
@@ -22,7 +22,7 @@ class Scene
 public:
 	Scene();
 
-#ifndef NPLS
+#ifndef PLS
 	std::vector<PointLight> m_pointLightList;
 #else
 	std::vector<float> plx, ply, plz;
