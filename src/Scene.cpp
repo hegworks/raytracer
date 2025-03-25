@@ -17,13 +17,73 @@ Scene::Scene()
 
 	stbi_set_flip_vertically_on_load(false);
 
+#pragma region SIMD TestScene
+	useSD = false;
+	dbgSLS = 32;
+
+	/*{
+		CreateModel(ModelType::SPHERE);
+		m_tranformList.back().m_scl = float3(2.5);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}*/
+
+	Model& plane = CreateModel(ModelType::PLANE);
+	plane.m_modelData.m_meshMaterialList[0].m_type = Material::Type::DIFFUSE;
+	m_tranformList.back().m_scl = float3(40, 1, 60);
+	m_tranformList.back().m_pos = float3(0, 0, 20);
+	SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	BuildTlas();
+
+	float3 colors[3] = {float3(1,0,0),float3(0,1,0),float3(0,0,1)};
+	{
+		int numRows = 5;
+		int numColumns = 10;
+		for(int z = 0; z < numColumns; ++z)
+		{
+			for(int x = 0; x < numRows; ++x)
+			{
+				PointLight& light = CreatePointLight();
+				light.m_pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
+				light.m_color = colors[(x + z) % 3];
+				light.m_intensity = 3.0;
+			}
+		}
+	}
+	{
+		int numRows = 5;
+		int numColumns = 10;
+		for(int z = 0; z < numColumns; ++z)
+		{
+			for(int x = 0; x < numRows; ++x)
+			{
+				PointLight& light = CreatePointLight();
+				light.m_pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
+				light.m_color = colors[(x + z) % 3];
+				light.m_intensity = 3.0;
+			}
+		}
+	}
+
+#pragma endregion
+
 #pragma region Texture TestScene
+	/*
 	{
 		CreateModel(ModelType::KENNY);
-		//m_tranformList.back().m_pos = float3(0, 2, -5);
+	}
+	{
+		CreateModel(ModelType::SNAKE);
+		m_tranformList.back().m_scl = float3(0.165f);
+		m_tranformList.back().m_pos = float3(-2, -0.8, -1);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	{
+		CreateModel(ModelType::CUBE);
+		m_tranformList.back().m_pos = float3(0, -0.8f, -3);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}
 	BuildTlas();
+	*/
 #pragma endregion
 
 #ifdef SPHERE_FLAKE

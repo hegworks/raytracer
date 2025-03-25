@@ -349,54 +349,21 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 
 float3 Renderer::CalcPointLight(const PointLight& light, float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY)
 {
-	float3 lPos = light.m_pos; /// LightPos
-	float3 vi = lPos - p; /// Light Vector
-	float3 wi = normalize(vi); /// incoming light direction
-	float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
-	float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
-
-	Ray shadowRay(srPos, wi, tMax);
-	bool isInShadow = scene.IsOccluded(shadowRay);
-
-	if(isTddPixelX && isTddPixelY)
-	{
-		// light pos
-		if(tddPLP)
-		{
-			int2 o = WTS(lPos); /// origin
-			screen->Box(o.x - 2, o.y - 2, o.x + 2, o.y + 2, 0x00ff00);
-		}
-
-		// shadow ray
-		if(tddPLR)
-		{
-			float2 o = WTS(srPos); /// origin
-			float2 d = WTS(lPos); /// destination
-
-			uint color = isInShadow ? 0xff00ff : 0xffff00;
-			if(isTddPixelY)
-			{
-				screen->Line(o.x, o.y, d.x, d.y, color);
-			}
-		}
-	}
-
-	if(isInShadow)
-	{
-		return 0;
-	}
+	float3 vi = light.m_pos - p; /// Light Vector
+	float tMax = length(vi); /// distance between srPos and lPos (Considering EPS)
+	float3 wi = vi / tMax; /// incoming light direction
 
 	float cosi = dot(n, wi); /// Lambert's cosine law
 	if(cosi <= 0)
-	{
 		return 0;
-	}
+
+	Ray shadowRay(p + wi * EPS, wi, tMax - EPS * 2);
+	if(scene.IsOccluded(shadowRay))
+		return 0;
 
 	float falloff = 1.0f / (tMax * tMax); /// inverse square law
 	if(falloff < EPS)
-	{
 		return 0;
-	}
 
 	return brdf * light.m_color * light.m_intensity * cosi * falloff;
 }
