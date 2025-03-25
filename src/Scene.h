@@ -25,9 +25,21 @@ public:
 #ifndef PLS
 	std::vector<PointLight> m_pointLightList;
 #else
-	std::vector<float> plx, ply, plz;
-	std::vector<float> plr, plg, plb;
-	std::vector<float> pli;
+	// last PointLight Index
+	int lplidx = 0;
+
+	// position
+	union { float plx[512]; __m128 plx4[128]; };
+	union { float ply[512]; __m128 ply4[128]; };
+	union { float plz[512]; __m128 plz4[128]; };
+
+	// albedo
+	union { float plr[512]; __m128 plr4[128]; };
+	union { float plg[512]; __m128 plg4[128]; };
+	union { float plb[512]; __m128 plb4[128]; };
+
+	// intensity
+	union { float pli[512]; __m128 pli4[128]; };
 #endif
 
 	std::vector<SpotLight> m_spotLightList;

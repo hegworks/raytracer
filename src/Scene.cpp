@@ -51,14 +51,14 @@ Scene::Scene()
 #else
 				CreatePointLight();
 				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
-				plx.back() = pos.x;
-				ply.back() = pos.y;
-				plz.back() = pos.z;
 				float3 color = colors[(x + z) % 3];
-				plr.back() = color.x;
-				plg.back() = color.y;
-				plb.back() = color.z;
-				pli.back() = 3.0;
+				plx[lplidx - 1] = pos.x;
+				ply[lplidx - 1] = pos.y;
+				plz[lplidx - 1] = pos.z;
+				plr[lplidx - 1] = color.x;
+				plg[lplidx - 1] = color.y;
+				plb[lplidx - 1] = color.z;
+				pli[lplidx - 1] = 3.0;
 #endif
 
 			}
@@ -80,14 +80,14 @@ Scene::Scene()
 #else
 				CreatePointLight();
 				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
-				plx.back() = pos.x;
-				ply.back() = pos.y;
-				plz.back() = pos.z;
 				float3 color = colors[(x + z) % 3];
-				plr.back() = color.x;
-				plg.back() = color.y;
-				plb.back() = color.z;
-				pli.back() = 3.0;
+				plx[lplidx - 1] = pos.x;
+				ply[lplidx - 1] = pos.y;
+				plz[lplidx - 1] = pos.z;
+				plr[lplidx - 1] = color.x;
+				plg[lplidx - 1] = color.y;
+				plb[lplidx - 1] = color.z;
+				pli[lplidx - 1] = 3.0;
 #endif
 
 			}
@@ -478,15 +478,7 @@ void Scene::CreatePointLight()
 #ifndef PLS
 	m_pointLightList.emplace_back();
 #else
-	plx.emplace_back();
-	ply.emplace_back();
-	plz.emplace_back();
-
-	plr.emplace_back();
-	plg.emplace_back();
-	plb.emplace_back();
-
-	pli.emplace_back();
+	lplidx++;
 #endif
 }
 
