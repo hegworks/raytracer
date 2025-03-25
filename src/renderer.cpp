@@ -288,51 +288,76 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool
 							isTddCameraY)
 {
-	/*float totalIntesity(0);
-	for(const PointLight& light : scene.m_pointLightList) totalIntesity += light.m_intensity;
-	for(const SpotLight& light : scene.m_spotLightList) totalIntesity += light.m_intensity;
-	for(const DirLight& light : scene.m_dirLightList) totalIntesity += light.m_intensity;
-	for(const QuadLight& light : scene.m_quadLightList) totalIntesity += light.GetPDF();*/
-
 	if(dbgSL) // Stochastically choosing a light
 	{
 		int numSamples = dbgSLS;
 		float3 stochasticL(0);
-		const uint numPointLights = static_cast<uint>(scene.m_pointLightList.size());
 		const uint numSpotLights = static_cast<uint>(scene.m_spotLightList.size());
 		const uint numDirLights = static_cast<uint>(scene.m_dirLightList.size());
 		const uint numQuadLights = static_cast<uint>(scene.m_quadLightList.size());
+		const uint numPointLights = static_cast<uint>(scene.m_pointLightList.size());
 		const uint numLights = numPointLights + numSpotLights + numDirLights + numQuadLights;
+
 		if(numLights == 0) return 0;
-		for(int i = 0; i < numSamples; ++i)
+
+		if(numPointLights > 0)
 		{
-			uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numLights);
-			if(randIdx >= numPointLights + numSpotLights + numDirLights) // QuadLight
+			for(int i = 0; i < numSamples; ++i)
 			{
-				QuadLight& light = scene.m_quadLightList[randIdx - numPointLights - numSpotLights - numDirLights];
-				float3 l = CalcQuadLight(light, p, n, brdf, pixelIndex);
-				stochasticL += l;
-			}
-			else if(randIdx >= numPointLights + numSpotLights) // DirLight
-			{
-				DirLight& light = scene.m_dirLightList[randIdx - numPointLights - numSpotLights];
-				float3 l = CalclDirLight(light, p, n, brdf);
-				stochasticL += l;
-			}
-			else if(randIdx >= numPointLights) // SpotLight
-			{
-				SpotLight& light = scene.m_spotLightList[randIdx - numPointLights];
-				float3 l = CalcSpotLight(light, p, n, brdf);
-				stochasticL += l;
-			}
-			else // PointLight
-			{
-				PointLight& light = scene.m_pointLightList[randIdx];
-				float3 l = CalcPointLight(light, p, n, brdf, isTddPixelX, isTddPixelY);
-				stochasticL += l;
+				uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numLights);
+
+				if(randIdx < numPointLights)
+				{
+					PointLight& light = scene.m_pointLightList[randIdx];
+					stochasticL += CalcPointLight(light, p, n, brdf, isTddPixelX, isTddPixelY);
+				}
 			}
 		}
+
+		if(numSpotLights > 0)
+		{
+			for(int i = 0; i < numSamples; ++i)
+			{
+				uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], numPointLights, numPointLights + numSpotLights);
+
+				if(randIdx < numPointLights + numSpotLights)
+				{
+					SpotLight& light = scene.m_spotLightList[randIdx - numPointLights];
+					stochasticL += CalcSpotLight(light, p, n, brdf);
+				}
+			}
+		}
+
+		if(numDirLights > 0)
+		{
+			for(int i = 0; i < numSamples; ++i)
+			{
+				uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], numPointLights + numSpotLights, numPointLights + numSpotLights + numDirLights);
+
+				if(randIdx < numPointLights + numSpotLights + numDirLights)
+				{
+					DirLight& light = scene.m_dirLightList[randIdx - numPointLights - numSpotLights];
+					stochasticL += CalclDirLight(light, p, n, brdf);
+				}
+			}
+		}
+
+		if(numQuadLights > 0)
+		{
+			for(int i = 0; i < numSamples; ++i)
+			{
+				uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], numPointLights + numSpotLights + numDirLights, numLights);
+
+				if(randIdx < numLights)
+				{
+					QuadLight& light = scene.m_quadLightList[randIdx - numPointLights - numSpotLights - numDirLights];
+					stochasticL += CalcQuadLight(light, p, n, brdf, pixelIndex);
+				}
+			}
+		}
+
 		return stochasticL * (float)numLights / (float)numSamples;
+
 	}
 	else // calclulating all the lights
 	{
