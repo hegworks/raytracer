@@ -232,9 +232,10 @@ void Renderer::UI()
 					{
 						if(ImGui::TreeNode(("PL " + std::to_string(i)).c_str()))
 						{
-							ImGui::DragFloat3("Pos", &scene.m_pointLightList[i].m_pos.x, 0.01f);
-							ImGui::ColorEdit3("Color", &scene.m_pointLightList[i].m_color.x);
-							ImGui::DragFloat("Intensity", &scene.m_pointLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+							//TODO
+							//ImGui::DragFloat3("Pos", &scene.m_pointLightList[i].m_pos.x, 0.01f);
+							//ImGui::ColorEdit3("Color", &scene.m_pointLightList[i].m_color.x);
+							//ImGui::DragFloat("Intensity", &scene.m_pointLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
 
 							ImGui::TreePop();
 						}

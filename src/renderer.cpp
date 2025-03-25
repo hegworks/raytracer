@@ -285,8 +285,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 }
 
-float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool
-							isTddCameraY)
+float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
 {
 	if(dbgSL) // Stochastically choosing a light
 	{
@@ -374,23 +373,44 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 
 float3 Renderer::CalcPointLight(const PointLight& light, float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY)
 {
-	float3 vi = light.m_pos - p; /// Light Vector
-	float tMax = length(vi); /// distance between srPos and lPos (Considering EPS)
-	float3 wi = vi / tMax; /// incoming light direction
+	// vi: incoming light vector
+	// float3 vi = light.m_pos - p;
+	float vix = light.x - p.x;
+	float viy = light.y - p.y;
+	float viz = light.z - p.z;
 
-	float cosi = dot(n, wi); /// Lambert's cosine law
+	// t: distance between shadowRayPos and lightPos
+	// float t = length(vi);
+	float t = sqrt(vix * vix + viy * viy + viz * viz);
+
+	// wi: incoming light direction
+	// float3 wi = vi / t;
+	float wix = vix / t;
+	float wiy = viy / t;
+	float wiz = viz / t;
+
+	// lambert's cosine law
+	// float cosi = dot(n,wi)
+	float cosi = n.x * wix + n.y * wiy + n.z * wiz;
 	if(cosi <= 0)
 		return 0;
 
-	Ray shadowRay(p + wi * EPS, wi, tMax - EPS * 2);
+	// shadow ray
+	const float3 wi = {wix, wiy, wiz};
+	Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
 	if(scene.IsOccluded(shadowRay))
 		return 0;
 
-	float falloff = 1.0f / (tMax * tMax); /// inverse square law
+	// inverse square law
+	float falloff = 1.0f / (t * t);
 	if(falloff < EPS)
 		return 0;
 
-	return brdf * light.m_color * light.m_intensity * cosi * falloff;
+	float r = brdf.x * light.r;
+	float g = brdf.y * light.g;
+	float b = brdf.z * light.b;
+
+	return float3(r, g, b) * light.i * cosi * falloff;
 }
 
 float3 Renderer::CalcAllPointLights(float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY, [[maybe_unused]] bool isTddCameraY)
