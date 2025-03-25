@@ -424,29 +424,20 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 float3 Renderer::CalcPointLight(const PointLight& light, float3 p, float3 n, float3 brdf, bool isTddPixelX, bool isTddPixelY)
 {
 	// vi: incoming light vector
-	// float3 vi = light.m_pos - p;
-	float vix = light.x - p.x;
-	float viy = light.y - p.y;
-	float viz = light.z - p.z;
+	float3 vi = light.m_pos - p;
 
 	// t: distance between shadowRayPos and lightPos
-	// float t = length(vi);
-	float t = sqrt(vix * vix + viy * viy + viz * viz);
+	float t = length(vi);
 
 	// wi: incoming light direction
-	// float3 wi = vi / t;
-	float wix = vix / t;
-	float wiy = viy / t;
-	float wiz = viz / t;
+	float3 wi = vi / t;
 
 	// lambert's cosine law
-	// float cosi = dot(n,wi)
-	float cosi = n.x * wix + n.y * wiy + n.z * wiz;
+	float cosi = dot(n, wi);
 	if(cosi <= 0)
 		return 0;
 
 	// shadow ray
-	const float3 wi = {wix, wiy, wiz};
 	Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
 	if(scene.IsOccluded(shadowRay))
 		return 0;
@@ -456,11 +447,7 @@ float3 Renderer::CalcPointLight(const PointLight& light, float3 p, float3 n, flo
 	if(falloff < EPS)
 		return 0;
 
-	float r = brdf.x * light.r;
-	float g = brdf.y * light.g;
-	float b = brdf.z * light.b;
-
-	return float3(r, g, b) * light.i * cosi * falloff;
+	return brdf * light.m_color * light.m_intensity * cosi * falloff;
 }
 
 float3 Renderer::CalcPointLightSIMD()

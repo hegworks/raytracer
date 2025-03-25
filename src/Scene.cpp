@@ -45,15 +45,9 @@ Scene::Scene()
 #ifndef PLS
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
-				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
-				light.x = pos.x;
-				light.y = pos.y;
-				light.z = pos.z;
-				float3 color = colors[(x + z) % 3];
-				light.r = color.x;
-				light.g = color.y;
-				light.b = color.z;
-				light.i = 3.0;
+				light.m_pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
+				light.m_color = colors[(x + z) % 3];
+				light.m_intensity = 3.0;
 #else
 				CreatePointLight();
 				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
@@ -80,15 +74,9 @@ Scene::Scene()
 #ifndef PLS
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
-				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
-				light.x = pos.x;
-				light.y = pos.y;
-				light.z = pos.z;
-				float3 color = colors[(x + z) % 3];
-				light.r = color.x;
-				light.g = color.y;
-				light.b = color.z;
-				light.i = 3.0;
+				light.m_pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
+				light.m_color = colors[(x + z) % 3];
+				light.m_intensity = 3.0;
 #else
 				CreatePointLight();
 				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
