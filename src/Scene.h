@@ -25,21 +25,24 @@ public:
 #ifndef PLS
 	std::vector<PointLight> m_pointLightList;
 #else
+#define SIMD
+#define TOTAL_POINT_LIGHTS 128
+
 	// Number of PointLights
 	int npl = 0;
 
 	// position
-	union { float plx[512]; __m128 plx4[128]; };
-	union { float ply[512]; __m128 ply4[128]; };
-	union { float plz[512]; __m128 plz4[128]; };
+	union { float plx[TOTAL_POINT_LIGHTS]; __m128 plx4[TOTAL_POINT_LIGHTS / 4]; };
+	union { float ply[TOTAL_POINT_LIGHTS]; __m128 ply4[TOTAL_POINT_LIGHTS / 4]; };
+	union { float plz[TOTAL_POINT_LIGHTS]; __m128 plz4[TOTAL_POINT_LIGHTS / 4]; };
 
 	// albedo
-	union { float plr[512]; __m128 plr4[128]; };
-	union { float plg[512]; __m128 plg4[128]; };
-	union { float plb[512]; __m128 plb4[128]; };
+	union { float plr[TOTAL_POINT_LIGHTS]; __m128 plr4[TOTAL_POINT_LIGHTS / 4]; };
+	union { float plg[TOTAL_POINT_LIGHTS]; __m128 plg4[TOTAL_POINT_LIGHTS / 4]; };
+	union { float plb[TOTAL_POINT_LIGHTS]; __m128 plb4[TOTAL_POINT_LIGHTS / 4]; };
 
 	// intensity
-	union { float pli[512]; __m128 pli4[128]; };
+	union { float pli[TOTAL_POINT_LIGHTS]; __m128 pli4[TOTAL_POINT_LIGHTS / 4]; };
 #endif
 
 	std::vector<SpotLight> m_spotLightList;

@@ -56,6 +56,9 @@ public:
 	bool useACM = false;
 	int maxDepth = 50;
 	Scene scene;
+
+	union quadf { __m128 f4; float f[4]; };
+	union quadi { __m128i i4; int i[4]; };
 };
 
 } // namespace Tmpl8

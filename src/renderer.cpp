@@ -374,49 +374,150 @@ void Renderer::CalcStochPointLights(float3 p, float3 n, float3 brdf, uint pixelI
 #else
 void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, int numSamples, float3& stochasticL, uint numLights, bool isAll)
 {
+#ifdef SIMD
+	quadf px4 = {_mm_set_ps1(p.x)};
+	quadf py4 = {_mm_set_ps1(p.y)};
+	quadf pz4 = {_mm_set_ps1(p.z)};
+
+	__m128 nx4 = _mm_set_ps1(n.x);
+	__m128 ny4 = _mm_set_ps1(n.y);
+	__m128 nz4 = _mm_set_ps1(n.z);
+
+	__m128 one4 = _mm_set_ps1(1.0f);
+
+	__m128 brdfx4 = _mm_set_ps1(brdf.x);
+	__m128 brdfy4 = _mm_set_ps1(brdf.y);
+	__m128 brdfz4 = _mm_set_ps1(brdf.z);
+#endif
+
 	const int count = isAll ? numLights : numSamples;
+#ifndef SIMD
 	for(int i = 0; i < count; ++i)
+#else
+	for(int i = 0; i < count / 4; ++i)
+#endif
 	{
 		uint idx = isAll ? i : threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numLights);
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;
+#ifndef SIMD
 		float vix = scene.plx[idx] - p.x;
 		float viy = scene.ply[idx] - p.y;
 		float viz = scene.plz[idx] - p.z;
+#else
+		__m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
+		__m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
+		__m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
+#endif
 
 		// t: distance between shadowRayPos and lightPos
 		// float t = length(vi);
-		float t = sqrt(vix * vix + viy * viy + viz * viz);
+#ifndef SIMD
+		float t = sqrt(vix * vix +
+					   viy * viy +
+					   viz * viz);
+#else
+		__m128 t4 =
+			_mm_sqrt_ps
+			(
+				_mm_add_ps
+				(
+					_mm_add_ps
+					(
+						_mm_mul_ps(vix4, vix4), _mm_mul_ps(viy4, viy4)
+					)
+					, _mm_mul_ps(viz4, viz4)
+				)
+			);
+#endif
 
 		// wi: incoming light direction
 		// float3 wi = vi / t;
+#ifndef SIMD
 		float wix = vix / t;
 		float wiy = viy / t;
 		float wiz = viz / t;
+#else
+		quadf wix4 = {_mm_div_ps(vix4, t4)};
+		quadf wiy4 = {_mm_div_ps(viy4, t4)};
+		quadf wiz4 = {_mm_div_ps(viz4, t4)};
+#endif
 
 		// lambert's cosine law
 		// float cosi = dot(n,wi)
+#ifndef SIMD
 		float cosi = n.x * wix + n.y * wiy + n.z * wiz;
 		if(cosi <= 0)
 			continue;
+#else
+		__m128 cosi4 =
+			_mm_add_ps
+			(
+				_mm_add_ps
+				(
+					_mm_mul_ps(nx4, wix4.f4), _mm_mul_ps(ny4, wiy4.f4)
+				)
+				, _mm_mul_ps(nz4, wiz4.f4)
+			);
+		cosi4 = _mm_andnot_ps(_mm_cmple_ps(cosi4, _mm_setzero_ps()), cosi4);
+#endif
 
 		// shadow ray
+#ifndef SIMD
 		const float3 wi = {wix, wiy, wiz};
 		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
 		if(scene.IsOccluded(shadowRay))
 			continue;
+#else
+		//TODO
+#endif
 
 		// inverse square law
+#ifndef SIMD
 		float falloff = 1.0f / (t * t);
 		if(falloff < EPS)
 			continue;
+#else
+		__m128 falloff4 = _mm_div_ps(one4, _mm_mul_ps(t4, t4));
+#endif
 
+
+		// color with applied brdf
+#ifndef SIMD
 		float r = brdf.x * scene.plr[idx];
 		float g = brdf.y * scene.plg[idx];
 		float b = brdf.z * scene.plb[idx];
+#else
+		__m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
+		__m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
+		__m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
+#endif
 
+
+#ifndef SIMD
 		stochasticL += float3(r, g, b) * scene.pli[idx] * cosi * falloff;
+#else
+		// cosi * falloff * intensity
+		__m128 effect4 =
+			_mm_mul_ps
+			(
+				_mm_mul_ps(scene.pli4[idx], cosi4)
+				, falloff4
+			);
+
+		// effect4 * rbg4
+		__m128 lr4 = _mm_mul_ps(r4, effect4);
+		__m128 lg4 = _mm_mul_ps(g4, effect4);
+		__m128 lb4 = _mm_mul_ps(b4, effect4);
+
+		float r = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lr4, lr4), _mm_setzero_ps()));
+		float g = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lg4, lg4), _mm_setzero_ps()));
+		float b = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lb4, lb4), _mm_setzero_ps()));
+
+		// Now you can add to stochasticL just like in the non-SIMD version
+		stochasticL += float3(r, g, b);
+#endif
 	}
 }
 #endif
