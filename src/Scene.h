@@ -25,8 +25,8 @@ public:
 #ifndef PLS
 	std::vector<PointLight> m_pointLightList;
 #else
-	// last PointLight Index
-	int lplidx = 0;
+	// Number of PointLights
+	int npl = 0;
 
 	// position
 	union { float plx[512]; __m128 plx4[128]; };

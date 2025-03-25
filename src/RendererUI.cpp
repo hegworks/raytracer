@@ -227,7 +227,7 @@ void Renderer::UI()
 #ifndef PLS
 			int numPointLights = scene.m_pointLightList.size();
 #else
-			int numPointLights = scene.lplidx;
+			int numPointLights = scene.npl;
 #endif
 			if(numPointLights > 0)
 			{

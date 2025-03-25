@@ -297,7 +297,7 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 #ifndef PLS
 		const uint numPointLights = static_cast<uint>(scene.m_pointLightList.size());
 #else
-		const uint numPointLights = scene.lplidx;
+		const uint numPointLights = scene.npl;
 #endif
 
 		const uint numLights = numPointLights + numSpotLights + numDirLights + numQuadLights;
@@ -465,7 +465,7 @@ float3 Renderer::CalcAllPointLights(float3 p, float3 n, float3 brdf, uint pixelI
 		l += CalcPointLight(scene.m_pointLightList[i], p, n, brdf, isTddPixelX, isTddPixelY);
 	}
 #else
-	int numPointLights = scene.lplidx;
+	int numPointLights = scene.npl;
 	CalcStochPointLightsSIMD(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, 0, l, numPointLights, true);
 #endif
 
