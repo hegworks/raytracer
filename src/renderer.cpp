@@ -294,7 +294,7 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 		const uint numSpotLights = static_cast<uint>(scene.m_spotLightList.size());
 		const uint numDirLights = static_cast<uint>(scene.m_dirLightList.size());
 		const uint numQuadLights = static_cast<uint>(scene.m_quadLightList.size());
-#ifndef NPLS
+#ifndef PLS
 		const uint numPointLights = static_cast<uint>(scene.m_pointLightList.size());
 #else
 		const uint numPointLights = static_cast<uint>(scene.plx.size());
@@ -306,7 +306,7 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 
 		if(numPointLights > 0)
 		{
-#ifndef NPLS
+#ifndef PLS
 			CalcStochPointLights(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, numSamples, stochasticL, numLights);
 #else
 			CalcStochPointLightsSIMD(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, numSamples, stochasticL, numLights, false);
@@ -361,7 +361,7 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 	}
 }
 
-#ifndef NPLS
+#ifndef PLS
 void Renderer::CalcStochPointLights(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, int numSamples, float3& stochasticL, const uint numLights)
 {
 	for(int i = 0; i < numSamples; ++i)
@@ -471,7 +471,7 @@ float3 Renderer::CalcPointLightSIMD()
 float3 Renderer::CalcAllPointLights(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, [[maybe_unused]] bool isTddCameraY)
 {
 	float3 l(0);
-#ifndef NPLS
+#ifndef PLS
 	int numPointLights = static_cast<int>(scene.m_pointLightList.size());
 	for(int i = 0; i < numPointLights; ++i)
 	{
