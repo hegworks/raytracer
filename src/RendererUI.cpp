@@ -224,11 +224,16 @@ void Renderer::UI()
 				scene.CreateQuadLight();
 			}
 
-			if(!scene.m_pointLightList.empty())
+#ifndef PLS
+			int numPointLights = scene.m_pointLightList.size();
+#else
+			int numPointLights = scene.plx.size();
+#endif
+			if(numPointLights > 0)
 			{
 				if(ImGui::CollapsingHeader("PointLights"))
 				{
-					for(int i = 0; i < static_cast<int>(scene.m_pointLightList.size()); i++)
+					for(int i = 0; i < numPointLights; i++)
 					{
 						if(ImGui::TreeNode(("PL " + std::to_string(i)).c_str()))
 						{

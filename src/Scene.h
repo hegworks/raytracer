@@ -10,6 +10,7 @@
 #include "Transform.h"
 
 //#define SPHERE_FLAKE
+//#define PLS // PointLightSIMD
 
 constexpr int vertexCount = 259 * 6 * 2 * 49 * 3;
 
@@ -21,7 +22,14 @@ class Scene
 public:
 	Scene();
 
+#ifndef PLS
 	std::vector<PointLight> m_pointLightList;
+#else
+	std::vector<float> plx, ply, plz;
+	std::vector<float> plr, plg, plb;
+	std::vector<float> pli;
+#endif
+
 	std::vector<SpotLight> m_spotLightList;
 	std::vector<DirLight> m_dirLightList;
 	std::vector<QuadLight> m_quadLightList;
@@ -38,7 +46,7 @@ public:
 
 	Model& CreateModel(ModelType modelType);
 
-	PointLight& CreatePointLight();
+	void CreatePointLight();
 	SpotLight& CreateSpotLight();
 	DirLight& CreateDirLight();
 	QuadLight& CreateQuadLight();

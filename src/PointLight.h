@@ -7,7 +7,6 @@ class ALIGNED(32) PointLight
 public:
 	float x, y, z;
 	float r, g, b;
-	//float3 m_color;
 	float i;
 	float dummy;
 

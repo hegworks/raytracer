@@ -42,7 +42,9 @@ Scene::Scene()
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-				PointLight& light = CreatePointLight();
+#ifndef PLS
+				CreatePointLight();
+				PointLight& light = m_pointLightList.back();
 				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
 				light.x = pos.x;
 				light.y = pos.y;
@@ -52,6 +54,19 @@ Scene::Scene()
 				light.g = color.y;
 				light.b = color.z;
 				light.i = 3.0;
+#else
+				CreatePointLight();
+				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
+				plx.back() = pos.x;
+				ply.back() = pos.y;
+				plz.back() = pos.z;
+				float3 color = colors[(x + z) % 3];
+				plr.back() = color.x;
+				plg.back() = color.y;
+				plb.back() = color.z;
+				pli.back() = 3.0;
+#endif
+
 			}
 		}
 	}
@@ -62,7 +77,9 @@ Scene::Scene()
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-				PointLight& light = CreatePointLight();
+#ifndef PLS
+				CreatePointLight();
+				PointLight& light = m_pointLightList.back();
 				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
 				light.x = pos.x;
 				light.y = pos.y;
@@ -72,6 +89,19 @@ Scene::Scene()
 				light.g = color.y;
 				light.b = color.z;
 				light.i = 3.0;
+#else
+				CreatePointLight();
+				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
+				plx.back() = pos.x;
+				ply.back() = pos.y;
+				plz.back() = pos.z;
+				float3 color = colors[(x + z) % 3];
+				plr.back() = color.x;
+				plg.back() = color.y;
+				plb.back() = color.z;
+				pli.back() = 3.0;
+#endif
+
 			}
 		}
 	}
@@ -455,11 +485,21 @@ float3 Scene::GetRawNormal(Ray& ray) const
 	return normalize(n);
 }
 
-PointLight& Scene::CreatePointLight()
+void Scene::CreatePointLight()
 {
+#ifndef PLS
 	m_pointLightList.emplace_back();
-	PointLight& light = m_pointLightList.back();
-	return light;
+#else
+	plx.emplace_back();
+	ply.emplace_back();
+	plz.emplace_back();
+
+	plr.emplace_back();
+	plg.emplace_back();
+	plb.emplace_back();
+
+	pli.emplace_back();
+#endif
 }
 
 SpotLight& Scene::CreateSpotLight()
