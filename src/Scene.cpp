@@ -42,7 +42,7 @@ Scene::Scene()
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-#ifndef PLS
+#ifndef NPLS
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
 				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
@@ -77,7 +77,7 @@ Scene::Scene()
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-#ifndef PLS
+#ifndef NPLS
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
 				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
@@ -487,7 +487,7 @@ float3 Scene::GetRawNormal(Ray& ray) const
 
 void Scene::CreatePointLight()
 {
-#ifndef PLS
+#ifndef NPLS
 	m_pointLightList.emplace_back();
 #else
 	plx.emplace_back();

@@ -12,7 +12,7 @@ public:
 	// game flow methods
 	void Init();
 	float3 Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bool tddIsPixelY);
-#ifndef PLS
+#ifndef NPLS
 	void CalcStochPointLights(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, int numSamples, float3& stochasticL, uint numLights);
 #else
 	void CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, int numSamples, float3& stochasticL, uint numLights, bool isAll);
