@@ -102,6 +102,26 @@ public:
 		Assert::AreEqual(expected.y, result.y);
 		Assert::AreEqual(expected.z, result.z);
 	}
+
+	TEST_METHOD(ReflectWithNaNIncident)
+	{
+		float3 i = make_float3(0.0f, NAN, 0.0f);
+		float3 n = make_float3(0.0f, 1.0f, 0.0f);
+		float3 result = reflect(i, n);
+		Assert::IsTrue(isnan(result.x));
+		Assert::IsTrue(isnan(result.y));
+		Assert::IsTrue(isnan(result.z));
+	}
+
+	TEST_METHOD(ReflectWithNaNNormal)
+	{
+		float3 i = make_float3(0.0f, 1.0, 0.0f);
+		float3 n = make_float3(0.0f, NAN, 0.0f);
+		float3 result = reflect(i, n);
+		Assert::IsTrue(isnan(result.x));
+		Assert::IsTrue(isnan(result.y));
+		Assert::IsTrue(isnan(result.z));
+	}
 };
 
 TEST_CLASS(NormalizeFloat2)
