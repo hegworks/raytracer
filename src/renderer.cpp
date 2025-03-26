@@ -374,6 +374,7 @@ void Renderer::CalcStochPointLights(float3 p, float3 n, float3 brdf, uint pixelI
 #else
 void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, int numSamples, float3& stochasticL, uint numLights, bool isAll)
 {
+	PROFILE_FUNCTION();
 #ifdef SIMD
 	quadf px4 = {_mm_set_ps1(p.x)};
 	quadf py4 = {_mm_set_ps1(p.y)};
@@ -382,8 +383,6 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 	__m128 nx4 = _mm_set_ps1(n.x);
 	__m128 ny4 = _mm_set_ps1(n.y);
 	__m128 nz4 = _mm_set_ps1(n.z);
-
-	__m128 one4 = _mm_set_ps1(1.0f);
 
 	__m128 brdfx4 = _mm_set_ps1(brdf.x);
 	__m128 brdfy4 = _mm_set_ps1(brdf.y);
@@ -514,7 +513,8 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 		if(falloff < EPS)
 			continue;
 #else
-		__m128 falloff4 = _mm_div_ps(one4, _mm_mul_ps(t4.f4, t4.f4));
+		//__m128 falloff4 = _mm_div_ps(one4, _mm_mul_ps(t4.f4, t4.f4));
+		__m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
 #endif
 
 
@@ -542,15 +542,18 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 			);
 
 		// effect4 * rbg4
-		__m128 lr4 = _mm_mul_ps(r4, effect4);
-		__m128 lg4 = _mm_mul_ps(g4, effect4);
-		__m128 lb4 = _mm_mul_ps(b4, effect4);
+		quadf lr4 = {_mm_mul_ps(r4, effect4)};
+		quadf lg4 = {_mm_mul_ps(g4, effect4)};
+		quadf lb4 = {_mm_mul_ps(b4, effect4)};
 
-		float r = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lr4, lr4), _mm_setzero_ps()));
-		float g = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lg4, lg4), _mm_setzero_ps()));
-		float b = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lb4, lb4), _mm_setzero_ps()));
+		/*float r = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lr4.f4, lr4.f4), _mm_setzero_ps()));
+		float g = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lg4.f4, lg4.f4), _mm_setzero_ps()));
+		float b = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lb4.f4, lb4.f4), _mm_setzero_ps()));*/
 
-		// Now you can add to stochasticL just like in the non-SIMD version
+		float r = lr4.f[0] + lr4.f[1] + lr4.f[2] + lr4.f[3];
+		float g = lg4.f[0] + lg4.f[1] + lg4.f[2] + lg4.f[3];
+		float b = lb4.f[0] + lb4.f[1] + lb4.f[2] + lb4.f[3];
+
 		stochasticL += float3(r, g, b);
 #endif
 	}
@@ -596,6 +599,7 @@ float3 Renderer::CalcAllPointLights(float3 p, float3 n, float3 brdf, uint pixelI
 	float3 l(0);
 #ifndef PLS
 	int numPointLights = static_cast<int>(scene.m_pointLightList.size());
+	PROFILE_FUNCTION();
 	for(int i = 0; i < numPointLights; ++i)
 	{
 		l += CalcPointLight(scene.m_pointLightList[i], p, n, brdf, isTddPixelX, isTddPixelY);

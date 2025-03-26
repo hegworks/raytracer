@@ -17,3 +17,38 @@
 #define LARGE_FLOAT		1e34f
 //#define EPS				1e-4f
 const std::string ASSETDIR("../assets/");
+
+
+thread_local static int counter = 0;
+thread_local static float summ = 0;
+thread_local static bool resultPrinted = false;
+constexpr int SAMPLES = 15000;
+
+struct ScopedTimer
+{
+	Timer t;
+	const char* name;
+
+	ScopedTimer(const char* funcName)
+	{
+		name = funcName;
+	}
+
+	~ScopedTimer()
+	{
+		if(counter++ < SAMPLES)
+		{
+			float seconds = t.elapsed();
+			summ += seconds * 1000 * 1000;
+		}
+		else
+		{
+			if(resultPrinted) return;
+			printf("Avg %s: %f Ms \n", name, summ / (float)SAMPLES);
+			resultPrinted = true;
+		}
+	}
+};
+
+#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
+//#define PROFILE_FUNCTION() // DISABLE 
