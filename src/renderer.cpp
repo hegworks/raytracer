@@ -453,7 +453,7 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 		if(cosi <= 0)
 			continue;
 #else
-		__m128 cosi4 =
+		quadf cosi4 = {
 			_mm_add_ps
 			(
 				_mm_add_ps
@@ -461,8 +461,8 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 					_mm_mul_ps(nx4, wix4.f4), _mm_mul_ps(ny4, wiy4.f4)
 				)
 				, _mm_mul_ps(nz4, wiz4.f4)
-			);
-		cosi4 = _mm_andnot_ps(_mm_cmple_ps(cosi4, _mm_setzero_ps()), cosi4);
+			)};
+		cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
 #endif
 
 		// shadow ray
@@ -474,26 +474,38 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 #else
 		quadf shadowMask = {_mm_set_ps1(1)};
 		{
-			const float3 wi = {wix4.f[0], wiy4.f[0], wiz4.f[0]};
-			if(scene.IsOccluded({p + wi * EPS, wi, t4.f[0] - EPS * 2.0f}))
-				shadowMask.f[0] = 0;
+			if(cosi4.f[0] > 0)
+			{
+				const float3 wi = {wix4.f[0], wiy4.f[0], wiz4.f[0]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[0] - TWO_EPS}))
+					shadowMask.f[0] = 0;
+			}
 		}
 		{
-			const float3 wi = {wix4.f[1], wiy4.f[1], wiz4.f[1]};
-			if(scene.IsOccluded({p + wi * EPS, wi, t4.f[1] - EPS * 2.0f}))
-				shadowMask.f[1] = 0;
+			if(cosi4.f[1] > 0)
+			{
+				const float3 wi = {wix4.f[1], wiy4.f[1], wiz4.f[1]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[1] - TWO_EPS}))
+					shadowMask.f[1] = 0;
+			}
 		}
 		{
-			const float3 wi = {wix4.f[2], wiy4.f[2], wiz4.f[2]};
-			if(scene.IsOccluded({p + wi * EPS, wi, t4.f[2] - EPS * 2.0f}))
-				shadowMask.f[2] = 0;
+			if(cosi4.f[2] > 0)
+			{
+				const float3 wi = {wix4.f[2], wiy4.f[2], wiz4.f[2]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[2] - TWO_EPS}))
+					shadowMask.f[2] = 0;
+			}
 		}
 		{
-			const float3 wi = {wix4.f[3], wiy4.f[3], wiz4.f[3]};
-			if(scene.IsOccluded({p + wi * EPS, wi, t4.f[3] - EPS * 2.0f}))
-				shadowMask.f[3] = 0;
+			if(cosi4.f[3] > 0)
+			{
+				const float3 wi = {wix4.f[3], wiy4.f[3], wiz4.f[3]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[3] - TWO_EPS}))
+					shadowMask.f[3] = 0;
+			}
 		}
-		cosi4 = _mm_mul_ps(cosi4, shadowMask.f4);
+		cosi4.f4 = _mm_mul_ps(cosi4.f4, shadowMask.f4);
 #endif
 
 		// inverse square law
@@ -525,7 +537,7 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 		__m128 effect4 =
 			_mm_mul_ps
 			(
-				_mm_mul_ps(scene.pli4[idx], cosi4)
+				_mm_mul_ps(scene.pli4[idx], cosi4.f4)
 				, falloff4
 			);
 

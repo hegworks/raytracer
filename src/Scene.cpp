@@ -21,9 +21,9 @@ Scene::Scene()
 	useSD = false;
 	dbgSLS = 32;
 
-	{
+	/*{
 		CreateModel(ModelType::SPHERE);
-	}
+	}*/
 
 	Model& plane = CreateModel(ModelType::PLANE);
 	plane.m_modelData.m_meshMaterialList[0].m_type = Material::Type::DIFFUSE;

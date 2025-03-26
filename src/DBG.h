@@ -40,6 +40,7 @@ inline bool useSD = true; /// UseSkyDome
 inline bool useBI = true; /// UseBilinearInterpolation
 inline float dbgSDBF = 1.0f; /// SkyDomeBrightnessFactor
 inline float EPS = 1e-3f;
+inline float TWO_EPS = 2e-3f;
 inline int epsInt = 2;
 inline float dbgFF = 10.f; /// FireFly
 inline float dbgGC = 1.35f; /// GammaCorrection

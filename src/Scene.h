@@ -26,7 +26,7 @@ public:
 	std::vector<PointLight> m_pointLightList;
 #else
 #define SIMD
-#define TOTAL_POINT_LIGHTS 128
+#define TOTAL_POINT_LIGHTS 512
 
 	// Number of PointLights
 	int npl = 0;
