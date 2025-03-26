@@ -418,7 +418,8 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 					   viy * viy +
 					   viz * viz);
 #else
-		__m128 t4 =
+		quadf t4 =
+		{
 			_mm_sqrt_ps
 			(
 				_mm_add_ps
@@ -429,7 +430,8 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 					)
 					, _mm_mul_ps(viz4, viz4)
 				)
-			);
+			)
+		};
 #endif
 
 		// wi: incoming light direction
@@ -439,9 +441,9 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 		float wiy = viy / t;
 		float wiz = viz / t;
 #else
-		quadf wix4 = {_mm_div_ps(vix4, t4)};
-		quadf wiy4 = {_mm_div_ps(viy4, t4)};
-		quadf wiz4 = {_mm_div_ps(viz4, t4)};
+		quadf wix4 = {_mm_div_ps(vix4, t4.f4)};
+		quadf wiy4 = {_mm_div_ps(viy4, t4.f4)};
+		quadf wiz4 = {_mm_div_ps(viz4, t4.f4)};
 #endif
 
 		// lambert's cosine law
@@ -470,7 +472,28 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 		if(scene.IsOccluded(shadowRay))
 			continue;
 #else
-		//TODO
+		quadf shadowMask = {_mm_set_ps1(1)};
+		{
+			const float3 wi = {wix4.f[0], wiy4.f[0], wiz4.f[0]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t4.f[0] - EPS * 2.0f}))
+				shadowMask.f[0] = 0;
+		}
+		{
+			const float3 wi = {wix4.f[1], wiy4.f[1], wiz4.f[1]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t4.f[1] - EPS * 2.0f}))
+				shadowMask.f[1] = 0;
+		}
+		{
+			const float3 wi = {wix4.f[2], wiy4.f[2], wiz4.f[2]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t4.f[2] - EPS * 2.0f}))
+				shadowMask.f[2] = 0;
+		}
+		{
+			const float3 wi = {wix4.f[3], wiy4.f[3], wiz4.f[3]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t4.f[3] - EPS * 2.0f}))
+				shadowMask.f[3] = 0;
+		}
+		cosi4 = _mm_mul_ps(cosi4, shadowMask.f4);
 #endif
 
 		// inverse square law
@@ -479,7 +502,7 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 		if(falloff < EPS)
 			continue;
 #else
-		__m128 falloff4 = _mm_div_ps(one4, _mm_mul_ps(t4, t4));
+		__m128 falloff4 = _mm_div_ps(one4, _mm_mul_ps(t4.f4, t4.f4));
 #endif
 
 

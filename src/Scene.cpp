@@ -21,11 +21,9 @@ Scene::Scene()
 	useSD = false;
 	dbgSLS = 32;
 
-	/*{
+	{
 		CreateModel(ModelType::SPHERE);
-		m_tranformList.back().m_scl = float3(2.5);
-		SetBlasTransform(m_blasList.back(), m_tranformList.back());
-	}*/
+	}
 
 	Model& plane = CreateModel(ModelType::PLANE);
 	plane.m_modelData.m_meshMaterialList[0].m_type = Material::Type::DIFFUSE;
