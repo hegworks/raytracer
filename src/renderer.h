@@ -62,6 +62,24 @@ public:
 
 	union quadf { __m128 f4; float f[4]; };
 	union quadi { __m128i i4; int i[4]; };
+
+	float hsum_ps_sse1(__m128 v)
+	{
+		__m128 shuf = _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 3, 0, 1));
+		__m128 sums = _mm_add_ps(v, shuf);
+		shuf = _mm_movehl_ps(shuf, sums);
+		sums = _mm_add_ss(sums, shuf);
+		return    _mm_cvtss_f32(sums);
+	}
+
+	float hsum_ps_sse3(__m128 v)
+	{
+		__m128 shuf = _mm_movehdup_ps(v);
+		__m128 sums = _mm_add_ps(v, shuf);
+		shuf = _mm_movehl_ps(shuf, sums);
+		sums = _mm_add_ss(sums, shuf);
+		return        _mm_cvtss_f32(sums);
+	}
 };
 
 } // namespace Tmpl8

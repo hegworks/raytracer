@@ -686,7 +686,7 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 
 		// inverse square law
-		//__m128 falloff4 = _mm_div_ps(one4, _mm_mul_ps(t4.f4, t4.f4));
+		//const float falloff = 1.0f / (t * t);
 		__m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
 
 
@@ -711,10 +711,13 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 		quadf lb4 = {_mm_mul_ps(b4, effect4)};
 
 
-		float r = lr4.f[0] + lr4.f[1] + lr4.f[2] + lr4.f[3];
-		float g = lg4.f[0] + lg4.f[1] + lg4.f[2] + lg4.f[3];
-		float b = lb4.f[0] + lb4.f[1] + lb4.f[2] + lb4.f[3];
+		//float r = lr4.f[0] + lr4.f[1] + lr4.f[2] + lr4.f[3];
+		//float g = lg4.f[0] + lg4.f[1] + lg4.f[2] + lg4.f[3];
+		//float b = lb4.f[0] + lb4.f[1] + lb4.f[2] + lb4.f[3];
 
+		float r = hsum_ps_sse3(lr4.f4);
+		float g = hsum_ps_sse3(lg4.f4);
+		float b = hsum_ps_sse3(lb4.f4);
 
 		retVal += float3(r, g, b);
 	}
