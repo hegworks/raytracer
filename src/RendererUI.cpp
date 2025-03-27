@@ -135,8 +135,8 @@ void Renderer::UI()
 
 			ImGui::Separator();
 
-			ImGui::Checkbox("Stochastic Lights", &dbgSL);
-			ImGui::SliderInt("Samples", &dbgSLS, 1, 300);
+			//ImGui::Checkbox("Stochastic Lights", &dbgSL);
+			//ImGui::SliderInt("Samples", &dbgSLS, 1, 300);
 
 			ImGui::Separator();
 
@@ -224,7 +224,7 @@ void Renderer::UI()
 				scene.CreateQuadLight();
 			}
 
-#ifndef PLS
+#ifndef DOD
 			int numPointLights = scene.m_pointLightList.size();
 #else
 			int numPointLights = scene.npl;

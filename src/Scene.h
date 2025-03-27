@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <unordered_map>
-
 #include "DirLight.h"
 #include "Model.h"
 #include "PointLight.h"
@@ -10,7 +8,14 @@
 #include "Transform.h"
 
 //#define SPHERE_FLAKE
-#define PLS // PointLightSIMD
+#define NUMLIGHTS 128
+#define STOCH_SAMPLES 128
+//#define STOCH
+//#define DOD
+//#define SIMD
+
+#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
+//#define PROFILE_FUNCTION() // DISABLE 
 
 constexpr int vertexCount = 259 * 6 * 2 * 49 * 3;
 
@@ -22,10 +27,9 @@ class Scene
 public:
 	Scene();
 
-#ifndef PLS
+#ifndef DOD
 	std::vector<PointLight> m_pointLightList;
 #else
-#define SIMD
 #define TOTAL_POINT_LIGHTS 512
 
 	// Number of PointLights

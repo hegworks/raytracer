@@ -19,7 +19,6 @@ Scene::Scene()
 
 #pragma region SIMD TestScene
 	useSD = false;
-	dbgSLS = 32;
 
 	/*{
 		CreateModel(ModelType::SPHERE);
@@ -32,15 +31,16 @@ Scene::Scene()
 	SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	BuildTlas();
 
+	int each = static_cast<int>(sqrtf(NUMLIGHTS / 2));
 	float3 colors[3] = {float3(1,0,0),float3(0,1,0),float3(0,0,1)};
 	{
-		int numRows = 5;
-		int numColumns = 10;
+		int numRows = each;
+		int numColumns = each;
 		for(int z = 0; z < numColumns; ++z)
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-#ifndef PLS
+#ifndef DOD
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
 				light.m_pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
@@ -63,13 +63,13 @@ Scene::Scene()
 		}
 	}
 	{
-		int numRows = 5;
-		int numColumns = 10;
+		int numRows = each;
+		int numColumns = each;
 		for(int z = 0; z < numColumns; ++z)
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-#ifndef PLS
+#ifndef DOD
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
 				light.m_pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
@@ -473,7 +473,7 @@ float3 Scene::GetRawNormal(Ray& ray) const
 
 void Scene::CreatePointLight()
 {
-#ifndef PLS
+#ifndef DOD
 	m_pointLightList.emplace_back();
 #else
 	npl++;

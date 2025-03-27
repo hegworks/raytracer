@@ -44,8 +44,8 @@ inline float TWO_EPS = 2e-3f;
 inline int epsInt = 2;
 inline float dbgFF = 10.f; /// FireFly
 inline float dbgGC = 1.35f; /// GammaCorrection
-inline bool dbgSL = false; /// StochasticLights
-inline int dbgSLS = 2; /// StochasticLightsSamples
+//inline bool dbgSL = false; /// StochasticLights
+//inline int dbgSLS = 2; /// StochasticLightsSamples
 inline bool dbgSF = true; /// StochasticFresnel
 
 inline bool useDOF = false; /// DepthOfField
