@@ -587,13 +587,17 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 	quadf py4 = {_mm_set_ps1(p.y)};
 	quadf pz4 = {_mm_set_ps1(p.z)};
 
-	__m128 nx4 = _mm_set_ps1(n.x);
-	__m128 ny4 = _mm_set_ps1(n.y);
-	__m128 nz4 = _mm_set_ps1(n.z);
+	//__m128 nx4 = _mm_set_ps1(n.x);
+	//__m128 ny4 = _mm_set_ps1(n.y);
+	//__m128 nz4 = _mm_set_ps1(n.z);
+
+	__m128 n4 = _mm_set_ps(0, n.z, n.y, n.x);
 
 	__m128 brdfx4 = _mm_set_ps1(brdf.x);
 	__m128 brdfy4 = _mm_set_ps1(brdf.y);
 	__m128 brdfz4 = _mm_set_ps1(brdf.z);
+
+	__m128 brdf4 = _mm_set_ps(0, brdf.z, brdf.y, brdf.x);
 
 	const int count = scene.npl / 4;
 
@@ -636,15 +640,26 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 		// lambert's cosine law
 		// float cosi = dot(n,wi)
+
+		//quadf cosi4 = {
+		//	_mm_add_ps
+		//	(
+		//		_mm_add_ps
+		//		(
+		//			_mm_mul_ps(nx4, wix4.f4), _mm_mul_ps(ny4, wiy4.f4)
+		//		)
+		//		, _mm_mul_ps(nz4, wiz4.f4)
+		//	)};
 		quadf cosi4 = {
-			_mm_add_ps
-			(
-				_mm_add_ps
-				(
-					_mm_mul_ps(nx4, wix4.f4), _mm_mul_ps(ny4, wiy4.f4)
-				)
-				, _mm_mul_ps(nz4, wiz4.f4)
-			)};
+			_mm_add_ps(
+				_mm_add_ps(
+					_mm_mul_ps(_mm_shuffle_ps(n4, n4, _MM_SHUFFLE(0, 0, 0, 0)), wix4.f4),
+					_mm_mul_ps(_mm_shuffle_ps(n4, n4, _MM_SHUFFLE(1, 1, 1, 1)), wiy4.f4)
+				),
+				_mm_mul_ps(_mm_shuffle_ps(n4, n4, _MM_SHUFFLE(2, 2, 2, 2)), wiz4.f4)
+			)
+		};
+
 		cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
 
 
