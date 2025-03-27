@@ -583,9 +583,11 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 	float3 retVal(0);
 
-	quadf px4 = {_mm_set_ps1(p.x)};
-	quadf py4 = {_mm_set_ps1(p.y)};
-	quadf pz4 = {_mm_set_ps1(p.z)};
+	//quadf px4 = {_mm_set_ps1(p.x)};
+	//quadf py4 = {_mm_set_ps1(p.y)};
+	//quadf pz4 = {_mm_set_ps1(p.z)};
+
+	quadf p4 = {_mm_set_ps(0, p.z, p.y, p.x)};
 
 	//__m128 nx4 = _mm_set_ps1(n.x);
 	//__m128 ny4 = _mm_set_ps1(n.y);
@@ -593,9 +595,9 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 	__m128 n4 = _mm_set_ps(0, n.z, n.y, n.x);
 
-	__m128 brdfx4 = _mm_set_ps1(brdf.x);
-	__m128 brdfy4 = _mm_set_ps1(brdf.y);
-	__m128 brdfz4 = _mm_set_ps1(brdf.z);
+	//__m128 brdfx4 = _mm_set_ps1(brdf.x);
+	//__m128 brdfy4 = _mm_set_ps1(brdf.y);
+	//__m128 brdfz4 = _mm_set_ps1(brdf.z);
 
 	__m128 brdf4 = _mm_set_ps(0, brdf.z, brdf.y, brdf.x);
 
@@ -607,9 +609,14 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;
-		__m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
-		__m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
-		__m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
+
+		//__m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
+		//__m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
+		//__m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
+
+		__m128 vix4 = _mm_sub_ps(scene.plx4[idx], _mm_shuffle_ps(p4.f4, p4.f4, _MM_SHUFFLE(0, 0, 0, 0)));
+		__m128 viy4 = _mm_sub_ps(scene.ply4[idx], _mm_shuffle_ps(p4.f4, p4.f4, _MM_SHUFFLE(1, 1, 1, 1)));
+		__m128 viz4 = _mm_sub_ps(scene.plz4[idx], _mm_shuffle_ps(p4.f4, p4.f4, _MM_SHUFFLE(2, 2, 2, 2)));
 
 
 		// t: distance between shadowRayPos and lightPos
@@ -706,9 +713,14 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 
 		// color with applied brdf
-		__m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
-		__m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
-		__m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
+
+		//__m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
+		//__m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
+		//__m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
+
+		__m128 r4 = _mm_mul_ps(_mm_shuffle_ps(brdf4, brdf4, _MM_SHUFFLE(0, 0, 0, 0)), scene.plr4[idx]);
+		__m128 g4 = _mm_mul_ps(_mm_shuffle_ps(brdf4, brdf4, _MM_SHUFFLE(1, 1, 1, 1)), scene.plg4[idx]);
+		__m128 b4 = _mm_mul_ps(_mm_shuffle_ps(brdf4, brdf4, _MM_SHUFFLE(2, 2, 2, 2)), scene.plb4[idx]);
 
 
 		// cosi * falloff * intensity
