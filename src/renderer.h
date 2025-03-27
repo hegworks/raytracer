@@ -12,7 +12,7 @@ public:
 	// game flow methods
 	void Init();
 	float3 Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bool tddIsPixelY);
-	void CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, int numSamples, float3& stochasticL, uint numLights, bool isAll);
+	//void CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, int numSamples, float3& stochasticL, uint numLights, bool isAll);
 	void Tick(float deltaTime);
 	void UI();
 	void Shutdown() { /* implement if you want to do things on shutdown */ }
@@ -26,9 +26,13 @@ public:
 	void RotateAroundWorldAxis(Transform& transform, const float3& worldAxis, float angleRadians);
 	float3 CalcAllPointLights(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY);
 
+#ifdef SCALAR
 	float3 CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf);
 	float3 CalcStochPointLightsScalar(float3 p, float3 n, float3 brdf, int pixelIndex);
-	float3 CalcPointLightSIMD();
+#elif defined(DOD)
+	float3 CalcAllPointLightsDOD(float3 p, float3 n, float3 brdf);
+	float3 CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pixelIndex);
+#endif
 
 	float3 CalcAllSpotLights(float3 p, float3 n, float3 brdf);
 	float3 CalcSpotLight(const SpotLight& light, float3 p, float3 n, float3 brdf);

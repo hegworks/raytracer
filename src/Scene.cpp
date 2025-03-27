@@ -40,13 +40,13 @@ Scene::Scene()
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-#ifndef DOD
+#ifdef SCALAR
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
 				light.m_pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
 				light.m_color = colors[(x + z) % 3];
 				light.m_intensity = 3.0;
-#else
+#elif defined(DOD) || defined(SIMD)
 				CreatePointLight();
 				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
 				float3 color = colors[(x + z) % 3];
@@ -58,7 +58,6 @@ Scene::Scene()
 				plb[npl - 1] = color.z;
 				pli[npl - 1] = 3.0;
 #endif
-
 			}
 		}
 	}
@@ -69,13 +68,13 @@ Scene::Scene()
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-#ifndef DOD
+#ifdef SCALAR
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
 				light.m_pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
 				light.m_color = colors[(x + z) % 3];
 				light.m_intensity = 3.0;
-#else
+#elif defined(DOD) || defined(SIMD)
 				CreatePointLight();
 				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
 				float3 color = colors[(x + z) % 3];
@@ -87,7 +86,6 @@ Scene::Scene()
 				plb[npl - 1] = color.z;
 				pli[npl - 1] = 3.0;
 #endif
-
 			}
 		}
 	}

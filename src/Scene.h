@@ -10,8 +10,11 @@
 //#define SPHERE_FLAKE
 #define NUMLIGHTS 128
 #define STOCH_SAMPLES 128
+
 //#define STOCH
-//#define DOD
+
+//#define SCALAR
+#define DOD
 //#define SIMD
 
 #define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
@@ -27,26 +30,24 @@ class Scene
 public:
 	Scene();
 
-#ifndef DOD
+#ifdef SCALAR
 	std::vector<PointLight> m_pointLightList;
-#else
-#define TOTAL_POINT_LIGHTS 512
-
+#elif defined(DOD) || defined(SIMD)
 	// Number of PointLights
 	int npl = 0;
-
+#define SUPPORTED_POINT_LIGHTS 512
 	// position
-	union { float plx[TOTAL_POINT_LIGHTS]; __m128 plx4[TOTAL_POINT_LIGHTS / 4]; };
-	union { float ply[TOTAL_POINT_LIGHTS]; __m128 ply4[TOTAL_POINT_LIGHTS / 4]; };
-	union { float plz[TOTAL_POINT_LIGHTS]; __m128 plz4[TOTAL_POINT_LIGHTS / 4]; };
+	union { float plx[SUPPORTED_POINT_LIGHTS]; __m128 plx4[SUPPORTED_POINT_LIGHTS / 4]; };
+	union { float ply[SUPPORTED_POINT_LIGHTS]; __m128 ply4[SUPPORTED_POINT_LIGHTS / 4]; };
+	union { float plz[SUPPORTED_POINT_LIGHTS]; __m128 plz4[SUPPORTED_POINT_LIGHTS / 4]; };
 
 	// albedo
-	union { float plr[TOTAL_POINT_LIGHTS]; __m128 plr4[TOTAL_POINT_LIGHTS / 4]; };
-	union { float plg[TOTAL_POINT_LIGHTS]; __m128 plg4[TOTAL_POINT_LIGHTS / 4]; };
-	union { float plb[TOTAL_POINT_LIGHTS]; __m128 plb4[TOTAL_POINT_LIGHTS / 4]; };
+	union { float plr[SUPPORTED_POINT_LIGHTS]; __m128 plr4[SUPPORTED_POINT_LIGHTS / 4]; };
+	union { float plg[SUPPORTED_POINT_LIGHTS]; __m128 plg4[SUPPORTED_POINT_LIGHTS / 4]; };
+	union { float plb[SUPPORTED_POINT_LIGHTS]; __m128 plb4[SUPPORTED_POINT_LIGHTS / 4]; };
 
 	// intensity
-	union { float pli[TOTAL_POINT_LIGHTS]; __m128 pli4[TOTAL_POINT_LIGHTS / 4]; };
+	union { float pli[SUPPORTED_POINT_LIGHTS]; __m128 pli4[SUPPORTED_POINT_LIGHTS / 4]; };
 #endif
 
 	std::vector<SpotLight> m_spotLightList;

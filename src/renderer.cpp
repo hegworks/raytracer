@@ -305,7 +305,12 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 
 	if(numPointLights > 0)
 	{
+#ifdef SCALAR
 		stochasticL += CalcStochPointLightsScalar(p, n, brdf, pixelIndex);
+#elif defined(DOD)
+		stochasticL += CalcStochPointLightsDOD(p, n, brdf, pixelIndex);
+#endif
+
 		//#ifndef DOD
 					//CalcStochPointLights(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, numSamples, stochasticL, numPointLights);
 		//#else
@@ -350,7 +355,11 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 
 #else
 	float3 l(0); /// total outgoing radiance
+#ifdef SCALAR
 	l += CalcAllPointLightsScalar(p, n, brdf);
+#elif defined(DOD)
+	l += CalcAllPointLightsDOD(p, n, brdf);
+#endif
 	l += CalcAllSpotLights(p, n, brdf);
 	l += CalcAllDirLights(p, n, brdf);
 	l += CalcAllQuadLights(p, n, brdf, pixelIndex);
@@ -548,8 +557,11 @@ void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pi
 }
 #endif
 
+#ifdef SCALAR
 float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
 {
+	PROFILE_FUNCTION();
+
 	float3 retVal(0);
 
 	const int count = static_cast<int>(scene.m_pointLightList.size());
@@ -590,6 +602,8 @@ float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
 
 float3 Renderer::CalcStochPointLightsScalar(float3 p, float3 n, float3 brdf, int pixelIndex)
 {
+	PROFILE_FUNCTION();
+
 	float3 retVal(0);
 
 	const int numPointLights = static_cast<int>(scene.m_pointLightList.size());
@@ -629,26 +643,132 @@ float3 Renderer::CalcStochPointLightsScalar(float3 p, float3 n, float3 brdf, int
 
 	return retVal;
 }
+#endif
 
-float3 Renderer::CalcPointLightSIMD()
+#ifdef DOD
+float3 Renderer::CalcAllPointLightsDOD(float3 p, float3 n, float3 brdf)
 {
-	return 0;
+	PROFILE_FUNCTION();
+
+	float3 retVal(0);
+
+	const int count = scene.npl;
+
+	for(int i = 0; i < count; ++i)
+	{
+		uint idx = i;
+
+		// vi: incoming light vector
+		// float3 vi = light.m_pos - p;
+		float vix = scene.plx[idx] - p.x;
+		float viy = scene.ply[idx] - p.y;
+		float viz = scene.plz[idx] - p.z;
+
+		// t: distance between shadowRayPos and lightPos
+		// float t = length(vi);
+		float t = sqrt(vix * vix + viy * viy + viz * viz);
+
+		// wi: incoming light direction
+		// float3 wi = vi / t;
+		float rcp = 1.0f / t;
+		float wix = vix * rcp;
+		float wiy = viy * rcp;
+		float wiz = viz * rcp;
+
+		// lambert's cosine law
+		// float cosi = dot(n,wi)
+		float cosi = n.x * wix + n.y * wiy + n.z * wiz;
+		if(cosi <= 0)
+			continue;
+
+		// shadow ray
+		const float3 wi = {wix, wiy, wiz};
+		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
+		if(scene.IsOccluded(shadowRay))
+			continue;
+
+		// inverse square law
+		float falloff = 1.0f / (t * t);
+		if(falloff < EPS)
+			continue;
+
+		// color with applied brdf
+		float r = brdf.x * scene.plr[idx];
+		float g = brdf.y * scene.plg[idx];
+		float b = brdf.z * scene.plb[idx];
+
+		retVal += float3(r, g, b) * scene.pli[idx] * cosi * falloff;
+	}
+
+	return retVal;
 }
+
+float3 Renderer::CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pixelIndex)
+{
+	PROFILE_FUNCTION();
+
+	float3 retVal(0);
+
+	const int numPointLights = scene.npl;
+	const int count = STOCH_SAMPLES;
+
+	for(int i = 0; i < count; ++i)
+	{
+		uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numPointLights);
+		uint idx = randIdx;
+
+		// vi: incoming light vector
+		// float3 vi = light.m_pos - p;
+		float vix = scene.plx[idx] - p.x;
+		float viy = scene.ply[idx] - p.y;
+		float viz = scene.plz[idx] - p.z;
+
+		// t: distance between shadowRayPos and lightPos
+		// float t = length(vi);
+		float t = sqrt(vix * vix + viy * viy + viz * viz);
+
+		// wi: incoming light direction
+		// float3 wi = vi / t;
+		float rcp = 1.0f / t;
+		float wix = vix * rcp;
+		float wiy = viy * rcp;
+		float wiz = viz * rcp;
+
+		// lambert's cosine law
+		// float cosi = dot(n,wi)
+		float cosi = n.x * wix + n.y * wiy + n.z * wiz;
+		if(cosi <= 0)
+			continue;
+
+		// shadow ray
+		const float3 wi = {wix, wiy, wiz};
+		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
+		if(scene.IsOccluded(shadowRay))
+			continue;
+
+		// inverse square law
+		float falloff = 1.0f / (t * t);
+		if(falloff < EPS)
+			continue;
+
+		// color with applied brdf
+		float r = brdf.x * scene.plr[idx];
+		float g = brdf.y * scene.plg[idx];
+		float b = brdf.z * scene.plb[idx];
+
+		retVal += float3(r, g, b) * scene.pli[idx] * cosi * falloff;
+	}
+
+	return retVal;
+}
+#endif
+
 
 float3 Renderer::CalcAllPointLights(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, [[maybe_unused]] bool isTddCameraY)
 {
 	float3 l(0);
-#ifndef DOD
-	int numPointLights = static_cast<int>(scene.m_pointLightList.size());
-	PROFILE_FUNCTION();
-	for(int i = 0; i < numPointLights; ++i)
-	{
-		l += CalcAllPointLightsScalar(p, n, brdf);
-	}
-#else
-	int numPointLights = scene.npl;
-	CalcStochPointLightsSIMD(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, 0, l, numPointLights, true);
-#endif
+	//int numPointLights = scene.npl;
+	//CalcStochPointLightsSIMD(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, 0, l, numPointLights, true);
 
 	return l;
 }
