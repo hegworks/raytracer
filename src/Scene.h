@@ -16,8 +16,8 @@
 
 //#define SCALAR
 //#define DOD
-//#define SIMD
-#define AVX
+#define SIMD
+//#define AVX
 
 //#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
 #define PROFILE_FUNCTION() // DISABLE 

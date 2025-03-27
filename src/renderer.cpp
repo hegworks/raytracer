@@ -647,7 +647,8 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 				)
 				, _mm_mul_ps(nz4, wiz4.f4)
 			)};
-		cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
+		//cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
+		cosi4.f4 = _mm_max_ps(cosi4.f4, _mm_setzero_ps());
 
 
 		// shadow ray
@@ -716,9 +717,6 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 		float r = hsum_ps_sse3(lr4.f4);
 		float g = hsum_ps_sse3(lg4.f4);
 		float b = hsum_ps_sse3(lb4.f4);
-		float r = hsum_ps_sse3(lr8.f8);
-		float g = hsum_ps_sse3(lg8.f8);
-		float b = hsum_ps_sse3(lb8.f8);
 
 		retVal += float3(r, g, b);
 	}
