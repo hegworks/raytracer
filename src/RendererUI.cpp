@@ -226,7 +226,7 @@ void Renderer::UI()
 
 #ifdef SCALAR
 			int numPointLights = scene.m_pointLightList.size();
-#elif defined(DOD) || defined(SIMD)
+#elif defined(DOD) || defined(SIMD) || defined(AVX)
 			int numPointLights = scene.npl;
 #endif
 			if(numPointLights > 0)

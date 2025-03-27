@@ -10,12 +10,14 @@
 //#define SPHERE_FLAKE
 #define NUMLIGHTS 128
 #define STOCH_SAMPLES 128
+#define SUPPORTED_POINT_LIGHTS 512
 
 //#define STOCH
 
 //#define SCALAR
 //#define DOD
-#define SIMD
+//#define SIMD
+#define AVX
 
 //#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
 #define PROFILE_FUNCTION() // DISABLE 
@@ -29,25 +31,47 @@ class Scene
 {
 public:
 	Scene();
+	int npl = 0; // Number of PointLights
 
 #ifdef SCALAR
 	std::vector<PointLight> m_pointLightList;
-#elif defined(DOD) || defined(SIMD)
-	// Number of PointLights
-	int npl = 0;
-#define SUPPORTED_POINT_LIGHTS 512
+
+#elif defined(DOD)
+	// position
+	float plx[SUPPORTED_POINT_LIGHTS];
+	float ply[SUPPORTED_POINT_LIGHTS];
+	float plz[SUPPORTED_POINT_LIGHTS];
+	// albedo
+	float plr[SUPPORTED_POINT_LIGHTS];
+	float plg[SUPPORTED_POINT_LIGHTS];
+	float plb[SUPPORTED_POINT_LIGHTS];
+	// intensity
+	float pli[SUPPORTED_POINT_LIGHTS];
+
+#elif defined(SIMD)
 	// position
 	union { float plx[SUPPORTED_POINT_LIGHTS]; __m128 plx4[SUPPORTED_POINT_LIGHTS / 4]; };
 	union { float ply[SUPPORTED_POINT_LIGHTS]; __m128 ply4[SUPPORTED_POINT_LIGHTS / 4]; };
 	union { float plz[SUPPORTED_POINT_LIGHTS]; __m128 plz4[SUPPORTED_POINT_LIGHTS / 4]; };
-
 	// albedo
 	union { float plr[SUPPORTED_POINT_LIGHTS]; __m128 plr4[SUPPORTED_POINT_LIGHTS / 4]; };
 	union { float plg[SUPPORTED_POINT_LIGHTS]; __m128 plg4[SUPPORTED_POINT_LIGHTS / 4]; };
 	union { float plb[SUPPORTED_POINT_LIGHTS]; __m128 plb4[SUPPORTED_POINT_LIGHTS / 4]; };
-
 	// intensity
 	union { float pli[SUPPORTED_POINT_LIGHTS]; __m128 pli4[SUPPORTED_POINT_LIGHTS / 4]; };
+
+#elif defined(AVX)
+	// position
+	union { float plx[SUPPORTED_POINT_LIGHTS]; __m256 plx8[SUPPORTED_POINT_LIGHTS / 8]; };
+	union { float ply[SUPPORTED_POINT_LIGHTS]; __m256 ply8[SUPPORTED_POINT_LIGHTS / 8]; };
+	union { float plz[SUPPORTED_POINT_LIGHTS]; __m256 plz8[SUPPORTED_POINT_LIGHTS / 8]; };
+	// albedo
+	union { float plr[SUPPORTED_POINT_LIGHTS]; __m256 plr8[SUPPORTED_POINT_LIGHTS / 8]; };
+	union { float plg[SUPPORTED_POINT_LIGHTS]; __m256 plg8[SUPPORTED_POINT_LIGHTS / 8]; };
+	union { float plb[SUPPORTED_POINT_LIGHTS]; __m256 plb8[SUPPORTED_POINT_LIGHTS / 8]; };
+	// intensity
+	union { float pli[SUPPORTED_POINT_LIGHTS]; __m256 pli8[SUPPORTED_POINT_LIGHTS / 8]; };
+
 #endif
 
 	std::vector<SpotLight> m_spotLightList;

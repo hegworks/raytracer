@@ -32,6 +32,8 @@ public:
 	float3 CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pixelIndex);
 #elif defined(SIMD)
 	float3 CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf);
+#elif defined(AVX)
+	float3 CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf);
 #endif
 
 	float3 CalcAllSpotLights(float3 p, float3 n, float3 brdf);
@@ -62,6 +64,8 @@ public:
 
 	union quadf { __m128 f4; float f[4]; };
 	union quadi { __m128i i4; int i[4]; };
+	union octf { __m256 f8; float f[8]; };
+	union octi { __m256 i8; float i[8]; };
 
 	float hsum_ps_sse1(__m128 v)
 	{
@@ -69,7 +73,7 @@ public:
 		__m128 sums = _mm_add_ps(v, shuf);
 		shuf = _mm_movehl_ps(shuf, sums);
 		sums = _mm_add_ss(sums, shuf);
-		return    _mm_cvtss_f32(sums);
+		return _mm_cvtss_f32(sums);
 	}
 
 	float hsum_ps_sse3(__m128 v)
@@ -78,7 +82,15 @@ public:
 		__m128 sums = _mm_add_ps(v, shuf);
 		shuf = _mm_movehl_ps(shuf, sums);
 		sums = _mm_add_ss(sums, shuf);
-		return        _mm_cvtss_f32(sums);
+		return _mm_cvtss_f32(sums);
+	}
+
+	float hsum256_ps_avx(__m256 v)
+	{
+		__m128 vlow = _mm256_castps256_ps128(v);
+		__m128 vhigh = _mm256_extractf128_ps(v, 1);
+		vlow = _mm_add_ps(vlow, vhigh);
+		return hsum_ps_sse3(vlow);
 	}
 };
 

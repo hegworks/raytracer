@@ -361,6 +361,8 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 	l += CalcAllPointLightsDOD(p, n, brdf);
 #elif defined(SIMD)
 	l += CalcAllPointLightsSIMD(p, n, brdf);
+#elif defined(AVX)
+	l += CalcAllPointLightsAVX(p, n, brdf);
 #endif
 	l += CalcAllSpotLights(p, n, brdf);
 	l += CalcAllDirLights(p, n, brdf);
@@ -714,6 +716,172 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 		float r = hsum_ps_sse3(lr4.f4);
 		float g = hsum_ps_sse3(lg4.f4);
 		float b = hsum_ps_sse3(lb4.f4);
+		float r = hsum_ps_sse3(lr8.f8);
+		float g = hsum_ps_sse3(lg8.f8);
+		float b = hsum_ps_sse3(lb8.f8);
+
+		retVal += float3(r, g, b);
+	}
+
+	return retVal;
+}
+#endif
+
+
+#ifdef AVX
+float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
+{
+	PROFILE_FUNCTION();
+
+	float3 retVal(0);
+
+	octf px8 = {_mm256_set1_ps(p.x)};
+	octf py8 = {_mm256_set1_ps(p.y)};
+	octf pz8 = {_mm256_set1_ps(p.z)};
+
+	__m256 nx8 = _mm256_set1_ps(n.x);
+	__m256 ny8 = _mm256_set1_ps(n.y);
+	__m256 nz8 = _mm256_set1_ps(n.z);
+
+	__m256 brdfx8 = _mm256_set1_ps(brdf.x);
+	__m256 brdfy8 = _mm256_set1_ps(brdf.y);
+	__m256 brdfz8 = _mm256_set1_ps(brdf.z);
+
+	const int count = scene.npl / 8;
+
+	for(int i = 0; i < count; ++i)
+	{
+		uint idx = i;
+
+		// vi: incoming light vector
+		// float3 vi = light.m_pos - p;
+		__m256 vix8 = _mm256_sub_ps(scene.plx8[idx], px8.f8);
+		__m256 viy8 = _mm256_sub_ps(scene.ply8[idx], py8.f8);
+		__m256 viz8 = _mm256_sub_ps(scene.plz8[idx], pz8.f8);
+
+
+		// t: distance between shadowRayPos and lightPos
+		// float t = length(vi);
+		octf t8 =
+		{
+			_mm256_sqrt_ps
+			(
+				_mm256_add_ps
+				(
+					_mm256_add_ps
+					(
+						_mm256_mul_ps(vix8, vix8), _mm256_mul_ps(viy8, viy8)
+					)
+					, _mm256_mul_ps(viz8, viz8)
+				)
+			)
+		};
+
+
+		// wi: incoming light direction
+		// float3 wi = vi / t;
+		__m256 rcp = _mm256_rcp_ps(t8.f8);
+		octf wix8 = {_mm256_mul_ps(vix8, rcp)};
+		octf wiy8 = {_mm256_mul_ps(viy8, rcp)};
+		octf wiz8 = {_mm256_mul_ps(viz8, rcp)};
+
+
+		// lambert's cosine law
+		// float cosi = dot(n,wi)
+		octf cosi8 = {
+			_mm256_add_ps
+			(
+				_mm256_add_ps
+				(
+					_mm256_mul_ps(nx8, wix8.f8), _mm256_mul_ps(ny8, wiy8.f8)
+				)
+				, _mm256_mul_ps(nz8, wiz8.f8)
+			)};
+		cosi8.f8 = _mm256_andnot_ps(_mm256_cmp_ps(cosi8.f8, _mm256_setzero_ps(), _CMP_LE_OQ), cosi8.f8);
+
+
+		// shadow ray
+		octf shadowMask = {_mm256_set1_ps(1)};
+		if(cosi8.f[0] > 0)
+		{
+			const float3 wi = {wix8.f[0], wiy8.f[0], wiz8.f[0]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[0] - TWO_EPS}))
+				shadowMask.f[0] = 0;
+		}
+		if(cosi8.f[1] > 0)
+		{
+			const float3 wi = {wix8.f[1], wiy8.f[1], wiz8.f[1]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[1] - TWO_EPS}))
+				shadowMask.f[1] = 0;
+		}
+		if(cosi8.f[2] > 0)
+		{
+			const float3 wi = {wix8.f[2], wiy8.f[2], wiz8.f[2]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[2] - TWO_EPS}))
+				shadowMask.f[2] = 0;
+		}
+		if(cosi8.f[3] > 0)
+		{
+			const float3 wi = {wix8.f[3], wiy8.f[3], wiz8.f[3]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[3] - TWO_EPS}))
+				shadowMask.f[3] = 0;
+		}
+		if(cosi8.f[4] > 0)
+		{
+			const float3 wi = {wix8.f[4], wiy8.f[4], wiz8.f[4]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[4] - TWO_EPS}))
+				shadowMask.f[4] = 0;
+		}
+		if(cosi8.f[5] > 0)
+		{
+			const float3 wi = {wix8.f[5], wiy8.f[5], wiz8.f[5]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[5] - TWO_EPS}))
+				shadowMask.f[5] = 0;
+		}
+		if(cosi8.f[6] > 0)
+		{
+			const float3 wi = {wix8.f[6], wiy8.f[6], wiz8.f[6]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[6] - TWO_EPS}))
+				shadowMask.f[6] = 0;
+		}
+		if(cosi8.f[7] > 0)
+		{
+			const float3 wi = {wix8.f[7], wiy8.f[7], wiz8.f[7]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[7] - TWO_EPS}))
+				shadowMask.f[7] = 0;
+		}
+		cosi8.f8 = _mm256_mul_ps(cosi8.f8, shadowMask.f8);
+
+
+		// inverse square law
+		//const float falloff = 1.0f / (t * t);
+		__m256 falloff8 = _mm256_rcp_ps(_mm256_mul_ps(t8.f8, t8.f8));
+
+
+		// color with applied brdf
+		__m256 r8 = _mm256_mul_ps(brdfx8, scene.plr8[idx]);
+		__m256 g8 = _mm256_mul_ps(brdfy8, scene.plg8[idx]);
+		__m256 b8 = _mm256_mul_ps(brdfz8, scene.plb8[idx]);
+
+
+		// cosi * falloff * intensity
+		__m256 effect8 =
+			_mm256_mul_ps
+			(
+				_mm256_mul_ps(scene.pli8[idx], cosi8.f8)
+				, falloff8
+			);
+
+
+		// effect8 * rbg8
+		octf lr8 = {_mm256_mul_ps(r8, effect8)};
+		octf lg8 = {_mm256_mul_ps(g8, effect8)};
+		octf lb8 = {_mm256_mul_ps(b8, effect8)};
+
+
+		float r = hsum256_ps_avx(lr8.f8);
+		float g = hsum256_ps_avx(lg8.f8);
+		float b = hsum256_ps_avx(lb8.f8);
 
 		retVal += float3(r, g, b);
 	}

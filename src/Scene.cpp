@@ -46,7 +46,7 @@ Scene::Scene()
 				light.m_pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
 				light.m_color = colors[(x + z) % 3];
 				light.m_intensity = 3.0;
-#elif defined(DOD) || defined(SIMD)
+#elif defined(DOD) || defined(SIMD) || defined(AVX)
 				CreatePointLight();
 				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
 				float3 color = colors[(x + z) % 3];
@@ -74,7 +74,7 @@ Scene::Scene()
 				light.m_pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
 				light.m_color = colors[(x + z) % 3];
 				light.m_intensity = 3.0;
-#elif defined(DOD) || defined(SIMD)
+#elif defined(DOD) || defined(SIMD) || defined(AVX)
 				CreatePointLight();
 				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
 				float3 color = colors[(x + z) % 3];
@@ -473,7 +473,7 @@ void Scene::CreatePointLight()
 {
 #ifdef SCALAR
 	m_pointLightList.emplace_back();
-#elif defined(DOD) || defined(SIMD)
+#elif defined(DOD) || defined(SIMD) || defined(AVX)
 	npl++;
 #endif
 }
