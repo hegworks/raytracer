@@ -359,6 +359,8 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 	l += CalcAllPointLightsScalar(p, n, brdf);
 #elif defined(DOD)
 	l += CalcAllPointLightsDOD(p, n, brdf);
+#elif defined(SIMD)
+	l += CalcAllPointLightsSIMD(p, n, brdf);
 #endif
 	l += CalcAllSpotLights(p, n, brdf);
 	l += CalcAllDirLights(p, n, brdf);
@@ -367,195 +369,6 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 	return l;
 #endif
 }
-
-#ifdef SIMD
-void Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, int numSamples, float3& stochasticL, uint numLights, bool isAll)
-{
-	PROFILE_FUNCTION();
-#ifdef SIMD
-	quadf px4 = {_mm_set_ps1(p.x)};
-	quadf py4 = {_mm_set_ps1(p.y)};
-	quadf pz4 = {_mm_set_ps1(p.z)};
-
-	__m128 nx4 = _mm_set_ps1(n.x);
-	__m128 ny4 = _mm_set_ps1(n.y);
-	__m128 nz4 = _mm_set_ps1(n.z);
-
-	__m128 brdfx4 = _mm_set_ps1(brdf.x);
-	__m128 brdfy4 = _mm_set_ps1(brdf.y);
-	__m128 brdfz4 = _mm_set_ps1(brdf.z);
-#endif
-
-	const int count = isAll ? numLights : numSamples;
-#ifndef SIMD
-	for(int i = 0; i < count; ++i)
-#else
-	for(int i = 0; i < count / 4; ++i)
-#endif
-	{
-		uint idx = isAll ? i : threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numLights);
-
-		// vi: incoming light vector
-		// float3 vi = light.m_pos - p;
-#ifndef SIMD
-		float vix = scene.plx[idx] - p.x;
-		float viy = scene.ply[idx] - p.y;
-		float viz = scene.plz[idx] - p.z;
-#else
-		__m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
-		__m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
-		__m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
-#endif
-
-		// t: distance between shadowRayPos and lightPos
-		// float t = length(vi);
-#ifndef SIMD
-		float t = sqrt(vix * vix +
-					   viy * viy +
-					   viz * viz);
-#else
-		quadf t4 =
-		{
-			_mm_sqrt_ps
-			(
-				_mm_add_ps
-				(
-					_mm_add_ps
-					(
-						_mm_mul_ps(vix4, vix4), _mm_mul_ps(viy4, viy4)
-					)
-					, _mm_mul_ps(viz4, viz4)
-				)
-			)
-		};
-#endif
-
-		// wi: incoming light direction
-		// float3 wi = vi / t;
-#ifndef SIMD
-		float wix = vix / t;
-		float wiy = viy / t;
-		float wiz = viz / t;
-#else
-		quadf wix4 = {_mm_div_ps(vix4, t4.f4)};
-		quadf wiy4 = {_mm_div_ps(viy4, t4.f4)};
-		quadf wiz4 = {_mm_div_ps(viz4, t4.f4)};
-#endif
-
-		// lambert's cosine law
-		// float cosi = dot(n,wi)
-#ifndef SIMD
-		float cosi = n.x * wix + n.y * wiy + n.z * wiz;
-		if(cosi <= 0)
-			continue;
-#else
-		quadf cosi4 = {
-			_mm_add_ps
-			(
-				_mm_add_ps
-				(
-					_mm_mul_ps(nx4, wix4.f4), _mm_mul_ps(ny4, wiy4.f4)
-				)
-				, _mm_mul_ps(nz4, wiz4.f4)
-			)};
-		cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
-#endif
-
-		// shadow ray
-#ifndef SIMD
-		const float3 wi = {wix, wiy, wiz};
-		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
-		if(scene.IsOccluded(shadowRay))
-			continue;
-#else
-		quadf shadowMask = {_mm_set_ps1(1)};
-		{
-			if(cosi4.f[0] > 0)
-			{
-				const float3 wi = {wix4.f[0], wiy4.f[0], wiz4.f[0]};
-				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[0] - TWO_EPS}))
-					shadowMask.f[0] = 0;
-			}
-		}
-		{
-			if(cosi4.f[1] > 0)
-			{
-				const float3 wi = {wix4.f[1], wiy4.f[1], wiz4.f[1]};
-				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[1] - TWO_EPS}))
-					shadowMask.f[1] = 0;
-			}
-		}
-		{
-			if(cosi4.f[2] > 0)
-			{
-				const float3 wi = {wix4.f[2], wiy4.f[2], wiz4.f[2]};
-				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[2] - TWO_EPS}))
-					shadowMask.f[2] = 0;
-			}
-		}
-		{
-			if(cosi4.f[3] > 0)
-			{
-				const float3 wi = {wix4.f[3], wiy4.f[3], wiz4.f[3]};
-				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[3] - TWO_EPS}))
-					shadowMask.f[3] = 0;
-			}
-		}
-		cosi4.f4 = _mm_mul_ps(cosi4.f4, shadowMask.f4);
-#endif
-
-		// inverse square law
-#ifndef SIMD
-		float falloff = 1.0f / (t * t);
-		if(falloff < EPS)
-			continue;
-#else
-		//__m128 falloff4 = _mm_div_ps(one4, _mm_mul_ps(t4.f4, t4.f4));
-		__m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
-#endif
-
-
-		// color with applied brdf
-#ifndef SIMD
-		float r = brdf.x * scene.plr[idx];
-		float g = brdf.y * scene.plg[idx];
-		float b = brdf.z * scene.plb[idx];
-#else
-		__m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
-		__m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
-		__m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
-#endif
-
-
-#ifndef SIMD
-		stochasticL += float3(r, g, b) * scene.pli[idx] * cosi * falloff;
-#else
-		// cosi * falloff * intensity
-		__m128 effect4 =
-			_mm_mul_ps
-			(
-				_mm_mul_ps(scene.pli4[idx], cosi4.f4)
-				, falloff4
-			);
-
-		// effect4 * rbg4
-		quadf lr4 = {_mm_mul_ps(r4, effect4)};
-		quadf lg4 = {_mm_mul_ps(g4, effect4)};
-		quadf lb4 = {_mm_mul_ps(b4, effect4)};
-
-		/*float r = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lr4.f4, lr4.f4), _mm_setzero_ps()));
-		float g = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lg4.f4, lg4.f4), _mm_setzero_ps()));
-		float b = _mm_cvtss_f32(_mm_hadd_ps(_mm_hadd_ps(lb4.f4, lb4.f4), _mm_setzero_ps()));*/
-
-		float r = lr4.f[0] + lr4.f[1] + lr4.f[2] + lr4.f[3];
-		float g = lg4.f[0] + lg4.f[1] + lg4.f[2] + lg4.f[3];
-		float b = lb4.f[0] + lb4.f[1] + lb4.f[2] + lb4.f[3];
-
-		stochasticL += float3(r, g, b);
-#endif
-	}
-}
-#endif
 
 #ifdef SCALAR
 float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
@@ -763,15 +576,151 @@ float3 Renderer::CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pi
 }
 #endif
 
-
-float3 Renderer::CalcAllPointLights(float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, [[maybe_unused]] bool isTddCameraY)
+#ifdef SIMD
+float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 {
-	float3 l(0);
-	//int numPointLights = scene.npl;
-	//CalcStochPointLightsSIMD(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, 0, l, numPointLights, true);
+	PROFILE_FUNCTION();
 
-	return l;
+	float3 retVal(0);
+
+	quadf px4 = {_mm_set_ps1(p.x)};
+	quadf py4 = {_mm_set_ps1(p.y)};
+	quadf pz4 = {_mm_set_ps1(p.z)};
+
+	__m128 nx4 = _mm_set_ps1(n.x);
+	__m128 ny4 = _mm_set_ps1(n.y);
+	__m128 nz4 = _mm_set_ps1(n.z);
+
+	__m128 brdfx4 = _mm_set_ps1(brdf.x);
+	__m128 brdfy4 = _mm_set_ps1(brdf.y);
+	__m128 brdfz4 = _mm_set_ps1(brdf.z);
+
+	const int count = scene.npl / 4;
+
+	for(int i = 0; i < count; ++i)
+	{
+		uint idx = i;
+
+		// vi: incoming light vector
+		// float3 vi = light.m_pos - p;
+		__m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
+		__m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
+		__m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
+
+
+		// t: distance between shadowRayPos and lightPos
+		// float t = length(vi);
+		quadf t4 =
+		{
+			_mm_sqrt_ps
+			(
+				_mm_add_ps
+				(
+					_mm_add_ps
+					(
+						_mm_mul_ps(vix4, vix4), _mm_mul_ps(viy4, viy4)
+					)
+					, _mm_mul_ps(viz4, viz4)
+				)
+			)
+		};
+
+
+		// wi: incoming light direction
+		// float3 wi = vi / t;
+		quadf wix4 = {_mm_div_ps(vix4, t4.f4)};
+		quadf wiy4 = {_mm_div_ps(viy4, t4.f4)};
+		quadf wiz4 = {_mm_div_ps(viz4, t4.f4)};
+
+
+		// lambert's cosine law
+		// float cosi = dot(n,wi)
+		quadf cosi4 = {
+			_mm_add_ps
+			(
+				_mm_add_ps
+				(
+					_mm_mul_ps(nx4, wix4.f4), _mm_mul_ps(ny4, wiy4.f4)
+				)
+				, _mm_mul_ps(nz4, wiz4.f4)
+			)};
+		cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
+
+
+		// shadow ray
+		quadf shadowMask = {_mm_set_ps1(1)};
+		{
+			if(cosi4.f[0] > 0)
+			{
+				const float3 wi = {wix4.f[0], wiy4.f[0], wiz4.f[0]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[0] - TWO_EPS}))
+					shadowMask.f[0] = 0;
+			}
+		}
+		{
+			if(cosi4.f[1] > 0)
+			{
+				const float3 wi = {wix4.f[1], wiy4.f[1], wiz4.f[1]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[1] - TWO_EPS}))
+					shadowMask.f[1] = 0;
+			}
+		}
+		{
+			if(cosi4.f[2] > 0)
+			{
+				const float3 wi = {wix4.f[2], wiy4.f[2], wiz4.f[2]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[2] - TWO_EPS}))
+					shadowMask.f[2] = 0;
+			}
+		}
+		{
+			if(cosi4.f[3] > 0)
+			{
+				const float3 wi = {wix4.f[3], wiy4.f[3], wiz4.f[3]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[3] - TWO_EPS}))
+					shadowMask.f[3] = 0;
+			}
+		}
+		cosi4.f4 = _mm_mul_ps(cosi4.f4, shadowMask.f4);
+
+
+		// inverse square law
+		//__m128 falloff4 = _mm_div_ps(one4, _mm_mul_ps(t4.f4, t4.f4));
+		__m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
+
+
+		// color with applied brdf
+		__m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
+		__m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
+		__m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
+
+
+		// cosi * falloff * intensity
+		__m128 effect4 =
+			_mm_mul_ps
+			(
+				_mm_mul_ps(scene.pli4[idx], cosi4.f4)
+				, falloff4
+			);
+
+
+		// effect4 * rbg4
+		quadf lr4 = {_mm_mul_ps(r4, effect4)};
+		quadf lg4 = {_mm_mul_ps(g4, effect4)};
+		quadf lb4 = {_mm_mul_ps(b4, effect4)};
+
+
+		float r = lr4.f[0] + lr4.f[1] + lr4.f[2] + lr4.f[3];
+		float g = lg4.f[0] + lg4.f[1] + lg4.f[2] + lg4.f[3];
+		float b = lb4.f[0] + lb4.f[1] + lb4.f[2] + lb4.f[3];
+
+
+		retVal += float3(r, g, b);
+	}
+
+	return retVal;
 }
+#endif
 
 float3 Renderer::CalcSpotLight(const SpotLight& light, float3 p, float3 n, float3 brdf)
 {

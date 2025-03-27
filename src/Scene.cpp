@@ -471,9 +471,9 @@ float3 Scene::GetRawNormal(Ray& ray) const
 
 void Scene::CreatePointLight()
 {
-#ifndef DOD
+#ifdef SCALAR
 	m_pointLightList.emplace_back();
-#else
+#elif defined(DOD) || defined(SIMD)
 	npl++;
 #endif
 }

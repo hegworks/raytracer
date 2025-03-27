@@ -224,9 +224,9 @@ void Renderer::UI()
 				scene.CreateQuadLight();
 			}
 
-#ifndef DOD
+#ifdef SCALAR
 			int numPointLights = scene.m_pointLightList.size();
-#else
+#elif defined(DOD) || defined(SIMD)
 			int numPointLights = scene.npl;
 #endif
 			if(numPointLights > 0)
