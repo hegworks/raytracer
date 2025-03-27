@@ -568,19 +568,19 @@ float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
 
 	for(int i = 0; i < count; ++i)
 	{
-		PointLight& light = scene.m_pointLightList[i];
+		const PointLight& light = scene.m_pointLightList[i];
 
 		// vi: incoming light vector
-		float3 vi = light.m_pos - p;
+		const float3 vi = light.m_pos - p;
 
 		// t: distance between shadowRayPos and lightPos
-		float t = length(vi);
+		const float t = length(vi);
 
 		// wi: incoming light direction
-		float3 wi = vi / t;
+		const float3 wi = vi / t;
 
 		// lambert's cosine law
-		float cosi = dot(n, wi);
+		const float cosi = dot(n, wi);
 		if(cosi <= 0)
 			continue;
 
@@ -590,7 +590,7 @@ float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
 			continue;
 
 		// inverse square law
-		float falloff = 1.0f / (t * t);
+		const float falloff = 1.0f / (t * t);
 		if(falloff < EPS)
 			continue;
 
@@ -656,28 +656,28 @@ float3 Renderer::CalcAllPointLightsDOD(float3 p, float3 n, float3 brdf)
 
 	for(int i = 0; i < count; ++i)
 	{
-		uint idx = i;
+		const uint idx = i;
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;
-		float vix = scene.plx[idx] - p.x;
-		float viy = scene.ply[idx] - p.y;
-		float viz = scene.plz[idx] - p.z;
+		const float vix = scene.plx[idx] - p.x;
+		const float viy = scene.ply[idx] - p.y;
+		const float viz = scene.plz[idx] - p.z;
 
 		// t: distance between shadowRayPos and lightPos
 		// float t = length(vi);
-		float t = sqrt(vix * vix + viy * viy + viz * viz);
+		const float t = sqrt(vix * vix + viy * viy + viz * viz);
 
 		// wi: incoming light direction
 		// float3 wi = vi / t;
-		float rcp = 1.0f / t;
-		float wix = vix * rcp;
-		float wiy = viy * rcp;
-		float wiz = viz * rcp;
+		const float rcp = 1.0f / t;
+		const float wix = vix * rcp;
+		const float wiy = viy * rcp;
+		const float wiz = viz * rcp;
 
 		// lambert's cosine law
 		// float cosi = dot(n,wi)
-		float cosi = n.x * wix + n.y * wiy + n.z * wiz;
+		const float cosi = n.x * wix + n.y * wiy + n.z * wiz;
 		if(cosi <= 0)
 			continue;
 
@@ -688,14 +688,14 @@ float3 Renderer::CalcAllPointLightsDOD(float3 p, float3 n, float3 brdf)
 			continue;
 
 		// inverse square law
-		float falloff = 1.0f / (t * t);
+		const float falloff = 1.0f / (t * t);
 		if(falloff < EPS)
 			continue;
 
 		// color with applied brdf
-		float r = brdf.x * scene.plr[idx];
-		float g = brdf.y * scene.plg[idx];
-		float b = brdf.z * scene.plb[idx];
+		const float r = brdf.x * scene.plr[idx];
+		const float g = brdf.y * scene.plg[idx];
+		const float b = brdf.z * scene.plb[idx];
 
 		retVal += float3(r, g, b) * scene.pli[idx] * cosi * falloff;
 	}

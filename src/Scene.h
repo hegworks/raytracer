@@ -17,8 +17,8 @@
 #define DOD
 //#define SIMD
 
-#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
-//#define PROFILE_FUNCTION() // DISABLE 
+//#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
+#define PROFILE_FUNCTION() // DISABLE 
 
 constexpr int vertexCount = 259 * 6 * 2 * 49 * 3;
 
