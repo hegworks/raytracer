@@ -22,7 +22,7 @@ const std::string ASSETDIR("../assets/");
 thread_local static int counter = 0;
 thread_local static float summ = 0;
 thread_local static bool resultPrinted = false;
-constexpr int SAMPLES = 15000;
+constexpr int SAMPLES = 1000000;
 
 struct ScopedTimer
 {
@@ -49,6 +49,3 @@ struct ScopedTimer
 		}
 	}
 };
-
-#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
-//#define PROFILE_FUNCTION() // DISABLE 

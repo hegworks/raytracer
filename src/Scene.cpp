@@ -19,7 +19,7 @@ Scene::Scene()
 
 #pragma region SIMD TestScene
 	useSD = false;
-	dbgSLS = 32;
+	dbgSLS = 100;
 
 	/*{
 		CreateModel(ModelType::SPHERE);
@@ -40,7 +40,7 @@ Scene::Scene()
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-#ifndef PLS
+#ifndef VECTORIZE
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
 				light.m_pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
@@ -69,7 +69,7 @@ Scene::Scene()
 		{
 			for(int x = 0; x < numRows; ++x)
 			{
-#ifndef PLS
+#ifndef VECTORIZE
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
 				light.m_pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
@@ -473,7 +473,7 @@ float3 Scene::GetRawNormal(Ray& ray) const
 
 void Scene::CreatePointLight()
 {
-#ifndef PLS
+#ifndef VECTORIZE
 	m_pointLightList.emplace_back();
 #else
 	npl++;

@@ -10,7 +10,12 @@
 #include "Transform.h"
 
 //#define SPHERE_FLAKE
-#define PLS // PointLightSIMD
+//#define STOCHASTIC
+#define VECTORIZE
+#define SIMD
+
+#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
+//#define PROFILE_FUNCTION() // DISABLE 
 
 constexpr int vertexCount = 259 * 6 * 2 * 49 * 3;
 
@@ -22,10 +27,9 @@ class Scene
 public:
 	Scene();
 
-#ifndef PLS
+#ifndef VECTORIZE
 	std::vector<PointLight> m_pointLightList;
 #else
-#define SIMD
 #define TOTAL_POINT_LIGHTS 512
 
 	// Number of PointLights
