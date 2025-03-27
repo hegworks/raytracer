@@ -628,9 +628,10 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 		// wi: incoming light direction
 		// float3 wi = vi / t;
-		quadf wix4 = {_mm_div_ps(vix4, t4.f4)};
-		quadf wiy4 = {_mm_div_ps(viy4, t4.f4)};
-		quadf wiz4 = {_mm_div_ps(viz4, t4.f4)};
+		__m128 rcp = _mm_rcp_ps(t4.f4);
+		quadf wix4 = {_mm_mul_ps(vix4, rcp)};
+		quadf wiy4 = {_mm_mul_ps(viy4, rcp)};
+		quadf wiz4 = {_mm_mul_ps(viz4, rcp)};
 
 
 		// lambert's cosine law
