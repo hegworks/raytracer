@@ -388,20 +388,20 @@ Material& Scene::GetMaterial(const Ray& ray)
 
 float3 Scene::GetAlbedo(const Ray& ray, Model& model)
 {
-	uint tri = ray.hit.prim * 3;
-	const Model::VertexData& v0 = model.m_modelData.m_vertexDataList[tri + 0]; //tri
-	const Model::VertexData& v1 = model.m_modelData.m_vertexDataList[tri + 1]; //tri
-	const Model::VertexData& v2 = model.m_modelData.m_vertexDataList[tri + 2]; //tri
-	int mesh = model.VertexToMeshIdx(tri);
-	int surfaceIndex = model.m_modelData.m_surfaceIndexList[mesh];
-	const Surface& tex0 = model.m_modelData.m_surfaceList[surfaceIndex];
-	float2 uv = // texcoord
+	const uint tri = ray.hit.prim * 3;
+	const Model::VertexData& v0 = model.m_modelData.m_vertexDataList[tri + 0];
+	const Model::VertexData& v1 = model.m_modelData.m_vertexDataList[tri + 1];
+	const Model::VertexData& v2 = model.m_modelData.m_vertexDataList[tri + 2];
+	const int mesh = model.VertexToMeshIdx(tri);
+	const int surfaceIndex = model.m_modelData.m_surfaceIndexList[mesh];
+	const Surface& tex = model.m_modelData.m_surfaceList[surfaceIndex];
+	const float2 uv =
 		ray.hit.u * v1.m_texCoord +
 		ray.hit.v * v2.m_texCoord +
 		(1.0f - (ray.hit.u + ray.hit.v)) * v0.m_texCoord;
-	int iu = (int)(uv.x * tex0.width) % tex0.width;
-	int iv = (int)(uv.y * tex0.height) % tex0.height;
-	float3 texel = tex0.pixelsF[iu + iv * tex0.width];
+	const int iu = static_cast<int>(uv.x * static_cast<float>(tex.width)) % tex.width;
+	const int iv = static_cast<int>(uv.y * static_cast<float>(tex.height)) % tex.height;
+	const float3 texel = tex.pixelsF[iu + iv * tex.width];
 	return texel;
 }
 
