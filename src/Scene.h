@@ -48,7 +48,7 @@ public:
 	// intensity
 	float pli[SUPPORTED_POINT_LIGHTS];
 
-#elif defined(SIMD)
+#elif defined(SIMD) // SSE
 	// position
 	union { float plx[SUPPORTED_POINT_LIGHTS]; __m128 plx4[SUPPORTED_POINT_LIGHTS / 4]; };
 	union { float ply[SUPPORTED_POINT_LIGHTS]; __m128 ply4[SUPPORTED_POINT_LIGHTS / 4]; };
