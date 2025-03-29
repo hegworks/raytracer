@@ -795,7 +795,7 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 				)
 				, _mm256_mul_ps(nz8, wiz8.f8)
 			)};
-		cosi8.f8 = _mm256_andnot_ps(_mm256_cmp_ps(cosi8.f8, _mm256_setzero_ps(), _CMP_LE_OQ), cosi8.f8);
+		cosi8.f8 = _mm256_max_ps(cosi8.f8, _mm256_setzero_ps());
 
 
 		// shadow ray
