@@ -17,12 +17,10 @@ Scene::Scene()
 
 	stbi_set_flip_vertically_on_load(false);
 
-#pragma region SIMD TestScene
+#ifdef SIMD_TEST_SCENE
 	useSD = false;
 
-	/*{
-		CreateModel(ModelType::SPHERE);
-	}*/
+	CreateModel(ModelType::SPHERE);
 
 	Model& plane = CreateModel(ModelType::PLANE);
 	plane.m_modelData.m_meshMaterialList[0].m_type = Material::Type::DIFFUSE;
@@ -89,8 +87,7 @@ Scene::Scene()
 			}
 		}
 	}
-
-#pragma endregion
+#endif
 
 #pragma region Texture TestScene
 	/*

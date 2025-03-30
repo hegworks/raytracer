@@ -397,15 +397,17 @@ float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
 		if(cosi <= 0)
 			continue;
 
-		// shadow ray
-		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
-		if(scene.IsOccluded(shadowRay))
-			continue;
-
 		// inverse square law
 		const float falloff = 1.0f / (t * t);
 		if(falloff < EPS)
 			continue;
+
+#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+		// shadow ray
+		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
+		if(scene.IsOccluded(shadowRay))
+			continue;
+#endif
 
 		retVal += brdf * light.m_color * light.m_intensity * cosi * falloff;
 	}
@@ -441,15 +443,17 @@ float3 Renderer::CalcStochPointLightsScalar(float3 p, float3 n, float3 brdf, int
 		if(cosi <= 0)
 			continue;
 
-		// shadow ray
-		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
-		if(scene.IsOccluded(shadowRay))
-			continue;
-
 		// inverse square law
 		float falloff = 1.0f / (t * t);
 		if(falloff < EPS)
 			continue;
+
+#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+		// shadow ray
+		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
+		if(scene.IsOccluded(shadowRay))
+			continue;
+#endif
 
 		retVal += brdf * light.m_color * light.m_intensity * cosi * falloff;
 	}
@@ -494,16 +498,18 @@ float3 Renderer::CalcAllPointLightsDOD(float3 p, float3 n, float3 brdf)
 		if(cosi <= 0)
 			continue;
 
+		// inverse square law
+		const float falloff = 1.0f / (t * t);
+		if(falloff < EPS)
+			continue;
+
+#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
 		// shadow ray
 		const float3 wi = {wix, wiy, wiz};
 		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
 		if(scene.IsOccluded(shadowRay))
 			continue;
-
-		// inverse square law
-		const float falloff = 1.0f / (t * t);
-		if(falloff < EPS)
-			continue;
+#endif
 
 		// color with applied brdf
 		const float r = brdf.x * scene.plr[idx];
@@ -553,16 +559,18 @@ float3 Renderer::CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pi
 		if(cosi <= 0)
 			continue;
 
+		// inverse square law
+		float falloff = 1.0f / (t * t);
+		if(falloff < EPS)
+			continue;
+
+#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
 		// shadow ray
 		const float3 wi = {wix, wiy, wiz};
 		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
 		if(scene.IsOccluded(shadowRay))
 			continue;
-
-		// inverse square law
-		float falloff = 1.0f / (t * t);
-		if(falloff < EPS)
-			continue;
+#endif
 
 		// color with applied brdf
 		float r = brdf.x * scene.plr[idx];
@@ -648,7 +656,7 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 		//cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
 		cosi4.f4 = _mm_max_ps(cosi4.f4, _mm_setzero_ps());
 
-
+#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
 		// shadow ray
 		quadf shadowMask = {_mm_set_ps1(1)};
 		{
@@ -684,7 +692,7 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 			}
 		}
 		cosi4.f4 = _mm_mul_ps(cosi4.f4, shadowMask.f4);
-
+#endif
 
 		// inverse square law
 		//const float falloff = 1.0f / (t * t);
@@ -795,7 +803,7 @@ float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int p
 		//cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
 		cosi4.f4 = _mm_max_ps(cosi4.f4, _mm_setzero_ps());
 
-
+#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
 		// shadow ray
 		quadf shadowMask = {_mm_set_ps1(1)};
 		{
@@ -831,7 +839,7 @@ float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int p
 			}
 		}
 		cosi4.f4 = _mm_mul_ps(cosi4.f4, shadowMask.f4);
-
+#endif
 
 		// inverse square law
 		//const float falloff = 1.0f / (t * t);
@@ -943,7 +951,7 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 			)};
 		cosi8.f8 = _mm256_max_ps(cosi8.f8, _mm256_setzero_ps());
 
-
+#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
 		// shadow ray
 		octf shadowMask = {_mm256_set1_ps(1)};
 		if(cosi8.f[0] > 0)
@@ -995,7 +1003,7 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 				shadowMask.f[7] = 0;
 		}
 		cosi8.f8 = _mm256_mul_ps(cosi8.f8, shadowMask.f8);
-
+#endif
 
 		// inverse square law
 		//const float falloff = 1.0f / (t * t);
@@ -1105,7 +1113,7 @@ float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pi
 			)};
 		cosi8.f8 = _mm256_max_ps(cosi8.f8, _mm256_setzero_ps());
 
-
+#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
 		// shadow ray
 		octf shadowMask = {_mm256_set1_ps(1)};
 		if(cosi8.f[0] > 0)
@@ -1157,7 +1165,7 @@ float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pi
 				shadowMask.f[7] = 0;
 		}
 		cosi8.f8 = _mm256_mul_ps(cosi8.f8, shadowMask.f8);
-
+#endif
 
 		// inverse square law
 		//const float falloff = 1.0f / (t * t);

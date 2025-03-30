@@ -8,17 +8,25 @@
 #include "Transform.h"
 
 //#define SPHERE_FLAKE
+
+//#define SIMD_TEST_SCENE
+#ifdef SIMD_TEST_SCENE
 #define NUMLIGHTS 128
-#define STOCH_SAMPLES 8
+#define SHADOWRAY
+#endif
+
+#define STOCH_SAMPLES 16
 #define SUPPORTED_POINT_LIGHTS 512
 
-#define STOCH
+//#define STOCH //Stochastic (preprocessor only for PointLights)
 
-//#define SCALAR
-//#define DOD
-#define SIMD
+// enable one and only one at a time:
+#define SCALAR //AOS
+//#define DOD //SOA
+//#define SIMD //SSE
 //#define AVX
 
+// enable one and only one at a time:
 //#define PROFILE_FUNCTION() ScopedTimer timer(__FUNCTION__) // ENABLE
 #define PROFILE_FUNCTION() // DISABLE 
 
