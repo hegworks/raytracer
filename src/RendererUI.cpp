@@ -206,7 +206,25 @@ void Renderer::UI()
 			// credits to Okke for the idea of creating lights at runtime
 			if(ImGui::Button("+ PointL"))
 			{
+#if defined(SCALAR)
 				scene.CreatePointLight();
+#elif defined(DOD)
+				int count = 1;
+#elif defined(SIMD)
+				int count = 4;
+#elif defined(AVX)
+				int count = 8;
+#endif
+#if defined(DOD) || defined(SIMD) || defined(AVX)
+				for(int i = 0; i < count; ++i)
+				{
+					scene.CreatePointLight();
+					scene.plr[scene.npl - 1] = 1.0f;
+					scene.plg[scene.npl - 1] = 1.0f;
+					scene.plb[scene.npl - 1] = 1.0f;
+					scene.pli[scene.npl - 1] = 1.0f;
+				}
+#endif
 			}
 			ImGui::SameLine();
 			if(ImGui::Button("+ SpotL"))
@@ -237,11 +255,19 @@ void Renderer::UI()
 					{
 						if(ImGui::TreeNode(("PL " + std::to_string(i)).c_str()))
 						{
-							//TODO
-							//ImGui::DragFloat3("Pos", &scene.m_pointLightList[i].m_pos.x, 0.01f);
-							//ImGui::ColorEdit3("Color", &scene.m_pointLightList[i].m_color.x);
-							//ImGui::DragFloat("Intensity", &scene.m_pointLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
-
+#ifdef SCALAR
+							ImGui::DragFloat3("Pos", &scene.m_pointLightList[i].m_pos.x, 0.01f);
+							ImGui::ColorEdit3("Color", &scene.m_pointLightList[i].m_color.x);
+							ImGui::DragFloat("Intensity", &scene.m_pointLightList[i].m_intensity, 0.01f, 0.0f, 1000.0f);
+#elif defined(DOD) || defined(SIMD) || defined(AVX)
+							ImGui::DragFloat("PosX", &scene.plx[i], 0.01f);
+							ImGui::DragFloat("PosY", &scene.ply[i], 0.01f);
+							ImGui::DragFloat("PosZ", &scene.plz[i], 0.01f);
+							ImGui::DragFloat("ColorR", &scene.plr[i], 0.01f, 0, 1);
+							ImGui::DragFloat("ColorG", &scene.plg[i], 0.01f, 0, 1);
+							ImGui::DragFloat("ColorB", &scene.plb[i], 0.01f, 0, 1);
+							ImGui::DragFloat("Intensity", &scene.pli[i], 0.01f, 0.0f, 1000.0f);
+#endif
 							ImGui::TreePop();
 						}
 					}

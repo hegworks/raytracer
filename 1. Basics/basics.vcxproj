@@ -146,6 +146,7 @@
     <ClCompile Include="..\lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\src\renderer.cpp" />
+    <ClCompile Include="..\src\RendererPointLight.cpp" />
     <ClCompile Include="..\src\RendererUI.cpp" />
     <ClCompile Include="..\src\Scene.cpp" />
     <ClCompile Include="..\template\opengl.cpp" />

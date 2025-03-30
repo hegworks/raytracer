@@ -43,6 +43,9 @@
     <ClCompile Include="..\src\Scene.cpp">
       <Filter>Src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\RendererPointLight.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
