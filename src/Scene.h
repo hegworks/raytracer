@@ -9,10 +9,10 @@
 
 //#define SPHERE_FLAKE
 #define NUMLIGHTS 128
-#define STOCH_SAMPLES 128
+#define STOCH_SAMPLES 8
 #define SUPPORTED_POINT_LIGHTS 512
 
-//#define STOCH
+#define STOCH
 
 //#define SCALAR
 //#define DOD

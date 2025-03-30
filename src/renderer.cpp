@@ -293,9 +293,9 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 	const uint numSpotLights = static_cast<uint>(scene.m_spotLightList.size());
 	const uint numDirLights = static_cast<uint>(scene.m_dirLightList.size());
 	const uint numQuadLights = static_cast<uint>(scene.m_quadLightList.size());
-#ifndef DOD
+#ifdef SCALAR
 	const uint numPointLights = static_cast<uint>(scene.m_pointLightList.size());
-#else
+#elif defined(DOD) || defined(SIMD) || defined(AVX)
 	const uint numPointLights = scene.npl;
 #endif
 
@@ -309,13 +309,11 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 		stochasticL += CalcStochPointLightsScalar(p, n, brdf, pixelIndex);
 #elif defined(DOD)
 		stochasticL += CalcStochPointLightsDOD(p, n, brdf, pixelIndex);
+#elif defined(SIMD)
+		stochasticL += CalcStochPointLightsSIMD(p, n, brdf, pixelIndex);
+#elif defined(AVX) 
+		stochasticL += CalcStochPointLightsAVX(p, n, brdf, pixelIndex);
 #endif
-
-		//#ifndef DOD
-					//CalcStochPointLights(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, numSamples, stochasticL, numPointLights);
-		//#else
-					//CalcStochPointLightsSIMD(p, n, brdf, pixelIndex, isTddPixelX, isTddPixelY, numSamples, stochasticL, numLights, false);
-		//#endif
 	}
 
 	if(numSpotLights > 0)
@@ -351,7 +349,7 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 		}
 	}
 
-	return stochasticL * (float)numLights / (float)numSamples;
+	return stochasticL * ((float)numLights / (float)numSamples);
 
 #else
 	float3 l(0); /// total outgoing radiance
@@ -723,6 +721,154 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 	return retVal;
 }
+
+float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int pixelIndex)
+{
+	PROFILE_FUNCTION();
+
+	float3 retVal(0);
+
+	quadf px4 = {_mm_set_ps1(p.x)};
+	quadf py4 = {_mm_set_ps1(p.y)};
+	quadf pz4 = {_mm_set_ps1(p.z)};
+
+	__m128 nx4 = _mm_set_ps1(n.x);
+	__m128 ny4 = _mm_set_ps1(n.y);
+	__m128 nz4 = _mm_set_ps1(n.z);
+
+	__m128 brdfx4 = _mm_set_ps1(brdf.x);
+	__m128 brdfy4 = _mm_set_ps1(brdf.y);
+	__m128 brdfz4 = _mm_set_ps1(brdf.z);
+
+	const int numPointLights = scene.npl / 4;
+	const int count = STOCH_SAMPLES / 4;
+	uint idx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numPointLights);
+
+	for(int i = 0; i < count; ++i)
+	{
+		idx = (idx + i) % numPointLights;
+
+		// vi: incoming light vector
+		// float3 vi = light.m_pos - p;
+		__m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
+		__m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
+		__m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
+
+
+		// t: distance between shadowRayPos and lightPos
+		// float t = length(vi);
+		quadf t4 =
+		{
+			_mm_sqrt_ps
+			(
+				_mm_add_ps
+				(
+					_mm_add_ps
+					(
+						_mm_mul_ps(vix4, vix4), _mm_mul_ps(viy4, viy4)
+					)
+					, _mm_mul_ps(viz4, viz4)
+				)
+			)
+		};
+
+
+		// wi: incoming light direction
+		// float3 wi = vi / t;
+		__m128 rcp = _mm_rcp_ps(t4.f4);
+		quadf wix4 = {_mm_mul_ps(vix4, rcp)};
+		quadf wiy4 = {_mm_mul_ps(viy4, rcp)};
+		quadf wiz4 = {_mm_mul_ps(viz4, rcp)};
+
+
+		// lambert's cosine law
+		// float cosi = dot(n,wi)
+		quadf cosi4 = {
+			_mm_add_ps
+			(
+				_mm_add_ps
+				(
+					_mm_mul_ps(nx4, wix4.f4), _mm_mul_ps(ny4, wiy4.f4)
+				)
+				, _mm_mul_ps(nz4, wiz4.f4)
+			)};
+		//cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
+		cosi4.f4 = _mm_max_ps(cosi4.f4, _mm_setzero_ps());
+
+
+		// shadow ray
+		quadf shadowMask = {_mm_set_ps1(1)};
+		{
+			if(cosi4.f[0] > 0)
+			{
+				const float3 wi = {wix4.f[0], wiy4.f[0], wiz4.f[0]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[0] - TWO_EPS}))
+					shadowMask.f[0] = 0;
+			}
+		}
+		{
+			if(cosi4.f[1] > 0)
+			{
+				const float3 wi = {wix4.f[1], wiy4.f[1], wiz4.f[1]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[1] - TWO_EPS}))
+					shadowMask.f[1] = 0;
+			}
+		}
+		{
+			if(cosi4.f[2] > 0)
+			{
+				const float3 wi = {wix4.f[2], wiy4.f[2], wiz4.f[2]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[2] - TWO_EPS}))
+					shadowMask.f[2] = 0;
+			}
+		}
+		{
+			if(cosi4.f[3] > 0)
+			{
+				const float3 wi = {wix4.f[3], wiy4.f[3], wiz4.f[3]};
+				if(scene.IsOccluded({p + wi * EPS, wi, t4.f[3] - TWO_EPS}))
+					shadowMask.f[3] = 0;
+			}
+		}
+		cosi4.f4 = _mm_mul_ps(cosi4.f4, shadowMask.f4);
+
+
+		// inverse square law
+		//const float falloff = 1.0f / (t * t);
+		__m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
+
+
+		// color with applied brdf
+		__m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
+		__m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
+		__m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
+
+
+		// cosi * falloff * intensity
+		__m128 effect4 =
+			_mm_mul_ps
+			(
+				_mm_mul_ps(scene.pli4[idx], cosi4.f4)
+				, falloff4
+			);
+
+
+		// effect4 * rbg4
+		quadf lr4 = {_mm_mul_ps(r4, effect4)};
+		quadf lg4 = {_mm_mul_ps(g4, effect4)};
+		quadf lb4 = {_mm_mul_ps(b4, effect4)};
+
+
+		float r = hsum_ps_sse3(lr4.f4);
+		float g = hsum_ps_sse3(lg4.f4);
+		float b = hsum_ps_sse3(lb4.f4);
+
+		retVal += float3(r, g, b);
+	}
+
+	return retVal;
+}
+
 #endif
 
 
@@ -750,6 +896,168 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 	for(int i = 0; i < count; ++i)
 	{
 		uint idx = i;
+
+		// vi: incoming light vector
+		// float3 vi = light.m_pos - p;
+		__m256 vix8 = _mm256_sub_ps(scene.plx8[idx], px8.f8);
+		__m256 viy8 = _mm256_sub_ps(scene.ply8[idx], py8.f8);
+		__m256 viz8 = _mm256_sub_ps(scene.plz8[idx], pz8.f8);
+
+
+		// t: distance between shadowRayPos and lightPos
+		// float t = length(vi);
+		octf t8 =
+		{
+			_mm256_sqrt_ps
+			(
+				_mm256_add_ps
+				(
+					_mm256_add_ps
+					(
+						_mm256_mul_ps(vix8, vix8), _mm256_mul_ps(viy8, viy8)
+					)
+					, _mm256_mul_ps(viz8, viz8)
+				)
+			)
+		};
+
+
+		// wi: incoming light direction
+		// float3 wi = vi / t;
+		__m256 rcp = _mm256_rcp_ps(t8.f8);
+		octf wix8 = {_mm256_mul_ps(vix8, rcp)};
+		octf wiy8 = {_mm256_mul_ps(viy8, rcp)};
+		octf wiz8 = {_mm256_mul_ps(viz8, rcp)};
+
+
+		// lambert's cosine law
+		// float cosi = dot(n,wi)
+		octf cosi8 = {
+			_mm256_add_ps
+			(
+				_mm256_add_ps
+				(
+					_mm256_mul_ps(nx8, wix8.f8), _mm256_mul_ps(ny8, wiy8.f8)
+				)
+				, _mm256_mul_ps(nz8, wiz8.f8)
+			)};
+		cosi8.f8 = _mm256_max_ps(cosi8.f8, _mm256_setzero_ps());
+
+
+		// shadow ray
+		octf shadowMask = {_mm256_set1_ps(1)};
+		if(cosi8.f[0] > 0)
+		{
+			const float3 wi = {wix8.f[0], wiy8.f[0], wiz8.f[0]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[0] - TWO_EPS}))
+				shadowMask.f[0] = 0;
+		}
+		if(cosi8.f[1] > 0)
+		{
+			const float3 wi = {wix8.f[1], wiy8.f[1], wiz8.f[1]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[1] - TWO_EPS}))
+				shadowMask.f[1] = 0;
+		}
+		if(cosi8.f[2] > 0)
+		{
+			const float3 wi = {wix8.f[2], wiy8.f[2], wiz8.f[2]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[2] - TWO_EPS}))
+				shadowMask.f[2] = 0;
+		}
+		if(cosi8.f[3] > 0)
+		{
+			const float3 wi = {wix8.f[3], wiy8.f[3], wiz8.f[3]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[3] - TWO_EPS}))
+				shadowMask.f[3] = 0;
+		}
+		if(cosi8.f[4] > 0)
+		{
+			const float3 wi = {wix8.f[4], wiy8.f[4], wiz8.f[4]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[4] - TWO_EPS}))
+				shadowMask.f[4] = 0;
+		}
+		if(cosi8.f[5] > 0)
+		{
+			const float3 wi = {wix8.f[5], wiy8.f[5], wiz8.f[5]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[5] - TWO_EPS}))
+				shadowMask.f[5] = 0;
+		}
+		if(cosi8.f[6] > 0)
+		{
+			const float3 wi = {wix8.f[6], wiy8.f[6], wiz8.f[6]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[6] - TWO_EPS}))
+				shadowMask.f[6] = 0;
+		}
+		if(cosi8.f[7] > 0)
+		{
+			const float3 wi = {wix8.f[7], wiy8.f[7], wiz8.f[7]};
+			if(scene.IsOccluded({p + wi * EPS, wi, t8.f[7] - TWO_EPS}))
+				shadowMask.f[7] = 0;
+		}
+		cosi8.f8 = _mm256_mul_ps(cosi8.f8, shadowMask.f8);
+
+
+		// inverse square law
+		//const float falloff = 1.0f / (t * t);
+		__m256 falloff8 = _mm256_rcp_ps(_mm256_mul_ps(t8.f8, t8.f8));
+
+
+		// color with applied brdf
+		__m256 r8 = _mm256_mul_ps(brdfx8, scene.plr8[idx]);
+		__m256 g8 = _mm256_mul_ps(brdfy8, scene.plg8[idx]);
+		__m256 b8 = _mm256_mul_ps(brdfz8, scene.plb8[idx]);
+
+
+		// cosi * falloff * intensity
+		__m256 effect8 =
+			_mm256_mul_ps
+			(
+				_mm256_mul_ps(scene.pli8[idx], cosi8.f8)
+				, falloff8
+			);
+
+
+		// effect8 * rbg8
+		octf lr8 = {_mm256_mul_ps(r8, effect8)};
+		octf lg8 = {_mm256_mul_ps(g8, effect8)};
+		octf lb8 = {_mm256_mul_ps(b8, effect8)};
+
+
+		float r = hsum256_ps_avx(lr8.f8);
+		float g = hsum256_ps_avx(lg8.f8);
+		float b = hsum256_ps_avx(lb8.f8);
+
+		retVal += float3(r, g, b);
+	}
+
+	return retVal;
+}
+
+float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pixelIndex)
+{
+	PROFILE_FUNCTION();
+
+	float3 retVal(0);
+
+	octf px8 = {_mm256_set1_ps(p.x)};
+	octf py8 = {_mm256_set1_ps(p.y)};
+	octf pz8 = {_mm256_set1_ps(p.z)};
+
+	__m256 nx8 = _mm256_set1_ps(n.x);
+	__m256 ny8 = _mm256_set1_ps(n.y);
+	__m256 nz8 = _mm256_set1_ps(n.z);
+
+	__m256 brdfx8 = _mm256_set1_ps(brdf.x);
+	__m256 brdfy8 = _mm256_set1_ps(brdf.y);
+	__m256 brdfz8 = _mm256_set1_ps(brdf.z);
+
+	const int numPointLights = scene.npl / 8;
+	const int count = STOCH_SAMPLES / 8;
+	uint idx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numPointLights);
+
+	for(int i = 0; i < count; ++i)
+	{
+		idx = (idx + i) % (numPointLights);
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;

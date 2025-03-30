@@ -32,8 +32,10 @@ public:
 	float3 CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pixelIndex);
 #elif defined(SIMD)
 	float3 CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf);
+	float3 CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int pixelIndex);
 #elif defined(AVX)
 	float3 CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf);
+	float3 CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pixelIndex);
 #endif
 
 	float3 CalcAllSpotLights(float3 p, float3 n, float3 brdf);
