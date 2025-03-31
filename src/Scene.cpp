@@ -340,9 +340,8 @@ void Scene::BuildTlas()
 
 float3 Scene::SampleSky(const Ray& ray)
 {
-	const float phi = atan2(ray.D.z, ray.D.x);
-	const float u = 0.5f + (phi * INV2PI);
-	const float v = 0.5f - (asin(ray.D.y) * INVPI);
+	const float u = 0.5f + (atan2f(ray.D.z, ray.D.x) * INV2PI);
+	const float v = 0.5f - (asinf(ray.D.y) * INVPI);
 	const uint x = static_cast<uint>(m_skyWidthF * u);
 	const uint y = static_cast<uint>(m_skyHeightF * v);
 
