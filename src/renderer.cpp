@@ -150,9 +150,8 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
 	float3 n = scene.GetSmoothNormal(ray);
-	float dotResult = dot(ray.D, scene.GetRawNormal(ray));
-	bool inside = dotResult > 0.0f;
-	if(inside) n = -n, dotResult = -dotResult;
+	bool inside = dot(ray.D, scene.GetRawNormal(ray)) > 0.0f;
+	if(inside) n = -n;
 
 	bool tddIsCameraY = tdd && IsCloseF(p.y, camera.camPos.y);
 	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
@@ -250,12 +249,12 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			else
 			{
 				finalDir = diffuseDir;
-				finalMatColor = albedo;
+				finalMatColor = brdf;
 			}
 
 			Ray finalRay(p + finalDir * EPS, finalDir);
 
-			float3 finalTrace = finalMatColor * (-dotResult) * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
+			float3 finalTrace = finalMatColor * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 
 			float3 directLight = CalcLights(ray, p, n, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
 
