@@ -8,8 +8,8 @@
 class RNG
 {
 public:
-// WangHash: calculates a high-quality seed based on an arbitrary non-zero
-// integer. Use this to create your own seed based on e.g. thread index.
+	// WangHash: calculates a high-quality seed based on an arbitrary non-zero
+	// integer. Use this to create your own seed based on e.g. thread index.
 	uint WangHash(uint s)
 	{
 		s = (s ^ 61) ^ (s >> 16);
@@ -76,5 +76,16 @@ public:
 	{
 		float3 dir = RandomPointOnSphere(customSeed);
 		return dot(dir, normal) > 0.0f ? dir : -dir;
+	}
+
+	inline float3 cosineweighteddiffusereflection(const float3 N, uint& seed)
+	{
+		// blog.demofox.org/2020/06/06/casual-shadertoy-path-tracing-2-image-improvement-and-glossy-reflections
+		float3 R;
+		do
+		{
+			R = make_float3(RandomFloat(seed) * 2 - 1, RandomFloat(seed) * 2 - 1, RandomFloat(seed) * 2 - 1);
+		} while(dot(R, R) > 1);
+		return normalize(N + normalize(R));
 	}
 };

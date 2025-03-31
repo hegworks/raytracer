@@ -95,6 +95,11 @@ Scene::Scene()
 		CreateModel(ModelType::KENNY);
 	}
 	{
+		CreateModel(ModelType::DRAGON);
+		m_tranformList.back().m_pos = float3(-2, -0.8, -3);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	{
 		CreateModel(ModelType::SNAKE);
 		m_tranformList.back().m_scl = float3(0.165f);
 		m_tranformList.back().m_pos = float3(-2, -0.8, -1);
