@@ -109,7 +109,6 @@ public:
 
 private:
 	void LoadSkydome();
-	void SetBlasTransform(tinybvh::BLASInstance& blas, const mat4& mat);
 
 	int m_nextIdx = 0;
 

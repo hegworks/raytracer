@@ -320,14 +320,6 @@ void Scene::LoadSkydome()
 	for(int i = 0; i < m_skyWidth * m_skyHeight * 3; i++) m_skyPixels[i] = sqrtf(m_skyPixels[i]);
 }
 
-void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, const mat4& mat)
-{
-	for(int i = 0; i < 15; ++i)
-	{
-		blas.transform[i] = mat.cell[i];
-	}
-}
-
 void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t)
 {
 	mat4 mat =
