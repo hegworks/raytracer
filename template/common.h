@@ -8,10 +8,15 @@
 #pragma once
 
 // default screen resolution
-#define SCRWIDTH	1280
-#define SCRHEIGHT	720
+constexpr float SCRSCALE = 2.0f;
+constexpr float INV_SCRSCALE = 1.0f / SCRSCALE;
+constexpr int WINDOWWIDTH = 1280;
+constexpr int WINDOWHEIGHT = 720;
+constexpr int SCRWIDTH = static_cast<int>(WINDOWWIDTH * INV_SCRSCALE);
+constexpr int SCRHEIGHT = static_cast<int>(WINDOWHEIGHT * INV_SCRSCALE);
+constexpr int SCRSIZE = static_cast<int>(SCRWIDTH * SCRHEIGHT);
 // #define FULLSCREEN
-// #define DOUBLESIZE
+ //#define DOUBLESIZE
 
 // constants
 #define LARGE_FLOAT		1e34f

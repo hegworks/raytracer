@@ -96,9 +96,9 @@ void main()
 	window = glfwCreateWindow( SCRWIDTH, SCRHEIGHT, "Tmpl8RT", glfwGetPrimaryMonitor(), 0 );
 #else
 #ifdef DOUBLESIZE
-	window = glfwCreateWindow( SCRWIDTH * 2, SCRHEIGHT * 2, "Tmpl8RT", 0, 0 );
+	window = glfwCreateWindow( WINDOWWIDTH * 2, WINDOWWIDTH * 2, "Tmpl8RT", 0, 0 );
 #else
-	window = glfwCreateWindow( SCRWIDTH, SCRHEIGHT, "Tmpl8RT", 0, 0 );
+	window = glfwCreateWindow( WINDOWWIDTH, WINDOWHEIGHT, "Tmpl8RT", 0, 0 );
 #endif
 #endif
 	if (!window) FatalError( "glfwCreateWindow failed." );

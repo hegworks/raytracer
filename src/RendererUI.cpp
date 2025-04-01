@@ -23,84 +23,104 @@ void Renderer::UI()
 
 	ImGui::End();
 
-	ImGui::SetNextWindowPos(ImVec2(SCRWIDTH - 300, 0));
-	ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT));
+	ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH - 300, 0));
+	ImGui::SetNextWindowSize(ImVec2(300, WINDOWHEIGHT));
 	ImGui::SetNextWindowBgAlpha(0.55f);
-	ImGui::Begin("General", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-	if(ImGui::BeginTable("PerformanceTable", 5, ImGuiTableFlags_Borders))
+	if(ImGui::CollapsingHeader("Info", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::TableSetupColumn("avg");
-		ImGui::TableSetupColumn("fps");
-		ImGui::TableSetupColumn("rps");
-		ImGui::TableSetupColumn("acm");
-		ImGui::TableSetupColumn("sum");
-		ImGui::TableHeadersRow();
+		if(ImGui::BeginTable("PerformanceTable", 5, ImGuiTableFlags_Borders))
+		{
+			ImGui::TableSetupColumn("avg");
+			ImGui::TableSetupColumn("fps");
+			ImGui::TableSetupColumn("rps");
+			ImGui::TableSetupColumn("acm");
+			ImGui::TableSetupColumn("sum");
+			ImGui::TableHeadersRow();
 
-		ImGui::TableNextRow();
-		ImGui::TableSetColumnIndex(0); ImGui::Text("%.1f", davg);
-		ImGui::TableSetColumnIndex(1); ImGui::Text("%.0f", dfps);
-		ImGui::TableSetColumnIndex(2); ImGui::Text("%.0f", drps);
-		ImGui::TableSetColumnIndex(3); ImGui::Text("%i", acmCounter);
-		ImGui::TableSetColumnIndex(4); ImGui::Text("%.1f", dbgCalcSum ? sum : NAN);
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0); ImGui::Text("%.1f", davg);
+			ImGui::TableSetColumnIndex(1); ImGui::Text("%.0f", dfps);
+			ImGui::TableSetColumnIndex(2); ImGui::Text("%.0f", drps);
+			ImGui::TableSetColumnIndex(3); ImGui::Text("%i", acmCounter);
+			ImGui::TableSetColumnIndex(4); ImGui::Text("%.1f", dbgCalcSum ? sum : NAN);
 
-		ImGui::EndTable();
-	}
+			ImGui::EndTable();
+		}
 
-	// ray query on mouse
-	int2 coord = isDbgPixel ? dbgpixel : mousePos;
-	bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
-	uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
-	float pixelLength = 0.0f;
-	if(isInScreen)
-	{
-		float4 illum = illuminations[coord.x + coord.y * SCRWIDTH];
-		pixelLength = length(float3(illum.x, illum.y, illum.z));
-		pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
-		red = (pixel & 0xFF0000) >> 16;
-		green = (pixel & 0x00FF00) >> 8;
-		blue = pixel & 0x0000FF;
-	}
-	Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, 0);
-	scene.Intersect(r);
-	ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-	bool hit = r.hit.t < BVH_FAR;
-	int inst = hit ? r.hit.inst : -1;
-	int blasIdx = hit ? scene.m_blasList[inst].blasIdx : -1;
-	//int prim = hit ? r.hit.prim : -1; // unused
-	int tri = hit ? r.hit.prim * 3 : -1;
-	int mesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
+		if(ImGui::BeginTable("ResolutionTable", 3, ImGuiTableFlags_Borders))
+		{
+			ImGui::TableSetupColumn("render res.");
+			ImGui::TableSetupColumn("window res.");
+			ImGui::TableSetupColumn("scale");
+			ImGui::TableHeadersRow();
 
-	if(ImGui::BeginTable("PerformanceTable", 4, ImGuiTableFlags_Borders))
-	{
-		ImGui::TableSetupColumn("selected");
-		ImGui::TableSetupColumn("coord");
-		ImGui::TableSetupColumn("inst");
-		ImGui::TableSetupColumn("mesh");
-		ImGui::TableHeadersRow();
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0); ImGui::Text("%i x %i", SCRWIDTH, SCRHEIGHT);
+			ImGui::TableSetColumnIndex(1); ImGui::Text("%i x %i", WINDOWWIDTH, WINDOWHEIGHT);
+			ImGui::TableSetColumnIndex(2); ImGui::Text("%.2f", SCRSCALE);
 
-		ImGui::TableNextRow();
-		ImGui::TableSetColumnIndex(0); ImGui::Text("%i", selectedIdx);
-		ImGui::TableSetColumnIndex(1); ImGui::Text("%i,%i", coord.x, coord.y);
-		ImGui::TableSetColumnIndex(2); ImGui::Text("%i", inst);
-		ImGui::TableSetColumnIndex(3); ImGui::Text("%i", mesh);
+			ImGui::EndTable();
+		}
 
-		ImGui::EndTable();
-	}
+		// ray query on mouse
+		float2 coordf = isDbgPixel ? dbgpixel : mousePos;
+		bool isInScreen = coordf.x >= 0 && coordf.x < WINDOWWIDTH && coordf.y >= 0 && coordf.y < WINDOWHEIGHT;
+		coordf *= INV_SCRSCALE;
+		int2 coord = {static_cast<int>(coordf.x),static_cast<int>(coordf.y)};
+		uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
+		float pixelLength = 0.0f;
+		if(isInScreen)
+		{
+			float4 illum = illuminations[coord.x + coord.y * SCRWIDTH];
+			pixelLength = length(float3(illum.x, illum.y, illum.z));
+			pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
+			red = (pixel & 0xFF0000) >> 16;
+			green = (pixel & 0x00FF00) >> 8;
+			blue = pixel & 0x0000FF;
+		}
+		Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, 0);
+		scene.Intersect(r);
+		ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+		bool hit = r.hit.t < BVH_FAR;
+		int inst = hit ? r.hit.inst : -1;
+		int blasIdx = hit ? scene.m_blasList[inst].blasIdx : -1;
+		//int prim = hit ? r.hit.prim : -1; // unused
+		int tri = hit ? r.hit.prim * 3 : -1;
+		int mesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
 
-	if(ImGui::BeginTable("ColorTable", 3, ImGuiTableFlags_Borders))
-	{
-		ImGui::TableSetupColumn("color");
-		ImGui::TableSetupColumn("length");
-		ImGui::TableSetupColumn("RGB");
-		ImGui::TableHeadersRow();
+		if(ImGui::BeginTable("PerformanceTable", 4, ImGuiTableFlags_Borders))
+		{
+			ImGui::TableSetupColumn("selected");
+			ImGui::TableSetupColumn("coord");
+			ImGui::TableSetupColumn("inst");
+			ImGui::TableSetupColumn("mesh");
+			ImGui::TableHeadersRow();
 
-		ImGui::TableNextRow();
-		ImGui::TableSetColumnIndex(0); ImGui::ColorButton("##color", color);
-		ImGui::TableSetColumnIndex(1); ImGui::Text("%.2f", pixelLength);
-		ImGui::TableSetColumnIndex(2); ImGui::Text("%u, %u, %u", red, green, blue);
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0); ImGui::Text("%i", selectedIdx);
+			ImGui::TableSetColumnIndex(1); ImGui::Text("%i,%i", coord.x, coord.y);
+			ImGui::TableSetColumnIndex(2); ImGui::Text("%i", inst);
+			ImGui::TableSetColumnIndex(3); ImGui::Text("%i", mesh);
 
-		ImGui::EndTable();
+			ImGui::EndTable();
+		}
+
+		if(ImGui::BeginTable("ColorTable", 3, ImGuiTableFlags_Borders))
+		{
+			ImGui::TableSetupColumn("color");
+			ImGui::TableSetupColumn("length");
+			ImGui::TableSetupColumn("RGB");
+			ImGui::TableHeadersRow();
+
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0); ImGui::ColorButton("##color", color);
+			ImGui::TableSetColumnIndex(1); ImGui::Text("%.2f", pixelLength);
+			ImGui::TableSetColumnIndex(2); ImGui::Text("%u, %u, %u", red, green, blue);
+
+			ImGui::EndTable();
+		}
 	}
 
 	if(ImGui::BeginTabBar("Main"))
@@ -565,6 +585,11 @@ void Renderer::KeyDown(int key)
 
 		if(key == GLFW_KEY_ENTER)
 		{
+			dbgpixel =
+			{
+				static_cast<int>(static_cast<float>(dbgpixel.x) * INV_SCRSCALE),
+				static_cast<int>(static_cast<float>(dbgpixel.y) * INV_SCRSCALE)
+			};
 			printf("DBG PIXEL AT %i,%i\n", dbgpixel.x, dbgpixel.y);
 			isDbgPixelEntered = true;
 		}

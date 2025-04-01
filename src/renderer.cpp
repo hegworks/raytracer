@@ -13,11 +13,11 @@
 void Renderer::Init()
 {
 	// create fp32 rgb pixel buffer to render to
-	accumulator = (float4*)MALLOC64(SCRWIDTH * SCRHEIGHT * 16);
-	memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);
+	accumulator = (float4*)MALLOC64(SCRSIZE * 16);
+	memset(accumulator, 0, SCRSIZE * 16);
 
-	illuminations = (float4*)MALLOC64(SCRWIDTH * SCRHEIGHT * 16);
-	memset(illuminations, 0, SCRWIDTH * SCRHEIGHT * 16);
+	illuminations = (float4*)MALLOC64(SCRSIZE * 16);
+	memset(illuminations, 0, SCRSIZE * 16);
 
 	for(int y = 0; y < SCRHEIGHT; y++)
 	{
@@ -102,7 +102,7 @@ void Renderer::Tick(float deltaTime)
 	if(dbgCalcSum)
 	{
 		sum = 0;
-		for(int i = 0; i < SCRWIDTH * SCRHEIGHT; ++i)
+		for(int i = 0; i < SCRSIZE; ++i)
 		{
 			sum += (illuminations[i].x + illuminations[i].y + illuminations[i].z) / 3.0f;
 		}
@@ -113,13 +113,13 @@ void Renderer::Tick(float deltaTime)
 	static float avg = 10, alpha = 1;
 	avg = (1 - alpha) * avg + alpha * t.elapsed() * 1000;
 	if(alpha > 0.05f) alpha *= 0.5f;
-	float fps = 1000.0f / avg, rps = (SCRWIDTH * SCRHEIGHT) / (avg * 1000);
+	float fps = 1000.0f / avg, rps = (SCRSIZE) / (avg * 1000);
 	dfps = fps, drps = rps, davg = avg;
 	//printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps);
 	// handle user input
 	if(camera.HandleInput(deltaTime) || !useACM)
 	{
-		memset(accumulator, 0, SCRWIDTH * SCRHEIGHT * 16);
+		memset(accumulator, 0, SCRSIZE * 16);
 		acmCounter = 1;
 	}
 

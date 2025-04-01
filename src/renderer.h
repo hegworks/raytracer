@@ -54,8 +54,8 @@ public:
 	bool animating = false;
 	float anim_time = 0;
 	int ndal = 3; // normal, distance, albedo, light
-	uint pixelSeeds[SCRWIDTH * SCRHEIGHT];
-	uint lastPixelSeeds[SCRWIDTH * SCRHEIGHT];
+	uint pixelSeeds[SCRSIZE];
+	uint lastPixelSeeds[SCRSIZE];
 	inline static thread_local RNG threadRng;
 	int qlNumSamples = 1;
 	bool qlOneSided = true;
