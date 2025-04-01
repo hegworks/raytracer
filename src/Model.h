@@ -22,10 +22,11 @@ struct Texture
 class Model
 {
 public:
-	Model(std::string const& path, float2 textureCoordScale = float2(1))
+	Model(std::string const& path, const float2 textureCoordScale = float2(1), bool isRandZ = false)
 	{
 		//stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 		m_textureCoordScale = textureCoordScale;
+		m_isRandZ = isRandZ;
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
 		size_t pos = path.find_last_of("/\\");
@@ -88,6 +89,10 @@ private:
 	void TextureFromFile(const std::string& path);
 	void TextureFromMemory(aiTexel* pcData, int mWidth);
 	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
+
+	bool m_isRandZ = false;
+	inline static RNG rng;
+	inline static uint seed = 123;
 };
 
 inline void Model::loadModel(std::string path)
@@ -157,7 +162,13 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 			VertexData& newVertexData = m_modelData.m_vertexDataList.emplace_back();
 			newVertexData.m_normal = float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z);
-			float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z, 0);
+			float randZAddition = 0.0f;
+			if(m_isRandZ)
+			{
+				const float randSign = RandomFloat() > 0.5f ? 1.0f : -1.0f;
+				randZAddition = randSign * RandomFloat() * 2.0f;
+			}
+			float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z + randZAddition, 0);
 			m_modelData.m_vertices.emplace_back(vert);
 			if(mesh->mTextureCoords[0])
 				newVertexData.m_texCoord = float2(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);

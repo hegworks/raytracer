@@ -411,7 +411,7 @@ float3 Scene::SampleTexture(const Ray& ray, const Model& model)
 	return texel;
 }
 
-Model& Scene::CreateModel(const ModelType modelType)
+Model& Scene::CreateModel(const ModelType modelType, bool isRandZ)
 {
 	for(int i = 0; i < static_cast<int>(m_modelList.size()); ++i)
 	{
@@ -423,7 +423,7 @@ Model& Scene::CreateModel(const ModelType modelType)
 			return m_modelList[i];
 		}
 	}
-	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType));
+	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType), 1.0f, isRandZ);
 	model.m_modelData.m_type = modelType;
 	const int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
 	auto& bvh = m_bvhList.emplace_back();

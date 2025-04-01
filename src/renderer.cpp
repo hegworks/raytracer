@@ -28,6 +28,10 @@ void Renderer::Init()
 
 	acmCounter = 1;
 
+#ifdef _GAME
+	m_gameManager.Init(&scene);
+#endif
+
 	/*QuadLight& ql = scene.CreateQuadLight();
 	ql.m_quad.size = 5;
 	ql.m_intensity = 5;

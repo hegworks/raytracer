@@ -192,6 +192,7 @@
     <ClCompile Include="..\lib\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\src\GameManager.cpp" />
     <ClCompile Include="..\src\renderer.cpp" />
     <ClCompile Include="..\src\RendererGame.cpp" />
     <ClCompile Include="..\src\RendererPointLight.cpp" />
@@ -218,6 +219,7 @@
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
     <ClInclude Include="..\lib\tiny_bvh.h" />
     <ClInclude Include="..\src\DBG.h" />
+    <ClInclude Include="..\src\GameManager.h" />
     <ClInclude Include="..\src\Model.h" />
     <ClInclude Include="..\src\ModelData.h" />
     <ClInclude Include="..\src\PointLight.h" />

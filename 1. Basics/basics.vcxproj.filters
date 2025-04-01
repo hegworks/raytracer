@@ -49,6 +49,9 @@
     <ClCompile Include="..\src\RendererGame.cpp">
       <Filter>Src\_Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\GameManager.cpp">
+      <Filter>Src\_Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
@@ -143,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Transform.h">
       <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameManager.h">
+      <Filter>Src\_Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
