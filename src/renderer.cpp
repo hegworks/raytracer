@@ -5,7 +5,6 @@
 #include "DBG.h"
 #include "Material.h"
 #include "Model.h"
-#include "PointLight.h"
 
 // -----------------------------------------------------------
 // Initialize the renderer
@@ -13,11 +12,11 @@
 void Renderer::Init()
 {
 	// create fp32 rgb pixel buffer to render to
-	accumulator = (float4*)MALLOC64(SCRSIZE * 16);
-	memset(accumulator, 0, SCRSIZE * 16);
+	accumulator = static_cast<float4*>(MALLOC64((size_t)SCRSIZE * 16));
+	memset(accumulator, 0, static_cast<size_t>(SCRSIZE) * 16);
 
-	illuminations = (float4*)MALLOC64(SCRSIZE * 16);
-	memset(illuminations, 0, SCRSIZE * 16);
+	illuminations = static_cast<float4*>(MALLOC64((size_t)SCRSIZE * 16));
+	memset(illuminations, 0, static_cast<size_t>(SCRSIZE) * 16);
 
 	for(int y = 0; y < SCRHEIGHT; y++)
 	{
@@ -36,20 +35,21 @@ void Renderer::Init()
 	ql.m_quad.T = mat4::Translate(ql.m_quad.m_pos);
 	ql.m_quad.invT = ql.m_quad.T.FastInvertedTransformNoScale();*/
 
-#if _DEBUG
+#ifdef _DEBUG
 	dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 #endif // _DEBUG
 }
 
+#ifdef _ENGINE
 // -----------------------------------------------------------
 // Main application tick function - Executed once per frame
 // -----------------------------------------------------------
-void Renderer::Tick(float deltaTime)
+void Renderer::Tick(const float deltaTime)
 {
 	// pixel loop
-	Timer t;
+	const Timer t;
 	const float scale = 1.0f / static_cast<float>(acmCounter++);
 
 	if(isDbgPixel && !isDbgPixelEntered)
@@ -128,6 +128,7 @@ void Renderer::Tick(float deltaTime)
 		screen->Line(0, 360, SCRWIDTH - 1, 360, 0xff0000);
 	}
 }
+#endif
 
 // -----------------------------------------------------------
 // Evaluate light transport
@@ -140,7 +141,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 
 	scene.Intersect(ray);
-	bool hasHit = ray.hit.t < BVH_FAR;
+	const bool hasHit = ray.hit.t < BVH_FAR;
 	if(!hasHit)
 	{
 		if(useSD)
@@ -148,19 +149,21 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		return 0;
 	}
 
-	float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
-	float3 n = scene.GetSmoothNormal(ray);
-	bool inside = dot(ray.D, scene.GetRawNormal(ray)) > 0.0f;
+	const float3 p = ray.O + ray.hit.t * ray.D; /// intersection point
+	float3 n = scene.CalcSmoothNormal(ray);
+	const bool inside = dot(ray.D, scene.CalcRawNormal(ray)) > 0.0f;
 	if(inside) n = -n;
 
+#ifdef _ENGINE
 	bool tddIsCameraY = tdd && IsCloseF(p.y, camera.camPos.y);
 	TDDP(ray, p, n, screen, depth, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+#endif
 
 	float3 l(0);
-	Model& model = scene.GetModel(ray);
-	Material mat = scene.GetMaterial(ray);
-	float3 albedo = model.m_modelData.m_surfaceList.empty() ? mat.m_albedo : scene.GetAlbedo(ray, model);
-	float3 brdf = albedo / PI; // for diffuse (matte) surfaces
+	const Model& model = scene.GetModel(ray);
+	const Material mat = scene.GetMaterial(ray);
+	const float3 albedo = model.m_modelData.m_surfaceList.empty() ? mat.m_albedo : scene.SampleTexture(ray, model);
+	const float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 	switch(mat.m_type)
 	{
 		case Material::Type::DIFFUSE:
@@ -177,19 +180,19 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		}
 		case Material::Type::REFRACTIVE:
 		{
-			float density = mat.m_factor0;
-			float ior = mat.m_factor1;
+			const float density = mat.m_factor0;
+			const float ior = mat.m_factor1;
 			float3 localN = n;
 			if(inside) localN = -n;
 			float fres;
 			fresnel(ray.D, localN, ior, fres);
-			float oneMinusFres = 1.0f - fres;
+			const float oneMinusFres = 1.0f - fres;
 
 			if(fres > EPS || oneMinusFres > EPS)
 			{
 				if(dbgSF)
 				{
-					bool reflectTrueRefractFalse = threadRng.RandomFloat(pixelSeeds[pixelIndex]) < fres;
+					const bool reflectTrueRefractFalse = threadRng.RandomFloat(pixelSeeds[pixelIndex]) < fres;
 					float3 localL(0);
 					if(reflectTrueRefractFalse && fres > EPS)
 					{
@@ -270,6 +273,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		}
 	}
 
+#ifdef _ENGINE
 	switch(ndal)
 	{
 		case 0:
@@ -283,6 +287,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		default:
 			throw std::runtime_error("Unhandled situation");
 	}
+#elif defined(_GAME)
+	return l;
+#endif
 }
 
 float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex)
@@ -370,34 +377,34 @@ float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float
 #endif
 }
 
-float3 Renderer::CalcSpotLight(const SpotLight& light, float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcSpotLight(const SpotLight& light, const float3& p, const float3& n, const float3& brdf) const
 {
-	float3 lPos = light.m_pos; /// LightPos
-	float3 vi = lPos - p; /// Light Vector
-	float3 wi = normalize(vi); /// incoming light direction
-	float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
-	float tMax = length(vi) - EPS * 2; /// distance between srPos and lPos (Considering EPS)
+	const float3 lPos = light.m_pos; /// LightPos
+	const float3 vi = lPos - p; /// Light Vector
+	const float3 wi = normalize(vi); /// incoming light direction
+	const float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
+	const float tMax = length(vi) - TWO_EPS; /// distance between srPos and lPos (Considering EPS)
 
-	Ray shadowRay(srPos, wi, tMax);
-	bool isInShadow = scene.IsOccluded(shadowRay);
-	if(isInShadow)
-	{
-		return 0;
-	}
-
-	float cosi = dot(n, wi); /// Lambert's cosine law.
+	const float cosi = dot(n, wi); /// Lambert's cosine law.
 	if(cosi <= 0)
 	{
 		return 0;
 	}
 
-	float falloff = 1.0f / (tMax * tMax); /// inverse square law
+	const float falloff = 1.0f / (tMax * tMax); /// inverse square law
 	if(falloff < EPS)
 	{
 		return 0;
 	}
 
-	float cutoff = clamp((-dot(wi, light.m_dir) - light.m_cosO) / (light.m_cosI - light.m_cosO), 0.0f, 1.0f); // lerp. NOTICE the minus before dot
+	const Ray shadowRay(srPos, wi, tMax);
+	const bool isInShadow = scene.IsOccluded(shadowRay);
+	if(isInShadow)
+	{
+		return 0;
+	}
+
+	const float cutoff = clamp((-dot(wi, light.m_dir) - light.m_cosO) / (light.m_cosI - light.m_cosO), 0.0f, 1.0f); // lerp. NOTICE the minus before dot
 	if(cutoff <= 0)
 	{
 		return 0;
@@ -406,10 +413,10 @@ float3 Renderer::CalcSpotLight(const SpotLight& light, float3 p, float3 n, float
 	return brdf * light.m_color * light.m_intensity * cosi * falloff * cutoff * cutoff;
 }
 
-float3 Renderer::CalcAllSpotLights(float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcAllSpotLights(const float3& p, const float3& n, const float3& brdf) const
 {
 	float3 l(0);
-	int numSpotLights = static_cast<int>(scene.m_spotLightList.size());
+	const int numSpotLights = static_cast<int>(scene.m_spotLightList.size());
 	for(int i = 0; i < numSpotLights; ++i)
 	{
 		l += CalcSpotLight(scene.m_spotLightList[i], p, n, brdf);
@@ -417,20 +424,20 @@ float3 Renderer::CalcAllSpotLights(float3 p, float3 n, float3 brdf)
 	return l;
 }
 
-float3 Renderer::CalclDirLight(const DirLight& light, float3 p, float3 n, float3 brdf)
+float3 Renderer::CalclDirLight(const DirLight& light, const float3& p, const float3& n, const float3& brdf) const
 {
-	float3 wi = -light.m_dir; /// incoming light direction
-	float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
+	const float3 wi = -light.m_dir; /// incoming light direction
+	const float3 srPos = p + wi * EPS; /// ShadowRayPos (considering EPS)
 
-	Ray shadowRay(srPos, wi);
-	bool isInShadow = scene.IsOccluded(shadowRay);
-	if(isInShadow)
+	const float cosi = dot(n, wi); /// Lambert's cosine law
+	if(cosi <= 0)
 	{
 		return 0;
 	}
 
-	float cosi = dot(n, wi); /// Lambert's cosine law
-	if(cosi <= 0)
+	const Ray shadowRay(srPos, wi);
+	const bool isInShadow = scene.IsOccluded(shadowRay);
+	if(isInShadow)
 	{
 		return 0;
 	}
@@ -438,10 +445,10 @@ float3 Renderer::CalclDirLight(const DirLight& light, float3 p, float3 n, float3
 	return brdf * light.m_color * light.m_intensity * cosi;
 }
 
-float3 Renderer::CalcAllDirLights(float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcAllDirLights(const float3& p, const float3& n, const float3& brdf) const
 {
 	float3 l(0);
-	int numDirLights = static_cast<int>(scene.m_dirLightList.size());
+	const int numDirLights = static_cast<int>(scene.m_dirLightList.size());
 	for(int i = 0; i < numDirLights; ++i)
 	{
 		l += CalclDirLight(scene.m_dirLightList[i], p, n, brdf);
@@ -449,44 +456,44 @@ float3 Renderer::CalcAllDirLights(float3 p, float3 n, float3 brdf)
 	return l;
 }
 
-float3 Renderer::CalcQuadLight(const QuadLight& light, float3 p, float3 n, float3 brdf, uint pixelIndex)
+float3 Renderer::CalcQuadLight(const QuadLight& light, const float3& p, const float3& n, const float3& brdf, const uint pixelIndex)
 {
 	float3 lSamples = float3(0);
-	float3 lightDir = -light.m_quad.GetNormal();
-	float pdfEffect = 1 / light.GetPDF();
+	const float3 lightDir = -light.m_quad.GetNormal();
+	const float pdfEffect = 1.0f / light.GetArea();
 
 	for(int j = 0; j < qlNumSamples; ++j)
 	{
-		float3 a = light.GetRandomPoint(pixelSeeds[pixelIndex]);
-		float3 vi = a - p;
-		float3 wi = normalize(vi);
-		float tMax = length(vi) - EPS * 2;
+		const float3 a = light.GetRandomPoint(pixelSeeds[pixelIndex]);
+		const float3 vi = a - p;
+		const float3 wi = normalize(vi);
+		const float tMax = length(vi) - TWO_EPS;
 
 		if(qlOneSided)
 		{
-			bool isOppositeSide = dot(lightDir, wi) <= 0;
+			const bool isOppositeSide = dot(lightDir, wi) <= 0;
 			if(isOppositeSide)
 			{
 				continue;
 			}
 		}
 
-		float3 srPos = p + wi * EPS;
-		Ray shadowRay(srPos, wi, tMax);
-		bool isInShadow = scene.IsOccluded(shadowRay);
-		if(isInShadow)
-		{
-			continue;
-		}
-
-		float cosi = dot(n, wi); /// Lambert's cosine law.
+		const float cosi = dot(n, wi); /// Lambert's cosine law.
 		if(cosi <= 0)
 		{
 			continue;
 		}
 
-		float falloff = 1.0f / (tMax * tMax); /// inverse square law
+		const float falloff = 1.0f / (tMax * tMax); /// inverse square law
 		if(falloff < EPS)
+		{
+			continue;
+		}
+
+		const float3 srPos = p + wi * EPS;
+		const Ray shadowRay(srPos, wi, tMax);
+		const bool isInShadow = scene.IsOccluded(shadowRay);
+		if(isInShadow)
 		{
 			continue;
 		}
@@ -496,10 +503,10 @@ float3 Renderer::CalcQuadLight(const QuadLight& light, float3 p, float3 n, float
 	return lSamples / static_cast<float>(qlNumSamples);
 }
 
-float3 Renderer::CalcAllQuadLights(float3 p, float3 n, float3 brdf, uint pixelIndex)
+float3 Renderer::CalcAllQuadLights(const float3& p, const float3& n, const float3& brdf, const uint pixelIndex)
 {
 	float3 l(0);
-	int numQuadLights = static_cast<int>(scene.m_quadLightList.size());
+	const int numQuadLights = static_cast<int>(scene.m_quadLightList.size());
 	for(int i = 0; i < numQuadLights; ++i)
 	{
 		l += CalcQuadLight(scene.m_quadLightList[i], p, n, brdf, pixelIndex);

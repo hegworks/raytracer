@@ -14,19 +14,17 @@ public:
 		m_quad = Quad(1.0f);
 	}
 
-	/// returns a uniform pdf
-	float GetPDF() const
+	float GetArea() const
 	{
-		const float area = sqrf(m_quad.size * 2);
-		return 1.0f / area;
+		return sqrf(m_quad.size * 2);
 	}
 
 	float3 GetRandomPoint(const float r0, const float r1) const
 	{
 		const float size = m_quad.size;
-		float3 corner1 = TransformPosition(float3(-size, 0, -size), m_quad.T);
-		float3 corner2 = TransformPosition(float3(size, 0, -size), m_quad.T);
-		float3 corner3 = TransformPosition(float3(-size, 0, size), m_quad.T);
+		const float3 corner1 = TransformPosition(float3(-size, 0, -size), m_quad.T);
+		const float3 corner2 = TransformPosition(float3(size, 0, -size), m_quad.T);
+		const float3 corner3 = TransformPosition(float3(-size, 0, size), m_quad.T);
 		return corner1 + r0 * (corner2 - corner1) + r1 * (corner3 - corner1);
 	}
 

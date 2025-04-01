@@ -79,7 +79,7 @@ public:
 	std::vector<Texture> m_texturesLoaded;
 
 	std::string GetStrippedFileName() const;
-	int VertexToMeshIdx(uint prim);
+	int VertexToMeshIdx(uint prim) const;
 
 private:
 	void loadModel(std::string path);
@@ -113,13 +113,13 @@ inline std::string Model::GetStrippedFileName() const
 	return result;
 }
 
-inline int Model::VertexToMeshIdx(uint prim)
+inline int Model::VertexToMeshIdx(const uint prim) const
 {
-	int numMeshes = static_cast<int>(m_modelData.m_meshVertexBorderList.size());
+	const int numMeshes = static_cast<int>(m_modelData.m_meshVertexBorderList.size());
 	if(numMeshes == 1) return 0;
 	for(int i = 0; i < numMeshes; ++i)
 	{
-		int borderVertexIdx = m_modelData.m_meshVertexBorderList[i];
+		const int borderVertexIdx = m_modelData.m_meshVertexBorderList[i];
 		if(static_cast<int>(prim) <= borderVertexIdx)
 		{
 			return i;

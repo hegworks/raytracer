@@ -2,9 +2,14 @@
 
 #include "renderer.h"
 
-// -----------------------------------------------------------
-// Update user interface (imgui)
-// -----------------------------------------------------------
+/*
+ * NOTE: this is just debug and settings-related code.
+ * so optimizations and const-correctness are rarely followed in this file.
+ */
+
+ // -----------------------------------------------------------
+ // Update user interface (imgui)
+ // -----------------------------------------------------------
 void Renderer::UI()
 {
 	bool rotChanged = false;

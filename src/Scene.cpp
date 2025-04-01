@@ -29,11 +29,11 @@ Scene::Scene()
 	SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	BuildTlas();
 
-	int each = static_cast<int>(sqrtf(NUMLIGHTS / 2));
+	const int each = static_cast<int>(sqrt(NUMLIGHTS / 2));
 	float3 colors[3] = {float3(1,0,0),float3(0,1,0),float3(0,0,1)};
 	{
 		int numRows = each;
-		int numColumns = each;
+		const int numColumns = each;
 		for(int z = 0; z < numColumns; ++z)
 		{
 			for(int x = 0; x < numRows; ++x)
@@ -41,13 +41,17 @@ Scene::Scene()
 #ifdef SCALAR
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
-				light.m_pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
+				light.m_pos = float3(static_cast<float>(x) * 2 - static_cast<float>(numRows),
+									 1,
+									 static_cast<float>(z) * 2 - static_cast<float>(numRows) / 2);
 				light.m_color = colors[(x + z) % 3];
 				light.m_intensity = 3.0;
 #elif defined(DOD) || defined(SIMD) || defined(AVX)
 				CreatePointLight();
-				float3 pos = float3(x * 2 - numRows, 1, z * 2 - numRows / 2);
-				float3 color = colors[(x + z) % 3];
+				const float3 pos = float3(static_cast<float>(x) * 2 - static_cast<float>(numRows),
+										  1,
+										  static_cast<float>(z) * 2 - static_cast<float>(numRows) / 2);
+				const float3 color = colors[(x + z) % 3];
 				plx[npl - 1] = pos.x;
 				ply[npl - 1] = pos.y;
 				plz[npl - 1] = pos.z;
@@ -61,7 +65,7 @@ Scene::Scene()
 	}
 	{
 		int numRows = each;
-		int numColumns = each;
+		const int numColumns = each;
 		for(int z = 0; z < numColumns; ++z)
 		{
 			for(int x = 0; x < numRows; ++x)
@@ -69,13 +73,17 @@ Scene::Scene()
 #ifdef SCALAR
 				CreatePointLight();
 				PointLight& light = m_pointLightList.back();
-				light.m_pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
+				light.m_pos = float3(static_cast<float>(x) * 2 - static_cast<float>(numRows),
+									 -1,
+									 static_cast<float>(z) * 2 - static_cast<float>(numRows) / 2);
 				light.m_color = colors[(x + z) % 3];
 				light.m_intensity = 3.0;
 #elif defined(DOD) || defined(SIMD) || defined(AVX)
 				CreatePointLight();
-				float3 pos = float3(x * 2 - numRows, -1, z * 2 - numRows / 2);
-				float3 color = colors[(x + z) % 3];
+				const float3 pos = float3(static_cast<float>(x) * 2 - static_cast<float>(numRows),
+										  -1,
+										  static_cast<float>(z) * 2 - static_cast<float>(numRows) / 2);
+				const float3 color = colors[(x + z) % 3];
 				plx[npl - 1] = pos.x;
 				ply[npl - 1] = pos.y;
 				plz[npl - 1] = pos.z;
@@ -322,14 +330,14 @@ void Scene::LoadSkydome()
 
 void Scene::SetBlasTransform(tinybvh::BLASInstance& blas, Transform& t)
 {
-	mat4 mat =
+	const mat4 mat =
 		mat4::Translate(t.m_pos) *
 		t.m_rot.toMatrix() *
 		mat4::Scale(t.m_scl);
+
 	for(int i = 0; i < 16; ++i)
-	{
 		blas.transform[i] = mat.cell[i];
-	}
+
 	t.m_invT = mat.Inverted().Transposed();
 }
 
@@ -338,16 +346,17 @@ void Scene::BuildTlas()
 	m_tlas.Build(m_blasList.data(), static_cast<int>(m_blasList.size()), m_bvhBaseList.data(), static_cast<int>(m_bvhBaseList.size()));
 }
 
-float3 Scene::SampleSky(const Ray& ray)
+float3 Scene::SampleSky(const Ray& ray) const
 {
 	const float u = 0.5f + (atan2f(ray.D.z, ray.D.x) * INV2PI);
 	const float v = 0.5f - (asinf(ray.D.y) * INVPI);
 	const uint x = static_cast<uint>(m_skyWidthF * u);
 	const uint y = static_cast<uint>(m_skyHeightF * v);
 
-
+#ifdef _ENGINE
 	if(useBI) // Bilinear Interpolation
 	{
+#endif
 		const uint skyIdx00 = (x + y * m_skyWidth) % (m_skySize);
 		const uint skyIdx10 = ((x + 1) + y * m_skyWidth) % (m_skySize);
 		const uint skyIdx01 = (x + (y + 1) * m_skyWidth) % (m_skySize);
@@ -361,12 +370,14 @@ float3 Scene::SampleSky(const Ray& ray)
 		const float3 rgbHor = lerp(rgb00, rgb10, uRatio);
 		const float3 rgbVer = lerp(rgb01, rgb11, uRatio);
 		return dbgSDBF * lerp(rgbHor, rgbVer, vRatio);
+#ifdef _ENGINE
 	}
 	else
 	{
 		const uint skyIdx00 = (x + y * m_skyWidth) % (m_skySize);
 		return dbgSDBF * float3(m_skyPixels[skyIdx00 * 3 + 0], m_skyPixels[skyIdx00 * 3 + 1], m_skyPixels[skyIdx00 * 3 + 2]);
 	}
+#endif
 }
 
 Model& Scene::GetModel(const Ray& ray)
@@ -381,7 +392,7 @@ Material& Scene::GetMaterial(const Ray& ray)
 	return model.m_modelData.m_meshMaterialList[matIdx];
 }
 
-float3 Scene::GetAlbedo(const Ray& ray, Model& model)
+float3 Scene::SampleTexture(const Ray& ray, const Model& model)
 {
 	const uint tri = ray.hit.prim * 3;
 	const Model::VertexData& v0 = model.m_modelData.m_vertexDataList[tri + 0];
@@ -400,9 +411,9 @@ float3 Scene::GetAlbedo(const Ray& ray, Model& model)
 	return texel;
 }
 
-Model& Scene::CreateModel(ModelType modelType)
+Model& Scene::CreateModel(const ModelType modelType)
 {
-	for(int i = 0; i < m_modelList.size(); ++i)
+	for(int i = 0; i < static_cast<int>(m_modelList.size()); ++i)
 	{
 		if(m_modelList[i].m_modelData.m_type == modelType)
 		{
@@ -414,15 +425,16 @@ Model& Scene::CreateModel(ModelType modelType)
 	}
 	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType));
 	model.m_modelData.m_type = modelType;
-	int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
+	const int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
 	auto& bvh = m_bvhList.emplace_back();
 	bvh.BuildHQ(model.m_modelData.m_vertices.data(), verticesListSize / 3);
 	m_bvhBaseList.push_back(&bvh);
-	int moddelListSize = static_cast<int>(m_modelList.size());
+	const int moddelListSize = static_cast<int>(m_modelList.size());
 	m_blasList.emplace_back(moddelListSize - 1);
 	m_tranformList.emplace_back();
 	BuildTlas();
 
+	//TODO add #ifdef _ENGINE
 	printf("NumVertices: %llu\n", model.m_modelData.m_vertices.size());
 	printf("NumMeshes: %llu\n", model.m_modelData.m_meshVertexBorderList.size());
 
@@ -435,30 +447,30 @@ void Scene::Intersect(Ray& ray) const
 	m_tlas.Intersect(ray);
 }
 
-bool Scene::IsOccluded(const Ray& ray)
+bool Scene::IsOccluded(const Ray& ray) const
 {
 	if(m_blasList.empty()) return false;
 	return m_tlas.IsOccluded(ray);
 }
 
-float3 Scene::GetSmoothNormal(Ray& ray) const
+float3 Scene::CalcSmoothNormal(const Ray& ray) const
 {
-	float3 n0 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3].m_normal;
-	float3 n1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
-	float3 n2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
-	float w = 1.0f - ray.hit.u - ray.hit.v;
+	const float3 n0 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3].m_normal;
+	const float3 n1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 1].m_normal;
+	const float3 n2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertexDataList[ray.hit.prim * 3 + 2].m_normal;
+	const float w = 1.0f - ray.hit.u - ray.hit.v;
 	float3 n = float3((w * n0) + (ray.hit.u * n1) + (ray.hit.v * n2));
 	n = tinybvh::tinybvh_transform_vector(n, m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT.cell);
 	return normalize(n);
 }
 
-float3 Scene::GetRawNormal(Ray& ray) const
+float3 Scene::CalcRawNormal(const Ray& ray) const
 {
-	float3 p0 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 0];
-	float3 p1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 1];
-	float3 p2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 2];
-	float3 v0 = p1 - p0;
-	float3 v1 = p2 - p0;
+	const float3 p0 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 0];
+	const float3 p1 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 1];
+	const float3 p2 = m_modelList[m_blasList[ray.hit.inst].blasIdx].m_modelData.m_vertices[ray.hit.prim * 3 + 2];
+	const float3 v0 = p1 - p0;
+	const float3 v1 = p2 - p0;
 	float3 n = cross(v0, v1);
 	n = tinybvh::tinybvh_transform_vector(n, m_tranformList[m_blasList[ray.hit.inst].blasIdx].m_invT.cell);
 	return normalize(n);
@@ -475,23 +487,17 @@ void Scene::CreatePointLight()
 
 SpotLight& Scene::CreateSpotLight()
 {
-	m_spotLightList.emplace_back();
-	SpotLight& light = m_spotLightList.back();
-	return light;
+	return m_spotLightList.emplace_back();
 }
 
 DirLight& Scene::CreateDirLight()
 {
-	m_dirLightList.emplace_back();
-	DirLight& light = m_dirLightList.back();
-	return light;
+	return m_dirLightList.emplace_back();
 }
 
 QuadLight& Scene::CreateQuadLight()
 {
-	m_quadLightList.emplace_back();
-	QuadLight& light = m_quadLightList.back();
-	return light;
+	return m_quadLightList.emplace_back();
 }
 
 #ifdef SPHERE_FLAKE

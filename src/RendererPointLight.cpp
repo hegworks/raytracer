@@ -1,7 +1,7 @@
 ﻿#include "precomp.h"
 
 #ifdef SCALAR
-float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcAllPointLightsScalar(const float3& p, const float3& n, const float3& brdf) const
 {
 	PROFILE_FUNCTION();
 
@@ -32,7 +32,7 @@ float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
 		if(falloff < EPS)
 			continue;
 
-#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+#if !defined(SIMD_TEST_SCENE) || (defined(SIMD_TEST_SCENE) && defined(SHADOWRAY))
 		// shadow ray
 		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
 		if(scene.IsOccluded(shadowRay))
@@ -45,40 +45,40 @@ float3 Renderer::CalcAllPointLightsScalar(float3 p, float3 n, float3 brdf)
 	return retVal;
 }
 
-float3 Renderer::CalcStochPointLightsScalar(float3 p, float3 n, float3 brdf, int pixelIndex)
+float3 Renderer::CalcStochPointLightsScalar(const float3& p, const float3& n, const float3& brdf, const int pixelIndex)
 {
 	PROFILE_FUNCTION();
 
 	float3 retVal(0);
 
 	const int numPointLights = static_cast<int>(scene.m_pointLightList.size());
-	const int count = STOCH_SAMPLES;
+	constexpr int count = STOCH_SAMPLES;
 
 	for(int i = 0; i < count; ++i)
 	{
-		uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numPointLights);
+		const uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numPointLights);
 		PointLight& light = scene.m_pointLightList[randIdx];
 
 		// vi: incoming light vector
 		float3 vi = light.m_pos - p;
 
 		// t: distance between shadowRayPos and lightPos
-		float t = length(vi);
+		const float t = length(vi);
 
 		// wi: incoming light direction
 		float3 wi = vi / t;
 
 		// lambert's cosine law
-		float cosi = dot(n, wi);
+		const float cosi = dot(n, wi);
 		if(cosi <= 0)
 			continue;
 
 		// inverse square law
-		float falloff = 1.0f / (t * t);
+		const float falloff = 1.0f / (t * t);
 		if(falloff < EPS)
 			continue;
 
-#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+#if !defined(SIMD_TEST_SCENE) || (defined(SIMD_TEST_SCENE) && defined(SHADOWRAY))
 		// shadow ray
 		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
 		if(scene.IsOccluded(shadowRay))
@@ -93,7 +93,7 @@ float3 Renderer::CalcStochPointLightsScalar(float3 p, float3 n, float3 brdf, int
 #endif
 
 #ifdef DOD
-float3 Renderer::CalcAllPointLightsDOD(float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcAllPointLightsDOD(const float3& p, const float3& n, const float3& brdf) const
 {
 	PROFILE_FUNCTION();
 
@@ -133,7 +133,7 @@ float3 Renderer::CalcAllPointLightsDOD(float3 p, float3 n, float3 brdf)
 		if(falloff < EPS)
 			continue;
 
-#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+#if !defined(SIMD_TEST_SCENE) || (defined(SIMD_TEST_SCENE) && defined(SHADOWRAY))
 		// shadow ray
 		const float3 wi = {wix, wiy, wiz};
 		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
@@ -152,25 +152,25 @@ float3 Renderer::CalcAllPointLightsDOD(float3 p, float3 n, float3 brdf)
 	return retVal;
 }
 
-float3 Renderer::CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pixelIndex)
+float3 Renderer::CalcStochPointLightsDOD(const float3& p, const float3& n, const float3& brdf, const int pixelIndex)
 {
 	PROFILE_FUNCTION();
 
 	float3 retVal(0);
 
 	const int numPointLights = scene.npl;
-	const int count = STOCH_SAMPLES;
+	constexpr int count = STOCH_SAMPLES;
 
 	for(int i = 0; i < count; ++i)
 	{
-		uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numPointLights);
-		uint idx = randIdx;
+		const uint randIdx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numPointLights);
+		const uint idx = randIdx;
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;
-		float vix = scene.plx[idx] - p.x;
-		float viy = scene.ply[idx] - p.y;
-		float viz = scene.plz[idx] - p.z;
+		const float vix = scene.plx[idx] - p.x;
+		const float viy = scene.ply[idx] - p.y;
+		const float viz = scene.plz[idx] - p.z;
 
 		// t: distance between shadowRayPos and lightPos
 		// float t = length(vi);
@@ -178,23 +178,23 @@ float3 Renderer::CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pi
 
 		// wi: incoming light direction
 		// float3 wi = vi / t;
-		float rcp = 1.0f / t;
+		const float rcp = 1.0f / t;
 		float wix = vix * rcp;
 		float wiy = viy * rcp;
 		float wiz = viz * rcp;
 
 		// lambert's cosine law
 		// float cosi = dot(n,wi)
-		float cosi = n.x * wix + n.y * wiy + n.z * wiz;
+		const float cosi = n.x * wix + n.y * wiy + n.z * wiz;
 		if(cosi <= 0)
 			continue;
 
 		// inverse square law
-		float falloff = 1.0f / (t * t);
+		const float falloff = 1.0f / (t * t);
 		if(falloff < EPS)
 			continue;
 
-#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+#if !defined(SIMD_TEST_SCENE) || (defined(SIMD_TEST_SCENE) && defined(SHADOWRAY))
 		// shadow ray
 		const float3 wi = {wix, wiy, wiz};
 		Ray shadowRay(p + wi * EPS, wi, t - EPS * 2.0f);
@@ -203,9 +203,9 @@ float3 Renderer::CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pi
 #endif
 
 		// color with applied brdf
-		float r = brdf.x * scene.plr[idx];
-		float g = brdf.y * scene.plg[idx];
-		float b = brdf.z * scene.plb[idx];
+		const float r = brdf.x * scene.plr[idx];
+		const float g = brdf.y * scene.plg[idx];
+		const float b = brdf.z * scene.plb[idx];
 
 		retVal += float3(r, g, b) * scene.pli[idx] * cosi * falloff;
 	}
@@ -215,23 +215,23 @@ float3 Renderer::CalcStochPointLightsDOD(float3 p, float3 n, float3 brdf, int pi
 #endif
 
 #ifdef SIMD
-float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcAllPointLightsSIMD(const float3& p, const float3& n, const float3& brdf) const
 {
 	PROFILE_FUNCTION();
 
 	float3 retVal(0);
 
-	quadf px4 = {_mm_set_ps1(p.x)};
-	quadf py4 = {_mm_set_ps1(p.y)};
-	quadf pz4 = {_mm_set_ps1(p.z)};
+	const quadf px4 = {_mm_set_ps1(p.x)};
+	const quadf py4 = {_mm_set_ps1(p.y)};
+	const quadf pz4 = {_mm_set_ps1(p.z)};
 
-	__m128 nx4 = _mm_set_ps1(n.x);
-	__m128 ny4 = _mm_set_ps1(n.y);
-	__m128 nz4 = _mm_set_ps1(n.z);
+	const __m128 nx4 = _mm_set_ps1(n.x);
+	const __m128 ny4 = _mm_set_ps1(n.y);
+	const __m128 nz4 = _mm_set_ps1(n.z);
 
-	__m128 brdfx4 = _mm_set_ps1(brdf.x);
-	__m128 brdfy4 = _mm_set_ps1(brdf.y);
-	__m128 brdfz4 = _mm_set_ps1(brdf.z);
+	const __m128 brdfx4 = _mm_set_ps1(brdf.x);
+	const __m128 brdfy4 = _mm_set_ps1(brdf.y);
+	const __m128 brdfz4 = _mm_set_ps1(brdf.z);
 
 	const int count = scene.npl / 4;
 
@@ -241,14 +241,14 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;
-		__m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
-		__m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
-		__m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
+		const __m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
+		const __m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
+		const __m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
 
 
 		// t: distance between shadowRayPos and lightPos
 		// float t = length(vi);
-		quadf t4 =
+		const quadf t4 =
 		{
 			_mm_sqrt_ps
 			(
@@ -266,10 +266,10 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 		// wi: incoming light direction
 		// float3 wi = vi / t;
-		__m128 rcp = _mm_rcp_ps(t4.f4);
-		quadf wix4 = {_mm_mul_ps(vix4, rcp)};
-		quadf wiy4 = {_mm_mul_ps(viy4, rcp)};
-		quadf wiz4 = {_mm_mul_ps(viz4, rcp)};
+		const __m128 rcp = _mm_rcp_ps(t4.f4);
+		const quadf wix4 = {_mm_mul_ps(vix4, rcp)};
+		const quadf wiy4 = {_mm_mul_ps(viy4, rcp)};
+		const quadf wiz4 = {_mm_mul_ps(viz4, rcp)};
 
 
 		// lambert's cosine law
@@ -283,10 +283,9 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 				)
 				, _mm_mul_ps(nz4, wiz4.f4)
 			)};
-		//cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
 		cosi4.f4 = _mm_max_ps(cosi4.f4, _mm_setzero_ps());
 
-#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+#if !defined(SIMD_TEST_SCENE) || (defined(SIMD_TEST_SCENE) && defined(SHADOWRAY))
 		// shadow ray
 		quadf shadowMask = {_mm_set_ps1(1)};
 		{
@@ -326,17 +325,17 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 		// inverse square law
 		//const float falloff = 1.0f / (t * t);
-		__m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
+		const __m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
 
 
 		// color with applied brdf
-		__m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
-		__m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
-		__m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
+		const __m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
+		const __m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
+		const __m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
 
 
 		// cosi * falloff * intensity
-		__m128 effect4 =
+		const __m128 effect4 =
 			_mm_mul_ps
 			(
 				_mm_mul_ps(scene.pli4[idx], cosi4.f4)
@@ -345,14 +344,14 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 
 
 		// effect4 * rbg4
-		quadf lr4 = {_mm_mul_ps(r4, effect4)};
-		quadf lg4 = {_mm_mul_ps(g4, effect4)};
-		quadf lb4 = {_mm_mul_ps(b4, effect4)};
+		const quadf lr4 = {_mm_mul_ps(r4, effect4)};
+		const quadf lg4 = {_mm_mul_ps(g4, effect4)};
+		const quadf lb4 = {_mm_mul_ps(b4, effect4)};
 
 
-		float r = hsum_ps_sse3(lr4.f4);
-		float g = hsum_ps_sse3(lg4.f4);
-		float b = hsum_ps_sse3(lb4.f4);
+		const float r = hsum_ps_sse3(lr4.f4);
+		const float g = hsum_ps_sse3(lg4.f4);
+		const float b = hsum_ps_sse3(lb4.f4);
 
 		retVal += float3(r, g, b);
 	}
@@ -360,23 +359,23 @@ float3 Renderer::CalcAllPointLightsSIMD(float3 p, float3 n, float3 brdf)
 	return retVal;
 }
 
-float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int pixelIndex)
+float3 Renderer::CalcStochPointLightsSIMD(const float3& p, const float3& n, const float3& brdf, int pixelIndex)
 {
 	PROFILE_FUNCTION();
 
 	float3 retVal(0);
 
-	quadf px4 = {_mm_set_ps1(p.x)};
-	quadf py4 = {_mm_set_ps1(p.y)};
-	quadf pz4 = {_mm_set_ps1(p.z)};
+	const quadf px4 = {_mm_set_ps1(p.x)};
+	const quadf py4 = {_mm_set_ps1(p.y)};
+	const quadf pz4 = {_mm_set_ps1(p.z)};
 
-	__m128 nx4 = _mm_set_ps1(n.x);
-	__m128 ny4 = _mm_set_ps1(n.y);
-	__m128 nz4 = _mm_set_ps1(n.z);
+	const __m128 nx4 = _mm_set_ps1(n.x);
+	const __m128 ny4 = _mm_set_ps1(n.y);
+	const __m128 nz4 = _mm_set_ps1(n.z);
 
-	__m128 brdfx4 = _mm_set_ps1(brdf.x);
-	__m128 brdfy4 = _mm_set_ps1(brdf.y);
-	__m128 brdfz4 = _mm_set_ps1(brdf.z);
+	const __m128 brdfx4 = _mm_set_ps1(brdf.x);
+	const __m128 brdfy4 = _mm_set_ps1(brdf.y);
+	const __m128 brdfz4 = _mm_set_ps1(brdf.z);
 
 	const int numPointLights = scene.npl / 4;
 	const int count = STOCH_SAMPLES / 4;
@@ -388,14 +387,14 @@ float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int p
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;
-		__m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
-		__m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
-		__m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
+		const __m128 vix4 = _mm_sub_ps(scene.plx4[idx], px4.f4);
+		const __m128 viy4 = _mm_sub_ps(scene.ply4[idx], py4.f4);
+		const __m128 viz4 = _mm_sub_ps(scene.plz4[idx], pz4.f4);
 
 
 		// t: distance between shadowRayPos and lightPos
 		// float t = length(vi);
-		quadf t4 =
+		const quadf t4 =
 		{
 			_mm_sqrt_ps
 			(
@@ -413,10 +412,10 @@ float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int p
 
 		// wi: incoming light direction
 		// float3 wi = vi / t;
-		__m128 rcp = _mm_rcp_ps(t4.f4);
-		quadf wix4 = {_mm_mul_ps(vix4, rcp)};
-		quadf wiy4 = {_mm_mul_ps(viy4, rcp)};
-		quadf wiz4 = {_mm_mul_ps(viz4, rcp)};
+		const __m128 rcp = _mm_rcp_ps(t4.f4);
+		const quadf wix4 = {_mm_mul_ps(vix4, rcp)};
+		const quadf wiy4 = {_mm_mul_ps(viy4, rcp)};
+		const quadf wiz4 = {_mm_mul_ps(viz4, rcp)};
 
 
 		// lambert's cosine law
@@ -433,7 +432,7 @@ float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int p
 		//cosi4.f4 = _mm_andnot_ps(_mm_cmple_ps(cosi4.f4, _mm_setzero_ps()), cosi4.f4);
 		cosi4.f4 = _mm_max_ps(cosi4.f4, _mm_setzero_ps());
 
-#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+#if !defined(SIMD_TEST_SCENE) || (defined(SIMD_TEST_SCENE) && defined(SHADOWRAY))
 		// shadow ray
 		quadf shadowMask = {_mm_set_ps1(1)};
 		{
@@ -473,17 +472,17 @@ float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int p
 
 		// inverse square law
 		//const float falloff = 1.0f / (t * t);
-		__m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
+		const __m128 falloff4 = _mm_rcp_ps(_mm_mul_ps(t4.f4, t4.f4));
 
 
 		// color with applied brdf
-		__m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
-		__m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
-		__m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
+		const __m128 r4 = _mm_mul_ps(brdfx4, scene.plr4[idx]);
+		const __m128 g4 = _mm_mul_ps(brdfy4, scene.plg4[idx]);
+		const __m128 b4 = _mm_mul_ps(brdfz4, scene.plb4[idx]);
 
 
 		// cosi * falloff * intensity
-		__m128 effect4 =
+		const __m128 effect4 =
 			_mm_mul_ps
 			(
 				_mm_mul_ps(scene.pli4[idx], cosi4.f4)
@@ -492,14 +491,14 @@ float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int p
 
 
 		// effect4 * rbg4
-		quadf lr4 = {_mm_mul_ps(r4, effect4)};
-		quadf lg4 = {_mm_mul_ps(g4, effect4)};
-		quadf lb4 = {_mm_mul_ps(b4, effect4)};
+		const quadf lr4 = {_mm_mul_ps(r4, effect4)};
+		const quadf lg4 = {_mm_mul_ps(g4, effect4)};
+		const quadf lb4 = {_mm_mul_ps(b4, effect4)};
 
 
-		float r = hsum_ps_sse3(lr4.f4);
-		float g = hsum_ps_sse3(lg4.f4);
-		float b = hsum_ps_sse3(lb4.f4);
+		const float r = hsum_ps_sse3(lr4.f4);
+		const float g = hsum_ps_sse3(lg4.f4);
+		const float b = hsum_ps_sse3(lb4.f4);
 
 		retVal += float3(r, g, b);
 	}
@@ -509,25 +508,24 @@ float3 Renderer::CalcStochPointLightsSIMD(float3 p, float3 n, float3 brdf, int p
 
 #endif
 
-
 #ifdef AVX
-float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
+float3 Renderer::CalcAllPointLightsAVX(const float3& p, const float3& n, const float3& brdf) const
 {
 	PROFILE_FUNCTION();
 
 	float3 retVal(0);
 
-	octf px8 = {_mm256_set1_ps(p.x)};
-	octf py8 = {_mm256_set1_ps(p.y)};
-	octf pz8 = {_mm256_set1_ps(p.z)};
+	const octf px8 = {_mm256_set1_ps(p.x)};
+	const octf py8 = {_mm256_set1_ps(p.y)};
+	const octf pz8 = {_mm256_set1_ps(p.z)};
 
-	__m256 nx8 = _mm256_set1_ps(n.x);
-	__m256 ny8 = _mm256_set1_ps(n.y);
-	__m256 nz8 = _mm256_set1_ps(n.z);
+	const __m256 nx8 = _mm256_set1_ps(n.x);
+	const __m256 ny8 = _mm256_set1_ps(n.y);
+	const __m256 nz8 = _mm256_set1_ps(n.z);
 
-	__m256 brdfx8 = _mm256_set1_ps(brdf.x);
-	__m256 brdfy8 = _mm256_set1_ps(brdf.y);
-	__m256 brdfz8 = _mm256_set1_ps(brdf.z);
+	const __m256 brdfx8 = _mm256_set1_ps(brdf.x);
+	const __m256 brdfy8 = _mm256_set1_ps(brdf.y);
+	const __m256 brdfz8 = _mm256_set1_ps(brdf.z);
 
 	const int count = scene.npl / 8;
 
@@ -537,14 +535,14 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;
-		__m256 vix8 = _mm256_sub_ps(scene.plx8[idx], px8.f8);
-		__m256 viy8 = _mm256_sub_ps(scene.ply8[idx], py8.f8);
-		__m256 viz8 = _mm256_sub_ps(scene.plz8[idx], pz8.f8);
+		const __m256 vix8 = _mm256_sub_ps(scene.plx8[idx], px8.f8);
+		const __m256 viy8 = _mm256_sub_ps(scene.ply8[idx], py8.f8);
+		const __m256 viz8 = _mm256_sub_ps(scene.plz8[idx], pz8.f8);
 
 
 		// t: distance between shadowRayPos and lightPos
 		// float t = length(vi);
-		octf t8 =
+		const octf t8 =
 		{
 			_mm256_sqrt_ps
 			(
@@ -562,10 +560,10 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 
 		// wi: incoming light direction
 		// float3 wi = vi / t;
-		__m256 rcp = _mm256_rcp_ps(t8.f8);
-		octf wix8 = {_mm256_mul_ps(vix8, rcp)};
-		octf wiy8 = {_mm256_mul_ps(viy8, rcp)};
-		octf wiz8 = {_mm256_mul_ps(viz8, rcp)};
+		const __m256 rcp = _mm256_rcp_ps(t8.f8);
+		const octf wix8 = {_mm256_mul_ps(vix8, rcp)};
+		const octf wiy8 = {_mm256_mul_ps(viy8, rcp)};
+		const octf wiz8 = {_mm256_mul_ps(viz8, rcp)};
 
 
 		// lambert's cosine law
@@ -581,7 +579,7 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 			)};
 		cosi8.f8 = _mm256_max_ps(cosi8.f8, _mm256_setzero_ps());
 
-#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+#if !defined(SIMD_TEST_SCENE) || (defined(SIMD_TEST_SCENE) && defined(SHADOWRAY))
 		// shadow ray
 		octf shadowMask = {_mm256_set1_ps(1)};
 		if(cosi8.f[0] > 0)
@@ -637,17 +635,17 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 
 		// inverse square law
 		//const float falloff = 1.0f / (t * t);
-		__m256 falloff8 = _mm256_rcp_ps(_mm256_mul_ps(t8.f8, t8.f8));
+		const __m256 falloff8 = _mm256_rcp_ps(_mm256_mul_ps(t8.f8, t8.f8));
 
 
 		// color with applied brdf
-		__m256 r8 = _mm256_mul_ps(brdfx8, scene.plr8[idx]);
-		__m256 g8 = _mm256_mul_ps(brdfy8, scene.plg8[idx]);
-		__m256 b8 = _mm256_mul_ps(brdfz8, scene.plb8[idx]);
+		const __m256 r8 = _mm256_mul_ps(brdfx8, scene.plr8[idx]);
+		const __m256 g8 = _mm256_mul_ps(brdfy8, scene.plg8[idx]);
+		const __m256 b8 = _mm256_mul_ps(brdfz8, scene.plb8[idx]);
 
 
 		// cosi * falloff * intensity
-		__m256 effect8 =
+		const __m256 effect8 =
 			_mm256_mul_ps
 			(
 				_mm256_mul_ps(scene.pli8[idx], cosi8.f8)
@@ -656,14 +654,14 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 
 
 		// effect8 * rbg8
-		octf lr8 = {_mm256_mul_ps(r8, effect8)};
-		octf lg8 = {_mm256_mul_ps(g8, effect8)};
-		octf lb8 = {_mm256_mul_ps(b8, effect8)};
+		const octf lr8 = {_mm256_mul_ps(r8, effect8)};
+		const octf lg8 = {_mm256_mul_ps(g8, effect8)};
+		const octf lb8 = {_mm256_mul_ps(b8, effect8)};
 
 
-		float r = hsum256_ps_avx(lr8.f8);
-		float g = hsum256_ps_avx(lg8.f8);
-		float b = hsum256_ps_avx(lb8.f8);
+		const float r = hsum256_ps_avx(lr8.f8);
+		const float g = hsum256_ps_avx(lg8.f8);
+		const float b = hsum256_ps_avx(lb8.f8);
 
 		retVal += float3(r, g, b);
 	}
@@ -671,26 +669,26 @@ float3 Renderer::CalcAllPointLightsAVX(float3 p, float3 n, float3 brdf)
 	return retVal;
 }
 
-float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pixelIndex)
+float3 Renderer::CalcStochPointLightsAVX(const float3& p, const float3& n, const float3& brdf, int pixelIndex)
 {
 	PROFILE_FUNCTION();
 
 	float3 retVal(0);
 
-	octf px8 = {_mm256_set1_ps(p.x)};
-	octf py8 = {_mm256_set1_ps(p.y)};
-	octf pz8 = {_mm256_set1_ps(p.z)};
+	const octf px8 = {_mm256_set1_ps(p.x)};
+	const octf py8 = {_mm256_set1_ps(p.y)};
+	const octf pz8 = {_mm256_set1_ps(p.z)};
 
-	__m256 nx8 = _mm256_set1_ps(n.x);
-	__m256 ny8 = _mm256_set1_ps(n.y);
-	__m256 nz8 = _mm256_set1_ps(n.z);
+	const __m256 nx8 = _mm256_set1_ps(n.x);
+	const __m256 ny8 = _mm256_set1_ps(n.y);
+	const __m256 nz8 = _mm256_set1_ps(n.z);
 
-	__m256 brdfx8 = _mm256_set1_ps(brdf.x);
-	__m256 brdfy8 = _mm256_set1_ps(brdf.y);
-	__m256 brdfz8 = _mm256_set1_ps(brdf.z);
+	const __m256 brdfx8 = _mm256_set1_ps(brdf.x);
+	const __m256 brdfy8 = _mm256_set1_ps(brdf.y);
+	const __m256 brdfz8 = _mm256_set1_ps(brdf.z);
 
 	const int numPointLights = scene.npl / 8;
-	const int count = STOCH_SAMPLES / 8;
+	constexpr int count = STOCH_SAMPLES / 8;
 	uint idx = threadRng.RandomUInt(pixelSeeds[pixelIndex], 0, numPointLights);
 
 	for(int i = 0; i < count; ++i)
@@ -699,14 +697,14 @@ float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pi
 
 		// vi: incoming light vector
 		// float3 vi = light.m_pos - p;
-		__m256 vix8 = _mm256_sub_ps(scene.plx8[idx], px8.f8);
-		__m256 viy8 = _mm256_sub_ps(scene.ply8[idx], py8.f8);
-		__m256 viz8 = _mm256_sub_ps(scene.plz8[idx], pz8.f8);
+		const __m256 vix8 = _mm256_sub_ps(scene.plx8[idx], px8.f8);
+		const __m256 viy8 = _mm256_sub_ps(scene.ply8[idx], py8.f8);
+		const __m256 viz8 = _mm256_sub_ps(scene.plz8[idx], pz8.f8);
 
 
 		// t: distance between shadowRayPos and lightPos
 		// float t = length(vi);
-		octf t8 =
+		const octf t8 =
 		{
 			_mm256_sqrt_ps
 			(
@@ -724,10 +722,10 @@ float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pi
 
 		// wi: incoming light direction
 		// float3 wi = vi / t;
-		__m256 rcp = _mm256_rcp_ps(t8.f8);
-		octf wix8 = {_mm256_mul_ps(vix8, rcp)};
-		octf wiy8 = {_mm256_mul_ps(viy8, rcp)};
-		octf wiz8 = {_mm256_mul_ps(viz8, rcp)};
+		const __m256 rcp = _mm256_rcp_ps(t8.f8);
+		const octf wix8 = {_mm256_mul_ps(vix8, rcp)};
+		const octf wiy8 = {_mm256_mul_ps(viy8, rcp)};
+		const octf wiz8 = {_mm256_mul_ps(viz8, rcp)};
 
 
 		// lambert's cosine law
@@ -743,7 +741,7 @@ float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pi
 			)};
 		cosi8.f8 = _mm256_max_ps(cosi8.f8, _mm256_setzero_ps());
 
-#if defined(SIMD_TEST_SCENE) && defined(SHADOWRAY)
+#if !defined(SIMD_TEST_SCENE) || (defined(SIMD_TEST_SCENE) && defined(SHADOWRAY))
 		// shadow ray
 		octf shadowMask = {_mm256_set1_ps(1)};
 		if(cosi8.f[0] > 0)
@@ -799,17 +797,17 @@ float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pi
 
 		// inverse square law
 		//const float falloff = 1.0f / (t * t);
-		__m256 falloff8 = _mm256_rcp_ps(_mm256_mul_ps(t8.f8, t8.f8));
+		const __m256 falloff8 = _mm256_rcp_ps(_mm256_mul_ps(t8.f8, t8.f8));
 
 
 		// color with applied brdf
-		__m256 r8 = _mm256_mul_ps(brdfx8, scene.plr8[idx]);
-		__m256 g8 = _mm256_mul_ps(brdfy8, scene.plg8[idx]);
-		__m256 b8 = _mm256_mul_ps(brdfz8, scene.plb8[idx]);
+		const __m256 r8 = _mm256_mul_ps(brdfx8, scene.plr8[idx]);
+		const __m256 g8 = _mm256_mul_ps(brdfy8, scene.plg8[idx]);
+		const __m256 b8 = _mm256_mul_ps(brdfz8, scene.plb8[idx]);
 
 
 		// cosi * falloff * intensity
-		__m256 effect8 =
+		const __m256 effect8 =
 			_mm256_mul_ps
 			(
 				_mm256_mul_ps(scene.pli8[idx], cosi8.f8)
@@ -818,14 +816,14 @@ float3 Renderer::CalcStochPointLightsAVX(float3 p, float3 n, float3 brdf, int pi
 
 
 		// effect8 * rbg8
-		octf lr8 = {_mm256_mul_ps(r8, effect8)};
-		octf lg8 = {_mm256_mul_ps(g8, effect8)};
-		octf lb8 = {_mm256_mul_ps(b8, effect8)};
+		const octf lr8 = {_mm256_mul_ps(r8, effect8)};
+		const octf lg8 = {_mm256_mul_ps(g8, effect8)};
+		const octf lb8 = {_mm256_mul_ps(b8, effect8)};
 
 
-		float r = hsum256_ps_avx(lr8.f8);
-		float g = hsum256_ps_avx(lg8.f8);
-		float b = hsum256_ps_avx(lb8.f8);
+		const float r = hsum256_ps_avx(lr8.f8);
+		const float g = hsum256_ps_avx(lg8.f8);
+		const float b = hsum256_ps_avx(lb8.f8);
 
 		retVal += float3(r, g, b);
 	}

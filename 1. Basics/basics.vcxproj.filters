@@ -46,6 +46,9 @@
     <ClCompile Include="..\src\RendererPointLight.cpp">
       <Filter>Src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\RendererGame.cpp">
+      <Filter>Src\_Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
@@ -168,6 +171,9 @@
     </Filter>
     <Filter Include="Src\Tools">
       <UniqueIdentifier>{1e52af11-38c4-4b13-9986-ede5e8ea44d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\_Game">
+      <UniqueIdentifier>{8a7e5639-7fb9-400b-932e-19f2e9e1d044}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
