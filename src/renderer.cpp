@@ -165,7 +165,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	{
 		case Material::Type::DIFFUSE:
 		{
-			l += CalcLights(ray, p, n, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			l += CalcLights(ray, p, n, brdf, pixelIndex);
 			break;
 		}
 		case Material::Type::GLOSSY:
@@ -256,7 +256,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 
 			float3 finalTrace = finalMatColor * Trace(finalRay, pixelIndex, depth + 1, tddIsPixelX, tddIsPixelY);
 
-			float3 directLight = CalcLights(ray, p, n, brdf, pixelIndex, tddIsPixelX, tddIsPixelY, tddIsCameraY);
+			float3 directLight = CalcLights(ray, p, n, brdf, pixelIndex);
 
 			l += finalTrace + directLight;
 
@@ -285,7 +285,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	}
 }
 
-float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex, bool isTddPixelX, bool isTddPixelY, bool isTddCameraY)
+float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex)
 {
 #ifdef STOCH
 	int numSamples = STOCH_SAMPLES;

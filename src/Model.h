@@ -14,7 +14,7 @@
 
 struct Texture
 {
-	size_t m_surfaceIndex;
+	int m_surfaceIndex;
 	std::string m_type;
 	aiString m_path;
 };
@@ -22,13 +22,12 @@ struct Texture
 class Model
 {
 public:
-	Model(std::string const& path, float2 textureCoordScale = float2(1), bool shouldVerticallyFlipTexture = false)
+	Model(std::string const& path, float2 textureCoordScale = float2(1))
 	{
 		//stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 		m_textureCoordScale = textureCoordScale;
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
-		m_modelData.m_initialized = true;
 		size_t pos = path.find_last_of("/\\");
 		m_fileName = (pos != std::string::npos) ? path.substr(pos + 1) : path;
 	}
@@ -60,11 +59,10 @@ public:
 		std::vector<VertexData> m_vertexDataList;
 		std::vector<float4> m_vertices;
 		ModelType m_type;
-		bool m_initialized = false;
 #ifdef _DEBUG
-		char dummy[30];
+		char dummy[31];
 #else
-		char dummy[6];
+		char dummy[23];
 #endif
 	};
 
@@ -117,12 +115,12 @@ inline std::string Model::GetStrippedFileName() const
 
 inline int Model::VertexToMeshIdx(uint prim)
 {
-	uint numMeshes = static_cast<int>(m_modelData.m_meshVertexBorderList.size());
+	int numMeshes = static_cast<int>(m_modelData.m_meshVertexBorderList.size());
 	if(numMeshes == 1) return 0;
 	for(int i = 0; i < numMeshes; ++i)
 	{
 		int borderVertexIdx = m_modelData.m_meshVertexBorderList[i];
-		if(prim <= borderVertexIdx)
+		if(static_cast<int>(prim) <= borderVertexIdx)
 		{
 			return i;
 		}
@@ -228,7 +226,7 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 			}
 			texture.m_type = typeName;
 			texture.m_path = str.C_Str();
-			texture.m_surfaceIndex = m_modelData.m_surfaceList.size() - 1;
+			texture.m_surfaceIndex = static_cast<int>(m_modelData.m_surfaceList.size()) - 1;
 			textures.push_back(texture);
 			m_texturesLoaded.push_back(texture);
 			m_modelData.m_surfaceIndexList.emplace_back(texture.m_surfaceIndex);

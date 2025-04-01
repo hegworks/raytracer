@@ -263,7 +263,7 @@ void Renderer::UI()
 			}
 
 #ifdef SCALAR
-			int numPointLights = scene.m_pointLightList.size();
+			int numPointLights = static_cast<int>(scene.m_pointLightList.size());
 #elif defined(DOD) || defined(SIMD) || defined(AVX)
 			int numPointLights = scene.npl;
 #endif
