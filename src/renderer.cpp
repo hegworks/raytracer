@@ -29,7 +29,9 @@ void Renderer::Init()
 	acmCounter = 1;
 
 #ifdef _GAME
-	m_gameManager.Init(&scene);
+	m_gameManager.Init(&scene, this);
+	useACM = true;
+	useAA = true;
 #endif
 
 	/*QuadLight& ql = scene.CreateQuadLight();
@@ -549,6 +551,8 @@ void Renderer::MouseMove(int x, int y)
 	windowCoordF = windowCoord;
 	screenCoordF = windowCoordF * INV_SCRSCALE;
 	screenCoord = {static_cast<int>(screenCoordF.x),static_cast<int>(screenCoordF.y)};
+
+	m_gameManager.OnMouseMove(windowCoordF, windowCoord, screenCoordF, screenCoord);
 }
 
 void Renderer::MouseUp(const int button)

@@ -2,6 +2,8 @@
 
 #include <common.h>
 
+#include "GameEngineMediator.h"
+
 #ifdef _GAME
 void Renderer::Tick(const float deltaTime)
 {
@@ -44,10 +46,13 @@ void Renderer::Tick(const float deltaTime)
 
 	const bool cameraChanged = camera.HandleInput(deltaTime);
 	const bool objectRotationChanged = HandleKeyboardRotations(deltaTime);
-	if(cameraChanged || objectRotationChanged || !useACM)
+	if(cameraChanged || objectRotationChanged || resetAccumulator || !useACM)
 	{
 		memset(accumulator, 0, SCRSIZE * 16);
 		acmCounter = 1;
+		resetAccumulator = false;
 	}
+
+	m_gameManager.Tick(deltaTime);
 }
 #endif

@@ -24,7 +24,7 @@ public:
 	void MouseWheel([[maybe_unused]] float y) { /* implement if you want to handle the mouse wheel */ }
 	void KeyUp([[maybe_unused]] int key) { /* implement if you want to handle keys */ }
 	void KeyDown(int key);
-	void RotateAroundWorldAxis(Transform& transform, const float3& worldAxis, float angleRadians);
+	static void RotateAroundWorldAxis(Transform& transform, const float3& worldAxis, float angleRadians);
 
 #ifdef SCALAR
 	float3 CalcAllPointLightsScalar(const float3& p, const float3& n, const float3& brdf) const;
@@ -58,7 +58,7 @@ public:
 	float4* illuminations;
 	int hoveredInst = -1;
 	Camera camera;
-	bool animating = false;
+	bool resetAccumulator = false;
 	float anim_time = 0;
 	int ndal = 3; // normal, distance, albedo, light
 	uint pixelSeeds[SCRSIZE];
