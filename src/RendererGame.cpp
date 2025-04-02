@@ -42,8 +42,9 @@ void Renderer::Tick(const float deltaTime)
 	dfps = fps, drps = rps, davg = avg;
 	//printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps);
 
-	// handle user input
-	if(camera.HandleInput(deltaTime) || !useACM)
+	const bool cameraChanged = camera.HandleInput(deltaTime);
+	const bool objectRotationChanged = HandleKeyboardRotations(deltaTime);
+	if(cameraChanged || objectRotationChanged || !useACM)
 	{
 		memset(accumulator, 0, SCRSIZE * 16);
 		acmCounter = 1;

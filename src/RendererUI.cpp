@@ -12,20 +12,6 @@
  // -----------------------------------------------------------
 void Renderer::UI()
 {
-	bool rotChanged = false;
-	if(IsKeyDown(GLFW_KEY_U)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(1, 0, 0), 0.1f), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_I)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 1, 0), 0.1f), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_O)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 0, 1), 0.1f), rotChanged = true;
-
-	if(IsKeyDown(GLFW_KEY_J)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(1, 0, 0), -0.1f), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_K)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 1, 0), -0.1f), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_L)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 0, 1), -0.1f), rotChanged = true;
-	if(rotChanged)
-	{
-		scene.SetBlasTransform(scene.m_blasList[selectedIdx], scene.m_tranformList[selectedIdx]);
-		scene.BuildTlas();
-	}
-
 	ImGui::End();
 
 	ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH - 300, 0));
@@ -70,44 +56,53 @@ void Renderer::UI()
 		}
 
 		// ray query on mouse
-		float2 coordf = isDbgPixel ? dbgpixel : mousePos;
-		bool isInScreen = coordf.x >= 0 && coordf.x < WINDOWWIDTH && coordf.y >= 0 && coordf.y < WINDOWHEIGHT;
-		coordf *= INV_SCRSCALE;
-		int2 coord = {static_cast<int>(coordf.x),static_cast<int>(coordf.y)};
+		windowCoordF = isDbgPixel ? dbgpixel : windowCoordF;
+		bool isInWindow = windowCoordF.x >= 0 && windowCoordF.x < WINDOWWIDTH && windowCoordF.y >= 0 && windowCoordF.y < WINDOWHEIGHT;
 		uint pixel = 0xFF00FF, red = 0xFFFFFF, green = 0xFFFFFF, blue = 0xFFFFFF;
 		float pixelLength = 0.0f;
-		if(isInScreen)
+		if(isInWindow)
 		{
-			float4 illum = illuminations[coord.x + coord.y * SCRWIDTH];
+			float4 illum = illuminations[screenCoord.x + screenCoord.y * SCRWIDTH];
 			pixelLength = length(float3(illum.x, illum.y, illum.z));
-			pixel = screen->pixels[coord.x + coord.y * SCRWIDTH];
+			pixel = screen->pixels[screenCoord.x + screenCoord.y * SCRWIDTH];
 			red = (pixel & 0xFF0000) >> 16;
 			green = (pixel & 0x00FF00) >> 8;
 			blue = pixel & 0x0000FF;
 		}
-		Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, 0);
+		Ray r = camera.GetPrimaryRay(screenCoordF.x, screenCoordF.y, 0);
 		scene.Intersect(r);
-		ImVec4 color = isInScreen ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+		ImVec4 color = isInWindow ? ImVec4(red / 255.0f, green / 255.0f, blue / 255.0f, 1.0f) : ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
 		bool hit = r.hit.t < BVH_FAR;
-		int inst = hit ? r.hit.inst : -1;
-		int blasIdx = hit ? scene.m_blasList[inst].blasIdx : -1;
+		hoveredInst = hit ? r.hit.inst : -1;
+		int blasIdx = hit ? scene.m_blasList[hoveredInst].blasIdx : -1;
 		//int prim = hit ? r.hit.prim : -1; // unused
 		int tri = hit ? r.hit.prim * 3 : -1;
 		int mesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
 
-		if(ImGui::BeginTable("PerformanceTable", 4, ImGuiTableFlags_Borders))
+		if(ImGui::BeginTable("CoordTable", 2, ImGuiTableFlags_Borders))
+		{
+			ImGui::TableSetupColumn("screen coord");
+			ImGui::TableSetupColumn("window coord");
+			ImGui::TableHeadersRow();
+
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0); ImGui::Text("%i,%i", screenCoord.x, screenCoord.y);
+			ImGui::TableSetColumnIndex(1); ImGui::Text("%i,%i", windowCoord.x, windowCoord.y);
+
+			ImGui::EndTable();
+		}
+
+		if(ImGui::BeginTable("ObjectTable", 3, ImGuiTableFlags_Borders))
 		{
 			ImGui::TableSetupColumn("selected");
-			ImGui::TableSetupColumn("coord");
 			ImGui::TableSetupColumn("inst");
 			ImGui::TableSetupColumn("mesh");
 			ImGui::TableHeadersRow();
 
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0); ImGui::Text("%i", selectedIdx);
-			ImGui::TableSetColumnIndex(1); ImGui::Text("%i,%i", coord.x, coord.y);
-			ImGui::TableSetColumnIndex(2); ImGui::Text("%i", inst);
-			ImGui::TableSetColumnIndex(3); ImGui::Text("%i", mesh);
+			ImGui::TableSetColumnIndex(1); ImGui::Text("%i", hoveredInst);
+			ImGui::TableSetColumnIndex(2); ImGui::Text("%i", mesh);
 
 			ImGui::EndTable();
 		}
@@ -552,58 +547,3 @@ void Renderer::UI()
 	}
 }
 
-void Renderer::MouseDown(int button)
-{
-	if(isDbgPixel && !isDbgPixelClicked)
-	{
-		if(button == GLFW_MOUSE_BUTTON_LEFT)
-		{
-			isDbgPixelClicked = true;
-		}
-	}
-	else
-	{
-		if(button == GLFW_MOUSE_BUTTON_LEFT)
-		{
-			int2 coord = mousePos;
-			bool isInScreen = coord.x >= 0 && coord.x < SCRWIDTH && coord.y >= 0 && coord.y < SCRHEIGHT;
-			if(!isInScreen) return;
-			Ray r = camera.GetPrimaryRay((float)coord.x, (float)coord.y, 0);
-			scene.Intersect(r);
-			bool hit = r.hit.t < BVH_FAR;
-			if(hit)
-			{
-				selectedIdx = r.hit.inst;
-			}
-		}
-	}
-}
-
-void Renderer::KeyDown(int key)
-{
-	if(isDbgPixel && isDbgPixelClicked)
-	{
-		if(key == GLFW_KEY_UP) dbgpixel.y = dbgpixel.y == 0 ? 0 : dbgpixel.y - 1;
-		if(key == GLFW_KEY_DOWN) dbgpixel.y = dbgpixel.y == SCRHEIGHT - 1 ? SCRHEIGHT - 1 : dbgpixel.y + 1;
-		if(key == GLFW_KEY_LEFT) dbgpixel.x = dbgpixel.x == 0 ? 0 : dbgpixel.x - 1;
-		if(key == GLFW_KEY_RIGHT) dbgpixel.x = dbgpixel.x == SCRWIDTH - 1 ? SCRWIDTH - 1 : dbgpixel.x + 1;
-
-		if(key == GLFW_KEY_ENTER)
-		{
-			dbgpixel =
-			{
-				static_cast<int>(static_cast<float>(dbgpixel.x) * INV_SCRSCALE),
-				static_cast<int>(static_cast<float>(dbgpixel.y) * INV_SCRSCALE)
-			};
-			printf("DBG PIXEL AT %i,%i\n", dbgpixel.x, dbgpixel.y);
-			isDbgPixelEntered = true;
-		}
-	}
-}
-
-void Renderer::RotateAroundWorldAxis(Transform& transform, const float3& worldAxis, float angleRadians)
-{
-	quat worldRotation = quat::FromAxisAngle(worldAxis, angleRadians);
-	transform.m_rot = worldRotation * transform.m_rot;
-	transform.m_rotAngles += worldAxis * RAD_TO_DEG(angleRadians);
-}

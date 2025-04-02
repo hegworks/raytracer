@@ -14,12 +14,13 @@ public:
 	void Init();
 	float3 Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bool tddIsPixelY);
 	void Tick(float deltaTime);
+	bool HandleKeyboardRotations(float deltaTime);
 	void UI();
 	void Shutdown() { /* implement if you want to do things on shutdown */ }
 	// input handling
-	void MouseUp([[maybe_unused]] int button) { /* implement if you want to detect mouse button presses */ }
+	void MouseUp(int button);
 	void MouseDown(int button);
-	void MouseMove(int x, int y) { mousePos.x = x, mousePos.y = y; }
+	void MouseMove(int x, int y);
 	void MouseWheel([[maybe_unused]] float y) { /* implement if you want to handle the mouse wheel */ }
 	void KeyUp([[maybe_unused]] int key) { /* implement if you want to handle keys */ }
 	void KeyDown(int key);
@@ -49,8 +50,13 @@ public:
 
 	// data members
 	int2 mousePos;
+	float2 windowCoordF;
+	int2 windowCoord;
+	float2 screenCoordF;
+	int2 screenCoord;
 	float4* accumulator;
 	float4* illuminations;
+	int hoveredInst = -1;
 	Camera camera;
 	bool animating = false;
 	float anim_time = 0;

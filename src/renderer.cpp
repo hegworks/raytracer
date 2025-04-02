@@ -120,8 +120,10 @@ void Renderer::Tick(const float deltaTime)
 	float fps = 1000.0f / avg, rps = (SCRSIZE) / (avg * 1000);
 	dfps = fps, drps = rps, davg = avg;
 	//printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps);
-	// handle user input
-	if(camera.HandleInput(deltaTime) || !useACM)
+
+	const bool cameraChanged = camera.HandleInput(deltaTime);
+	const bool objectRotationChanged = HandleKeyboardRotations(deltaTime);
+	if(cameraChanged || objectRotationChanged || !useACM)
 	{
 		memset(accumulator, 0, SCRSIZE * 16);
 		acmCounter = 1;
@@ -516,4 +518,89 @@ float3 Renderer::CalcAllQuadLights(const float3& p, const float3& n, const float
 		l += CalcQuadLight(scene.m_quadLightList[i], p, n, brdf, pixelIndex);
 	}
 	return l;
+}
+
+bool Renderer::HandleKeyboardRotations(const float deltaTime)
+{
+	bool rotChanged = false;
+
+	const float speed = 0.001f * deltaTime;
+	if(IsKeyDown(GLFW_KEY_U)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(1, 0, 0), speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_I)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 1, 0), speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_O)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 0, 1), speed), rotChanged = true;
+
+	if(IsKeyDown(GLFW_KEY_J)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(1, 0, 0), -speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_K)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 1, 0), -speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_L)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 0, 1), -speed), rotChanged = true;
+
+	if(rotChanged)
+	{
+		Scene::SetBlasTransform(scene.m_blasList[selectedIdx], scene.m_tranformList[selectedIdx]);
+		scene.BuildTlas();
+	}
+
+	return rotChanged;
+}
+
+void Renderer::MouseMove(int x, int y)
+{
+	mousePos = {x,y};
+	windowCoord = {x,y};
+	windowCoordF = windowCoord;
+	screenCoordF = windowCoordF * INV_SCRSCALE;
+	screenCoord = {static_cast<int>(screenCoordF.x),static_cast<int>(screenCoordF.y)};
+}
+
+void Renderer::MouseUp(const int button)
+{
+	m_gameManager.OnMouseUp(button);
+}
+
+void Renderer::MouseDown(int button)
+{
+	m_gameManager.OnMouseDown(button);
+
+	if(isDbgPixel && !isDbgPixelClicked)
+	{
+		if(button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			isDbgPixelClicked = true;
+		}
+	}
+	else
+	{
+		if(button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			selectedIdx = hoveredInst;
+		}
+	}
+}
+
+void Renderer::KeyDown(const int key)
+{
+	if(isDbgPixel && isDbgPixelClicked)
+	{
+		if(key == GLFW_KEY_UP) dbgpixel.y = dbgpixel.y == 0 ? 0 : dbgpixel.y - 1;
+		if(key == GLFW_KEY_DOWN) dbgpixel.y = dbgpixel.y == SCRHEIGHT - 1 ? SCRHEIGHT - 1 : dbgpixel.y + 1;
+		if(key == GLFW_KEY_LEFT) dbgpixel.x = dbgpixel.x == 0 ? 0 : dbgpixel.x - 1;
+		if(key == GLFW_KEY_RIGHT) dbgpixel.x = dbgpixel.x == SCRWIDTH - 1 ? SCRWIDTH - 1 : dbgpixel.x + 1;
+
+		if(key == GLFW_KEY_ENTER)
+		{
+			dbgpixel =
+			{
+				static_cast<int>(static_cast<float>(dbgpixel.x) * INV_SCRSCALE),
+				static_cast<int>(static_cast<float>(dbgpixel.y) * INV_SCRSCALE)
+			};
+			printf("DBG PIXEL AT %i,%i\n", dbgpixel.x, dbgpixel.y);
+			isDbgPixelEntered = true;
+		}
+	}
+}
+
+void Renderer::RotateAroundWorldAxis(Transform& transform, const float3& worldAxis, const float angleRadians)
+{
+	const quat worldRotation = quat::FromAxisAngle(worldAxis, angleRadians);
+	transform.m_rot = worldRotation * transform.m_rot;
+	transform.m_rotAngles += worldAxis * RAD_TO_DEG(angleRadians);
 }
