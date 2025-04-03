@@ -29,10 +29,7 @@ void Renderer::Init()
 	acmCounter = 1;
 
 #ifdef _GAME
-	InitSeed(std::chrono::system_clock::now().time_since_epoch().count());
 	m_gameManager.Init(&scene, this);
-	useACM = true;
-	useAA = true;
 #endif
 
 	/*QuadLight& ql = scene.CreateQuadLight();

@@ -21,9 +21,28 @@ public:
 
 	enum class WinType : int8_t
 	{
-		EXACT,
-		DOUBLE_ROT,
-		FREE_ROT,
+		ANY_ROT,
+		SINGLE_SIDED,
+		DOUBLE_SIDED,
+	};
+
+	struct AnyRotWinData
+	{
+		quat m_winQuat = quat::identity();
+	};
+
+	struct SingleSidedWinData
+	{
+		float3 m_winRotDeg = 0;
+		float3 m_winRotWeights = 0.33f;
+	};
+
+	struct DoubleSidedWinData
+	{
+		float3 m_winRotDeg0 = 0;
+		float3 m_winRotDeg1 = 0;
+		float3 m_winRotWeights0 = 0.33f;
+		float3 m_winRotWeights1 = 0.33f;
 	};
 
 	int m_levelIdx = 0;
@@ -31,11 +50,13 @@ public:
 
 	void Init(Scene* scene, Renderer* renderer);
 	void Tick(const float deltaTime);
+	float CalcProgress() const;
+	float CalcProgressByFixedRot(const float3& targetRotDeg, const float3& weight) const;
+	float CalcProgressByAnyRot() const;
 	void OnMouseMove(const float2& windowCoordF, const int2& windowCoord, const float2& screenCoordF, const int2& screenCoord);
 	void OnMouseDown(int button);
 	void OnMouseUp(int button);
-	void OnKeyDown(int key);
-	float CalculateWinProgress() const;
+	void OnKeyDown(int key) const;
 	void RotateRandomly();
 	void RotateUntilLeastDiff(float leastDiff);
 	void UpdateProgressBar(float progress) const;
@@ -56,12 +77,10 @@ private:
 	float m_deltaTime = 0;
 	uint m_seed = 0;
 
-	quat m_winQuat;
-	quat m_winQuat2;
-	float3 m_winRotDeg;
-	float3 m_winWeights;
-	float3 m_winRotDeg2;
-	WinType m_winType = WinType::EXACT;
+	WinType m_winType = WinType::ANY_ROT;
+	AnyRotWinData m_anyRotWinData;
+	SingleSidedWinData m_singleSidedWinData;
+	DoubleSidedWinData m_doubleSidedWinData;
 
 	Scene* m_scene = nullptr;
 	Renderer* m_renderer = nullptr;
