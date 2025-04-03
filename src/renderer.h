@@ -16,6 +16,9 @@ public:
 	void Tick(float deltaTime);
 	bool HandleKeyboardRotations(float deltaTime);
 	void UI();
+#ifdef _GAME
+	void GameUI();
+#endif
 	void Shutdown() { /* implement if you want to do things on shutdown */ }
 	// input handling
 	void MouseUp(int button);
@@ -49,6 +52,10 @@ public:
 	float3 CalcLights(Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex);
 
 	// data members
+#ifdef _GAME
+	float progress = 0;
+#endif
+
 	int2 mousePos;
 	float2 windowCoordF;
 	int2 windowCoord;

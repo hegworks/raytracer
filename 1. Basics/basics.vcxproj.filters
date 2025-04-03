@@ -52,6 +52,9 @@
     <ClCompile Include="..\src\GameManager.cpp">
       <Filter>Src\_Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\GameUI.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">

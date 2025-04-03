@@ -14,6 +14,10 @@ void Renderer::UI()
 {
 	ImGui::End();
 
+#ifdef _GAME
+	GameUI();
+#endif
+
 	ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH - 300, 0));
 	ImGui::SetNextWindowSize(ImVec2(300, WINDOWHEIGHT));
 	ImGui::SetNextWindowBgAlpha(0.55f);
@@ -399,46 +403,6 @@ void Renderer::UI()
 
 			if(ImGui::BeginTabBar("Objects"))
 			{
-				if(ImGui::BeginTabItem("Materials"))
-				{
-					for(int i = 0; i < numModels; ++i)
-					{
-						Model& model = scene.m_modelList[i];
-						if(ImGui::TreeNode((std::to_string(i) + " " + model.m_fileName).c_str()))
-						{
-							for(int j = 0; j < model.m_modelData.m_meshMaterialList.size(); j++)
-							{
-								if(j > 0) ImGui::Separator();
-								Material& mat = model.m_modelData.m_meshMaterialList[j];
-								if(mat.m_name[0] != '\0') ImGui::Text(mat.m_name);
-								int matInt = static_cast<int>(mat.m_type);
-								ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, MATERIAL_STRING, IM_ARRAYSIZE(MATERIAL_STRING));
-								mat.m_type = static_cast<Material::Type>(matInt);
-								ImGui::ColorEdit3(("Albedo##" + std::to_string(j)).c_str(), &mat.m_albedo.x);
-
-								switch(mat.m_type)
-								{
-									case Material::Type::DIFFUSE:
-									case Material::Type::GLOSSY:
-										break;
-									case Material::Type::REFRACTIVE:
-										ImGui::DragFloat(("Density##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
-										ImGui::DragFloat(("IOR##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.01f, 0.0f, 999999.0f);
-										break;
-									case Material::Type::PATH_TRACED:
-										ImGui::DragFloat(("Smoothness##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0, 1);
-										ImGui::DragFloat(("Specularity##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
-										break;
-									case Material::Type::EMISSIVE:
-										ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
-										break;
-								}
-							}
-							ImGui::TreePop();
-						}
-					}
-					ImGui::EndTabItem();
-				}
 				if(ImGui::BeginTabItem("Transforms"))
 				{
 					for(int i = 0; i < numBlases; ++i)
@@ -486,6 +450,47 @@ void Renderer::UI()
 					}
 					ImGui::EndTabItem();
 				}
+				if(ImGui::BeginTabItem("Materials"))
+				{
+					for(int i = 0; i < numModels; ++i)
+					{
+						Model& model = scene.m_modelList[i];
+						if(ImGui::TreeNode((std::to_string(i) + " " + model.m_fileName).c_str()))
+						{
+							for(int j = 0; j < model.m_modelData.m_meshMaterialList.size(); j++)
+							{
+								if(j > 0) ImGui::Separator();
+								Material& mat = model.m_modelData.m_meshMaterialList[j];
+								if(mat.m_name[0] != '\0') ImGui::Text(mat.m_name);
+								int matInt = static_cast<int>(mat.m_type);
+								ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, MATERIAL_STRING, IM_ARRAYSIZE(MATERIAL_STRING));
+								mat.m_type = static_cast<Material::Type>(matInt);
+								ImGui::ColorEdit3(("Albedo##" + std::to_string(j)).c_str(), &mat.m_albedo.x);
+
+								switch(mat.m_type)
+								{
+									case Material::Type::DIFFUSE:
+									case Material::Type::GLOSSY:
+										break;
+									case Material::Type::REFRACTIVE:
+										ImGui::DragFloat(("Density##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
+										ImGui::DragFloat(("IOR##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.01f, 0.0f, 999999.0f);
+										break;
+									case Material::Type::PATH_TRACED:
+										ImGui::DragFloat(("Smoothness##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0, 1);
+										ImGui::DragFloat(("Specularity##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
+										break;
+									case Material::Type::EMISSIVE:
+										ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
+										break;
+								}
+							}
+							ImGui::TreePop();
+						}
+					}
+					ImGui::EndTabItem();
+				}
+
 				ImGui::EndTabBar();
 			}
 			ImGui::EndTabItem();
@@ -546,4 +551,3 @@ void Renderer::UI()
 		ImGui::End();
 	}
 }
-

@@ -91,8 +91,6 @@ private:
 	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
 
 	bool m_isRandZ = false;
-	inline static RNG rng;
-	inline static uint seed = 123;
 };
 
 inline void Model::loadModel(std::string path)

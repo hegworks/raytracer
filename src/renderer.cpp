@@ -29,6 +29,7 @@ void Renderer::Init()
 	acmCounter = 1;
 
 #ifdef _GAME
+	InitSeed(std::chrono::system_clock::now().time_since_epoch().count());
 	m_gameManager.Init(&scene, this);
 	useACM = true;
 	useAA = true;
@@ -552,17 +553,23 @@ void Renderer::MouseMove(int x, int y)
 	screenCoordF = windowCoordF * INV_SCRSCALE;
 	screenCoord = {static_cast<int>(screenCoordF.x),static_cast<int>(screenCoordF.y)};
 
+#ifdef _GAME
 	m_gameManager.OnMouseMove(windowCoordF, windowCoord, screenCoordF, screenCoord);
+#endif
 }
 
 void Renderer::MouseUp(const int button)
 {
+#ifdef _GAME
 	m_gameManager.OnMouseUp(button);
+#endif
 }
 
 void Renderer::MouseDown(int button)
 {
+#ifdef _GAME
 	m_gameManager.OnMouseDown(button);
+#endif
 
 	if(isDbgPixel && !isDbgPixelClicked)
 	{
@@ -582,6 +589,10 @@ void Renderer::MouseDown(int button)
 
 void Renderer::KeyDown(const int key)
 {
+#ifdef _GAME
+	m_gameManager.OnKeyDown(key);
+#endif
+
 	if(isDbgPixel && isDbgPixelClicked)
 	{
 		if(key == GLFW_KEY_UP) dbgpixel.y = dbgpixel.y == 0 ? 0 : dbgpixel.y - 1;
@@ -606,5 +617,13 @@ void Renderer::RotateAroundWorldAxis(Transform& transform, const float3& worldAx
 {
 	const quat worldRotation = quat::FromAxisAngle(worldAxis, angleRadians);
 	transform.m_rot = worldRotation * transform.m_rot;
+#if 0
 	transform.m_rotAngles += worldAxis * RAD_TO_DEG(angleRadians);
+#elif 1
+	transform.m_rotAngles = RAD_TO_DEG(transform.m_rot.toEuler());
+#elif 0
+	float3 eu = 0;
+	quat::DecomposeQuaternionToEuler(transform.m_rot, eu);
+	transform.m_rotAngles = eu;
+#endif
 }

@@ -943,6 +943,12 @@ public:
 		r = r * 2, r = r * one, ret.x = r.x, ret.y = r.y, ret.z = r.z;
 		return ret;
 	}
+	float angleTo(const quat& other) const
+	{
+		float d = w * other.w + x * other.x + y * other.y + z * other.z;
+		d = clamp(d, -1.0f, 1.0f); // Clamp to avoid NaN due to floating point errors
+		return 2.0f * acos(std::abs(d)); // Ensure shortest rotation path
+	}
 	float3 rotateVector(const float3& v) const
 	{
 		float3 qv = make_float3(x, y, z), t = cross(qv, v) * 2.0f;
@@ -954,6 +960,12 @@ public:
 			w * q.w - x * q.x - y * q.y - z * q.z, w * q.x + x * q.w + y * q.z - z * q.y,
 			w * q.y - x * q.z + y * q.w + z * q.x, w * q.z + x * q.y - y * q.x + z * q.w
 		);
+	}
+	float3 operator *(const float3& v) const
+	{
+		quat q_vec(0, v.x, v.y, v.z);
+		quat res = (*this) * q_vec * conjugate();
+		return {res.x, res.y, res.z};
 	}
 	static quat slerp(const quat& a, const quat& b, const float t)
 	{
@@ -1048,6 +1060,7 @@ public:
 	quat scale(float s) const { return quat(w * s, x * s, y * s, z * s); }
 	float w = 1, x = 0, y = 0, z = 0;
 };
+inline float dot(const quat& a, const quat& b) { return a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z; }
 
 // axis aligned bounding box class
 class aabb

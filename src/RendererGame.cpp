@@ -2,8 +2,6 @@
 
 #include <common.h>
 
-#include "GameEngineMediator.h"
-
 #ifdef _GAME
 void Renderer::Tick(const float deltaTime)
 {
