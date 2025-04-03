@@ -845,19 +845,19 @@ class quat // based on https://github.com/adafruit
 {
 public:
 	quat() = default;
-	quat(float _w, float _x, float _y, float _z) : w(_w), x(_x), y(_y), z(_z) {}
-	quat(float _w, float3 v) : w(_w), x(v.x), y(v.y), z(v.z) {}
+	quat(const float _w, const float _x, const float _y, const float _z) : w(_w), x(_x), y(_y), z(_z) {}
+	quat(const float _w, const float3 v) : w(_w), x(v.x), y(v.y), z(v.z) {}
 	float magnitude() const { return sqrtf(w * w + x * x + y * y + z * z); }
 	void normalize() { float m = magnitude(); *this = this->scale(1 / m); }
 	quat conjugate() const { return quat(w, -x, -y, -z); }
 	static quat identity() { return quat(1, 0, 0, 0); }
-	void fromAxisAngle(const float3& axis, float theta)
+	void fromAxisAngle(const float3& axis, const float theta)
 	{
 		w = cosf(theta / 2);
 		const float s = sinf(theta / 2);
 		x = axis.x * s, y = axis.y * s, z = axis.z * s;
 	}
-	static quat FromAxisAngle(const float3& axis, float theta)
+	static quat FromAxisAngle(const float3& axis, const float theta)
 	{
 		float w = cosf(theta / 2);
 		const float s = sinf(theta / 2);
@@ -936,7 +936,7 @@ public:
 		ret.z = atan2f(2.0f * (y * z + x * w), (-sqx - sqy + sqz + sqw));
 		return ret;
 	}
-	float3 toAngularVelocity(float dt) const
+	float3 toAngularVelocity(const float dt) const
 	{
 		float3 ret;
 		quat one(1, 0, 0, 0), delta = one - *this, r = (delta / dt);
@@ -992,6 +992,30 @@ public:
 		}
 		return r;
 	}
+	static quat slerp2(const quat& q1, const quat& q2, const float lambda)
+	{
+		// from https://www2.sonycsl.co.jp/person/nielsen/visualcomputing/programs/slerp.cpp
+		const float dotproduct = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
+
+		float theta = acos(dotproduct);
+		if(theta < 0.0) theta = -theta;
+
+		const float st = sin(theta);
+		const float sut = sin(lambda * theta);
+		const float sout = sin((1 - lambda) * theta);
+		const float coeff1 = sout / st;
+		const float coeff2 = sut / st;
+
+		quat qr;
+		qr.x = coeff1 * q1.x + coeff2 * q2.x;
+		qr.y = coeff1 * q1.y + coeff2 * q2.y;
+		qr.z = coeff1 * q1.z + coeff2 * q2.z;
+		qr.w = coeff1 * q1.w + coeff2 * q2.w;
+		qr.normalize();
+
+		return qr;
+	}
+
 	/// <summary>
 	/// Extract Euler angles from quaternion
 	/// Note: This uses XYZ rotation order
@@ -1055,9 +1079,9 @@ public:
 	}
 	quat operator + (const quat& q) const { return quat(w + q.w, x + q.x, y + q.y, z + q.z); }
 	quat operator - (const quat& q) const { return quat(w - q.w, x - q.x, y - q.y, z - q.z); }
-	quat operator / (float s) const { return quat(w / s, x / s, y / s, z / s); }
-	quat operator * (float s) const { return scale(s); }
-	quat scale(float s) const { return quat(w * s, x * s, y * s, z * s); }
+	quat operator / (const float s) const { return quat(w / s, x / s, y / s, z / s); }
+	quat operator * (const float s) const { return scale(s); }
+	quat scale(const float s) const { return quat(w * s, x * s, y * s, z * s); }
 	float w = 1, x = 0, y = 0, z = 0;
 };
 inline float dot(const quat& a, const quat& b) { return a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z; }

@@ -153,6 +153,9 @@
     <ClInclude Include="..\src\GameManager.h">
       <Filter>Src\_Game</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\CountdownTimer.h">
+      <Filter>Src\Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">
