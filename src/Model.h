@@ -9,8 +9,11 @@
 #include <stb_image.h>
 #include <stdexcept>
 #include <string>
+#include <tmpl8math.h>
 #include <utility>
 #include <vector>
+
+#include "PerlinGenerator.h"
 
 struct Texture
 {
@@ -22,11 +25,13 @@ struct Texture
 class Model
 {
 public:
-	Model(std::string const& path, const float2 textureCoordScale = float2(1), bool isRandZ = false)
+	Model(std::string const& path, const float2 textureCoordScale = float2(1), const bool isRandZ = false)
 	{
 		//stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
+
 		m_textureCoordScale = textureCoordScale;
 		m_isRandZ = isRandZ;
+
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
 		size_t pos = path.find_last_of("/\\");
@@ -149,6 +154,11 @@ inline void Model::processNode(aiNode* node, const aiScene* scene)
 
 inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
+	//int tv = 0;
+	float zAddition = 0;
+	float sign = 1.0f;
+	float firstY = 0;
+	bool isFirstVertex = true;
 	// process indices
 	for(unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
@@ -163,15 +173,35 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 			float randZAddition = 0.0f;
 			if(m_isRandZ)
 			{
+#if 0
 				const float randSign = RandomFloat() > 0.5f ? 1.0f : -1.0f;
 				randZAddition = randSign * RandomFloat() * 2.0f;
+#elif 0
+				randZAddition = PerlinGenerator::noise3D(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z);
+#elif 1
+				if(isFirstVertex)
+				{
+					firstY = mesh->mVertices[idx].x;
+					isFirstVertex = false;
+				}
+				else
+				{
+					float div = fmodf(abs(mesh->mVertices[idx].x - firstY), 10.0f);
+					zAddition += div * 1.0f;
+				}
+#endif
 			}
-			float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z + randZAddition, 0);
+			//float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z + randZAddition, 0);
+			float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z + zAddition * sign, 0);
 			m_modelData.m_vertices.emplace_back(vert);
 			if(mesh->mTextureCoords[0])
 				newVertexData.m_texCoord = float2(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);
 			else
 				newVertexData.m_texCoord = float2(0);
+
+			//tv++;
+			//if(tv % 90 == 0)
+				//zAddition += 0.01f, sign = sign;
 		}
 	}
 	int verticesSize = static_cast<int>(m_modelData.m_vertices.size());

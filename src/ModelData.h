@@ -89,7 +89,7 @@ public:
 			case ModelType::LVL_TTORUS:
 				return ASSETDIR + "Models/Game/ttorus.glb";
 			case ModelType::LVL_TEAPOT0:
-				return ASSETDIR + "Models/Game/teapot_0.obj";
+				return ASSETDIR + "Models/Game/teapot.fbx";
 			case ModelType::LVL_TEAPOT1:
 				return ASSETDIR + "Models/Game/teapot_1.obj";
 		}

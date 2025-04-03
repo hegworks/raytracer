@@ -17,6 +17,10 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	m_seed = m_rng.InitSeed(time);
 	InitSeed(time * 17);
 
+	PerlinGenerator::m_numOctaves = 1;
+	PerlinGenerator::m_amplitude = 0.99f;
+	//PerlinGenerator::m_persistence = 0.9f;
+
 	LoadLevel(0);
 }
 
@@ -213,7 +217,7 @@ void GameManager::LoadLevel(const int levelIdx)
 	m_scene->m_tranformList.back().m_scl = float3(30);
 	Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
 
-#if 1 // square level
+#if 0 // square level
 	Model& level0 = m_scene->CreateModel(ModelType::LVL_SQUARE, false);
 	m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 	m_scene->m_tranformList.back().m_scl = float3(0.2f);
@@ -231,10 +235,20 @@ void GameManager::LoadLevel(const int levelIdx)
 	m_winType = WinType::SINGLE_SIDED;
 	m_singleSidedWinData.m_winRotDeg = 0;
 	m_singleSidedWinData.m_winRotWeights = 0.33f;
-#elif 0 // teapot level
+#elif 0 // teapot level 1
 	Model& level0 = m_scene->CreateModel(ModelType::LVL_TEAPOT1, true);
 	m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 	m_scene->m_tranformList.back().m_scl = float3(0.2f);
+
+	m_winType = WinType::DOUBLE_SIDED;
+	m_doubleSidedWinData.m_winRotDeg0 = 0;
+	m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+	m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+	m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+#elif 1 // teapot level 0
+	Model& level0 = m_scene->CreateModel(ModelType::LVL_TEAPOT0, true);
+	m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+	m_scene->m_tranformList.back().m_scl = float3(1.2f);
 
 	m_winType = WinType::DOUBLE_SIDED;
 	m_doubleSidedWinData.m_winRotDeg0 = 0;

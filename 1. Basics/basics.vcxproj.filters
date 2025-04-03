@@ -156,6 +156,9 @@
     <ClInclude Include="..\src\CountdownTimer.h">
       <Filter>Src\Tools</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\PerlinGenerator.h">
+      <Filter>Src\Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">
