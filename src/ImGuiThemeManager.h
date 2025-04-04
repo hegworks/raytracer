@@ -2,6 +2,9 @@
 
 class ImGuiThemeManager
 {
+	///
+	/// Taken from https://github.com/shivang51/bess/blob/main/Bess/src/settings/themes.cpp
+	///
 public:
 	static void SetNewDarkTheme()
 	{
