@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "RNG.h"
 
+class CountdownTimer;
+
 namespace Tmpl8
 {
 class Renderer;
@@ -78,11 +80,11 @@ private:
 	float m_deltaTime = 0;
 	uint m_seed = 0;
 	float m_levelObjectScale = 0;
+	float m_winTimeProgress = 0;
 
 	bool m_isGameWon = false;
 	bool m_isWinSlerpFinished = false;
 	bool m_isShrinkDeformedFinished = false;
-	bool m_isGrowDeformedFinished = false;
 	bool m_isGrowFullFinished = false;
 
 	WinType m_winType = WinType::ANY_ROT;
@@ -94,8 +96,10 @@ private:
 	static constexpr float WIN_SLERP_SPEED = 0.0025f;
 	static constexpr float WIN_PERCENTAGE = 0.98f;
 	static constexpr float WIN_SLERP_END_PROGRESS = 1.0f - 1e-4f;
+	static constexpr float SCALE_TIME = 2750.0f;
 
 	Scene* m_scene = nullptr;
 	Renderer* m_renderer = nullptr;
 	RNG m_rng;
+	CountdownTimer* m_scaleTimer = nullptr;
 };

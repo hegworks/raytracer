@@ -76,3 +76,32 @@ inline float ease_in_circular(const float x)
 {
 	return 1.0f - sqrtf(1.0f - (x * x));
 }
+
+inline float ease_in_out_elastic(const float x)
+{
+	if(x == 0.0f || x == 1.0f) return x;
+	constexpr float c5 = (TWOPI) / 4.5f;
+	if(x < 0.5f)  return -0.5f * (powf(2.0f, (20.0f * x) - 10.0f) * sinf((x * 20.0f - 11.125f) * c5));
+	return powf(2.0f, (-20.0f * x) + 10.0f) * sinf((x * 20.0f - 11.125f) * c5) * 0.5f + 1.0f;
+}
+
+inline float ease_out_bounce(float x)
+{
+	constexpr float n1 = 7.5625f;
+	constexpr float d1 = 2.75f;
+	if(x < 1.0f / d1) return n1 * x * x;
+	if(x < 2.0f / d1) return n1 * (x -= (1.5f / d1)) * x + 0.75f;
+	if(x < 2.5f / d1) return n1 * (x -= (2.25f / d1)) * x + 0.9375f;
+	return n1 * (x -= (2.625f / d1)) * x + 0.984375f;
+}
+
+inline float ease_in_bounce(float x)
+{
+	return 1.0f - ease_out_bounce(1.0f - x);
+}
+
+inline float ease_in_out_bounce(float x)
+{
+	if(x < 0.5f) return ease_in_bounce(x * 2.0f) * 0.5f;
+	return ease_out_bounce(x * 2.0f - 1.0f) * 0.5f + 0.5f;
+}

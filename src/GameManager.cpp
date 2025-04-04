@@ -2,6 +2,8 @@
 
 #include "GameManager.h"
 
+#include "CountdownTimer.h"
+
 void GameManager::Init(Scene* scene, Renderer* renderer)
 {
 	m_scene = scene;
@@ -21,6 +23,8 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	PerlinGenerator::m_amplitude = 0.9f;
 	PerlinGenerator::m_persistence = 0.9f;
 
+	m_scaleTimer = new CountdownTimer(SCALE_TIME, false);
+
 	LoadLevel(0);
 }
 
@@ -31,34 +35,28 @@ void GameManager::Tick(const float deltaTime)
 	{
 		quat& q = m_scene->m_tranformList[m_levelObjectInstIdx].m_rot;
 		q = quat::slerp2(q, quat::identity(), WIN_SLERP_SPEED * deltaTime);
+		float progress = lerp(m_winTimeProgress, 1.0f, WIN_SLERP_SPEED * deltaTime);
+		m_winTimeProgress = progress;
 		if(CalcProgress() > WIN_SLERP_END_PROGRESS)
 		{
 			q = quat::identity();
 			m_isWinSlerpFinished = true;
+			m_scaleTimer->Reset();
+			progress = 1.0f;
 		}
 		OnTransformChanged(m_levelObjectInstIdx);
-		UpdateProgressBar(CalcProgress());
+		UpdateProgressBar(progress);
 	}
-	else if(m_isWinSlerpFinished && !m_isGrowDeformedFinished)
+	else if(m_isWinSlerpFinished && !m_isShrinkDeformedFinished)
 	{
 		float3& scl = m_scene->m_tranformList[m_levelObjectInstIdx].m_scl;
-		scl += 0.001f * deltaTime;
-		if(scl.x > m_levelObjectScale * 1.5f)
-		{
-			scl = m_levelObjectScale * 1.5f;
-			m_isGrowDeformedFinished = true;
-		}
-		OnTransformChanged(m_levelObjectInstIdx);
-
-	}
-	else if(m_isGrowDeformedFinished && !m_isShrinkDeformedFinished)
-	{
-		float3& scl = m_scene->m_tranformList[m_levelObjectInstIdx].m_scl;
-		scl -= 0.002f * deltaTime;
+		m_scaleTimer->Update(deltaTime);
+		scl = lerp(m_levelObjectScale, EPS, ease_in_out_elastic(m_scaleTimer->GetProgress()));
 		if(scl.x < EPS)
 		{
 			scl = EPS;
 			m_isShrinkDeformedFinished = true;
+			m_scaleTimer->Reset();
 		}
 		OnTransformChanged(m_levelObjectInstIdx);
 
@@ -66,7 +64,8 @@ void GameManager::Tick(const float deltaTime)
 	else if(m_isShrinkDeformedFinished && !m_isGrowFullFinished)
 	{
 		float3& scl = m_scene->m_tranformList[m_levelObjectInstIdx + 1].m_scl;
-		scl += 0.002f * deltaTime;
+		m_scaleTimer->Update(deltaTime);
+		scl = lerp(EPS, m_levelObjectScale * 1.5f, ease_out_bounce(m_scaleTimer->GetProgress()));
 		if(scl.x > m_levelObjectScale * 1.5f)
 		{
 			scl = m_levelObjectScale * 1.5f;
@@ -142,6 +141,7 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 		if(progress > WIN_PERCENTAGE)
 		{
 			m_isGameWon = true;
+			m_winTimeProgress = progress;
 		}
 	}
 	else
