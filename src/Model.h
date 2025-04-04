@@ -152,59 +152,74 @@ inline void Model::processNode(aiNode* node, const aiScene* scene)
 	}
 }
 
+//#define FULLY_RANDOM
+//#define SINE
+//#define PERLIN
+#define FIXED_MOVE
+
 inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
-	//int tv = 0;
-	float zAddition = 0;
-	float sign = 1.0f;
-	float firstY = 0;
-	bool isFirstVertex = true;
 	// process indices
 	for(unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
-		aiFace face = mesh->mFaces[i];
+		const aiFace face = mesh->mFaces[i];
 
 		for(unsigned int j = 0; j < face.mNumIndices; j++)
 		{
-			int idx = face.mIndices[j];
+			const uint idx = face.mIndices[j];
 
 			VertexData& newVertexData = m_modelData.m_vertexDataList.emplace_back();
 			newVertexData.m_normal = float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z);
-			float randZAddition = 0.0f;
+			float randZAddition = 0;
 			if(m_isRandZ)
 			{
-#if 0
+#if defined(FULLY_RANDOM)
+				constexpr float amplitude = 0.5f;
 				const float randSign = RandomFloat() > 0.5f ? 1.0f : -1.0f;
-				randZAddition = randSign * RandomFloat() * 2.0f;
-#elif 0
+				randZAddition = randSign * RandomFloat() * amplitude;
+
+
+#elif defined(SINE)
+				constexpr float frequency = 5.0f, amplitude = 1.5f, axis = mesh->mVertices[idx].z;
+				randZAddition = sin(axis * frequency) * amplitude;
+
+
+#elif defined (PERLIN)
+				PerlinGenerator::m_numOctaves = 1;
+				PerlinGenerator::m_amplitude = 0.5f;
+				PerlinGenerator::m_persistence = 0.5f;
 				randZAddition = PerlinGenerator::noise3D(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z);
+
+
+#elif defined (FIXED_MOVE)
+				constexpr float frequency = 0.5f;
+				constexpr float amplitude = 0.85f;
+				const float axis = mesh->mVertices[idx].x;
+				const int sectionIndex = static_cast<int>(axis / frequency);
+#if 0
+				randZAddition = (sectionIndex * amplitude);
+#elif 0
+				randZAddition = (sectionIndex % 2 == 0 ? 1.0f : -1.0f) * (sectionIndex * amplitude);
+#elif 0
+				randZAddition = amplitude * sinf(sectionIndex * TWOPI * 0.1f);
 #elif 1
-				if(isFirstVertex)
-				{
-					firstY = mesh->mVertices[idx].x;
-					isFirstVertex = false;
-				}
-				else
-				{
-					float div = fmodf(abs(mesh->mVertices[idx].x - firstY), 10.0f);
-					zAddition += div * 1.0f;
-				}
+				randZAddition = amplitude * sinf(sectionIndex + axis * frequency);
+#endif
+
+
+
 #endif
 			}
-			//float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z + randZAddition, 0);
-			float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z + zAddition * sign, 0);
+			float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z + randZAddition, 0);
 			m_modelData.m_vertices.emplace_back(vert);
 			if(mesh->mTextureCoords[0])
 				newVertexData.m_texCoord = float2(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);
 			else
 				newVertexData.m_texCoord = float2(0);
 
-			//tv++;
-			//if(tv % 90 == 0)
-				//zAddition += 0.01f, sign = sign;
 		}
 	}
-	int verticesSize = static_cast<int>(m_modelData.m_vertices.size());
+	const int verticesSize = static_cast<int>(m_modelData.m_vertices.size());
 	m_modelData.m_meshVertexBorderList.emplace_back(verticesSize - 1);
 
 	// process material

@@ -86,8 +86,8 @@ private:
 	DoubleSidedWinData m_doubleSidedWinData;
 
 	static constexpr float DRAG_ROTATE_SPEED = 0.001f;
-	static constexpr float WIN_SLERP_SPEED = 0.005f;
-	static constexpr float WIN_PERCENTAGE = 0.99f;
+	static constexpr float WIN_SLERP_SPEED = 0.0025f;
+	static constexpr float WIN_PERCENTAGE = 0.98f;
 	static constexpr float WIN_SLERP_END_PROGRESS = 1.0f - 1e-4f;
 
 	Scene* m_scene = nullptr;
