@@ -10,8 +10,8 @@ Scene::Scene()
 {
 	printf("using tiny_bvh version %i.%i.%i\n", TINY_BVH_VERSION_MAJOR, TINY_BVH_VERSION_MINOR, TINY_BVH_VERSION_SUB);
 
-	m_modelList.reserve(NUM_MODEL_TYPES);
-	m_bvhList.reserve(NUM_MODEL_TYPES);
+	m_modelList.reserve(NUM_MODEL_TYPES * 2);
+	m_bvhList.reserve(NUM_MODEL_TYPES * 2);
 
 	LoadSkydome();
 
@@ -411,16 +411,19 @@ float3 Scene::SampleTexture(const Ray& ray, const Model& model)
 	return texel;
 }
 
-Model& Scene::CreateModel(const ModelType modelType, bool isRandZ)
+Model& Scene::CreateModel(const ModelType modelType, bool isRandZ, const bool isUnique)
 {
-	for(int i = 0; i < static_cast<int>(m_modelList.size()); ++i)
+	if(!isUnique)
 	{
-		if(m_modelList[i].m_modelData.m_type == modelType)
+		for(int i = 0; i < static_cast<int>(m_modelList.size()); ++i)
 		{
-			m_blasList.emplace_back(i);
-			m_tranformList.emplace_back();
-			BuildTlas();
-			return m_modelList[i];
+			if(m_modelList[i].m_modelData.m_type == modelType)
+			{
+				m_blasList.emplace_back(i);
+				m_tranformList.emplace_back();
+				BuildTlas();
+				return m_modelList[i];
+			}
 		}
 	}
 	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType), 1.0f, isRandZ);

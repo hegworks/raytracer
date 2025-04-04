@@ -54,7 +54,7 @@ public:
 	float CalcProgressByFixedRot(const float3& targetRotDeg, const float3& weight) const;
 	float CalcProgressByAnyRot() const;
 	void OnMouseMove(const float2& windowCoordF, const int2& windowCoord, const float2& screenCoordF, const int2& screenCoord);
-	void OnLevelRotationUpdated() const;
+	void OnTransformChanged(int instanceIdx) const;
 	void OnMouseDown(int button);
 	void OnMouseUp(int button);
 	void OnKeyDown(int key) const;
@@ -77,8 +77,13 @@ private:
 	int m_levelObjectInstIdx = -1;
 	float m_deltaTime = 0;
 	uint m_seed = 0;
+	float m_levelObjectScale = 0;
+
 	bool m_isGameWon = false;
 	bool m_isWinSlerpFinished = false;
+	bool m_isShrinkDeformedFinished = false;
+	bool m_isGrowDeformedFinished = false;
+	bool m_isGrowFullFinished = false;
 
 	WinType m_winType = WinType::ANY_ROT;
 	AnyRotWinData m_anyRotWinData;

@@ -153,9 +153,9 @@ inline void Model::processNode(aiNode* node, const aiScene* scene)
 }
 
 //#define FULLY_RANDOM
-//#define SINE
+#define SINE
 //#define PERLIN
-#define FIXED_MOVE
+//#define FIXED_MOVE
 
 inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
@@ -180,7 +180,8 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 
 #elif defined(SINE)
-				constexpr float frequency = 5.0f, amplitude = 1.5f, axis = mesh->mVertices[idx].z;
+				constexpr float frequency = 5.0f, amplitude = 1.5f;
+				const float axis = mesh->mVertices[idx].x;
 				randZAddition = sin(axis * frequency) * amplitude;
 
 
@@ -194,7 +195,7 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 #elif defined (FIXED_MOVE)
 				constexpr float frequency = 0.5f;
 				constexpr float amplitude = 0.85f;
-				const float axis = mesh->mVertices[idx].x;
+				const float axis = mesh->mVertices[idx].z;
 				const int sectionIndex = static_cast<int>(axis / frequency);
 #if 0
 				randZAddition = (sectionIndex * amplitude);

@@ -36,8 +36,43 @@ void GameManager::Tick(const float deltaTime)
 			q = quat::identity();
 			m_isWinSlerpFinished = true;
 		}
-		OnLevelRotationUpdated();
+		OnTransformChanged(m_levelObjectInstIdx);
 		UpdateProgressBar(CalcProgress());
+	}
+	else if(m_isWinSlerpFinished && !m_isGrowDeformedFinished)
+	{
+		float3& scl = m_scene->m_tranformList[m_levelObjectInstIdx].m_scl;
+		scl += 0.001f * deltaTime;
+		if(scl.x > m_levelObjectScale * 1.5f)
+		{
+			scl = m_levelObjectScale * 1.5f;
+			m_isGrowDeformedFinished = true;
+		}
+		OnTransformChanged(m_levelObjectInstIdx);
+
+	}
+	else if(m_isGrowDeformedFinished && !m_isShrinkDeformedFinished)
+	{
+		float3& scl = m_scene->m_tranformList[m_levelObjectInstIdx].m_scl;
+		scl -= 0.002f * deltaTime;
+		if(scl.x < EPS)
+		{
+			scl = EPS;
+			m_isShrinkDeformedFinished = true;
+		}
+		OnTransformChanged(m_levelObjectInstIdx);
+
+	}
+	else if(m_isShrinkDeformedFinished && !m_isGrowFullFinished)
+	{
+		float3& scl = m_scene->m_tranformList[m_levelObjectInstIdx + 1].m_scl;
+		scl += 0.002f * deltaTime;
+		if(scl.x > m_levelObjectScale * 1.5f)
+		{
+			scl = m_levelObjectScale * 1.5f;
+			m_isGrowFullFinished = true;
+		}
+		OnTransformChanged(m_levelObjectInstIdx + 1);
 	}
 }
 
@@ -98,7 +133,7 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 		{
 			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[m_levelObjectInstIdx], {0,0,1}, -axisSpeed.x);
 		}
-		OnLevelRotationUpdated();
+		OnTransformChanged(m_levelObjectInstIdx);
 		m_mouseDownWindowPos = windowCoord;
 
 		const float progress = CalcProgress();
@@ -115,9 +150,9 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 	}
 }
 
-void GameManager::OnLevelRotationUpdated() const
+void GameManager::OnTransformChanged(const int instanceIdx) const
 {
-	Scene::SetBlasTransform(m_scene->m_blasList[m_levelObjectInstIdx], m_scene->m_tranformList[m_levelObjectInstIdx]);
+	Scene::SetBlasTransform(m_scene->m_blasList[instanceIdx], m_scene->m_tranformList[instanceIdx]);
 	m_scene->BuildTlas();
 	m_renderer->resetAccumulator = true;
 }
@@ -248,7 +283,11 @@ void GameManager::LoadLevel(const int levelIdx)
 #elif 1 // teapot level 0
 	Model& level0 = m_scene->CreateModel(ModelType::DRAGON, true);
 	m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+	m_levelObjectScale = 1.2f;
 	m_scene->m_tranformList.back().m_scl = float3(1.2f);
+
+	Model& fullShape = m_scene->CreateModel(ModelType::DRAGON, false, true);
+	m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 	m_winType = WinType::DOUBLE_SIDED;
 	m_doubleSidedWinData.m_winRotDeg0 = 0;
@@ -260,7 +299,8 @@ void GameManager::LoadLevel(const int levelIdx)
 	RotateUntilLeastDiff(0.01f);
 	UpdateProgressBar(CalcProgress());
 
-	Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
+	Scene::SetBlasTransform(m_scene->m_blasList[m_levelObjectInstIdx], m_scene->m_tranformList[m_levelObjectInstIdx]);
+	Scene::SetBlasTransform(m_scene->m_blasList[m_levelObjectInstIdx + 1], m_scene->m_tranformList[m_levelObjectInstIdx + 1]);
 
 	DirLight& dirLight = m_scene->CreateDirLight();
 	dirLight.m_dir = float3(0, 0, 1);
