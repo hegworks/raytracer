@@ -13,7 +13,7 @@ void Renderer::GameUI()
 		case GameManager::State::START_MENU:
 		{
 			constexpr float startX = 50.0f;
-			constexpr float startY = centerY;
+			constexpr float startY = centerY - 50.0f;
 
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
 			ImGui::SetNextWindowSize(ImVec2(WINDOWWIDTH, WINDOWHEIGHT));
@@ -38,6 +38,9 @@ void Renderer::GameUI()
 			ImGui::SetCursorPosX(startX);
 			ImGui::Checkbox("Tutorial", &m_gameManager.m_showTutorial);
 
+			ImGui::SetCursorPosX(startX);
+			ImGui::Checkbox("Guide bar", &m_gameManager.m_showProgressBar);
+
 			ImGui::SetCursorPos(ImVec2(startX, ImGui::GetCursorPosY() + 50));
 			if(ImGui::Button("Quit", ImVec2(btnWidth, btnHeight)))
 			{
@@ -45,7 +48,7 @@ void Renderer::GameUI()
 			}
 
 			ImGui::SetCursorPos(ImVec2(10, WINDOWHEIGHT - textSize.y - 10));
-			ImGui::Text("Created by Hesam Ghadimi @BUAS");
+			ImGui::Text("Created by Hesam Ghadimi @ BUAS");
 
 
 			ImGui::End();
@@ -91,6 +94,8 @@ void Renderer::GameUI()
 
 		case GameManager::State::GAMEPLAY:
 		{
+			if(!m_gameManager.m_showProgressBar) { ImGui::End(); break; }
+
 			constexpr float progressBarWidth = 600.0f;
 			constexpr float progressBarHeight = 100.0f;
 			ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH * 0.5f - progressBarWidth * 0.5f, 20));
@@ -189,7 +194,7 @@ void Renderer::GameUI()
 				}
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				{
-					const string text = "Note that some levels require the correct roll. Others don’t.";
+					const string text = "Note that some levels require the correct roll. Others don't.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());

@@ -53,6 +53,7 @@ public:
 	State m_state;
 	int m_tutorialStage = 0;
 	bool m_showTutorial = true;
+	bool m_showProgressBar = true;
 	float m_progress = 0;
 
 	static constexpr int NUM_LEVELS = 4;

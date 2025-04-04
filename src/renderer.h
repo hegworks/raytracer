@@ -52,9 +52,7 @@ public:
 	float3 CalcLights(Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex);
 
 	// data members
-#ifdef _GAME
 	ImFont* font = nullptr;
-#endif
 
 	int2 mousePos;
 	float2 windowCoordF;
