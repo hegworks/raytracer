@@ -15,7 +15,9 @@ void Renderer::UI()
 	ImGui::End();
 
 #ifdef _GAME
+	ImGui::PushFont(font);
 	GameUI();
+	ImGui::PopFont();
 #endif
 
 	ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH - 300, 0));

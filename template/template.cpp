@@ -138,7 +138,7 @@ void main()
 	Surface* screen = new Surface(SCRWIDTH, SCRHEIGHT);
 	app = new Renderer();
 	app->screen = screen;
-	app->Init();
+
 	// prep imgui
 	ImGui::CreateContext();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -146,6 +146,9 @@ void main()
 	ImGui::StyleColorsDark();
 	ImGuiIO& io = ImGui::GetIO();
 	io.IniFilename = "./imgui.ini";
+	io.Fonts->AddFontDefault();
+
+	app->Init();
 	// done, enter main loop
 	// basic shader: apply gamma correction
 #if 1

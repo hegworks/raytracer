@@ -6,7 +6,7 @@ void Renderer::GameUI()
 	constexpr float startX = 50.0f;
 	constexpr float startY = WINDOWHEIGHT * 0.5f + 100.0f;
 	constexpr float btnWidth = 200.0f;
-	constexpr float btnHeight = 25.0f;
+	constexpr float btnHeight = 40.0f;
 
 	switch(m_gameManager.m_state)
 	{
@@ -83,5 +83,6 @@ void Renderer::GameUI()
 	}
 
 
+	
 }
 #endif

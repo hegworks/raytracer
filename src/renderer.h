@@ -54,6 +54,7 @@ public:
 	// data members
 #ifdef _GAME
 	float progress = 0;
+	ImFont* font = nullptr;
 #endif
 
 	int2 mousePos;

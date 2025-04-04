@@ -25,6 +25,8 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 
 	m_scaleTimer = new CountdownTimer(SCALE_TIME, false);
 
+	m_renderer->font = ImGui::GetIO().Fonts->AddFontFromFileTTF((ASSETDIR + "Fonts/Omniblack.ttf").c_str(), 32.0f);
+
 	LoadStartMenu();
 	//LoadLevel(0);
 }
