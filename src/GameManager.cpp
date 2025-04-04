@@ -73,7 +73,7 @@ void GameManager::Tick(const float deltaTime)
 		{
 			scl = m_levelObjectScale * 1.5f;
 			m_isGrowFullFinished = true;
-			if(m_levelIdx == 0 && m_renderer->showTutorial)
+			if(m_levelIdx == 0 && m_showTutorial)
 				m_state = State::TUTORIAL;
 			else
 				m_state = State::WIN;
@@ -249,9 +249,9 @@ void GameManager::RotateUntilLeastDiff(const float leastDiff)
 #endif
 }
 
-void GameManager::UpdateProgressBar(const float progress) const
+void GameManager::UpdateProgressBar(const float progress)
 {
-	m_renderer->progress = progress;
+	m_progress = progress;
 }
 
 void GameManager::ResetSceneLists()

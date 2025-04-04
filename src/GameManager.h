@@ -52,6 +52,10 @@ public:
 	int m_levelIdx = 0;
 	State m_state;
 	int m_tutorialStage = 0;
+	bool m_showTutorial = true;
+	float m_progress = 0;
+
+	static constexpr int NUM_LEVELS = 4;
 
 	void LoadStartMenu() const;
 	void Init(Scene* scene, Renderer* renderer);
@@ -66,7 +70,7 @@ public:
 	void OnKeyDown(int key) const;
 	void RotateRandomly();
 	void RotateUntilLeastDiff(float leastDiff);
-	void UpdateProgressBar(float progress) const;
+	void UpdateProgressBar(float progress);
 	void ResetSceneLists();
 	void ResetGameplayStates();
 	void LoadLevel(const int levelIdx);

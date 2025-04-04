@@ -28,7 +28,7 @@ void Renderer::GameUI()
 			{
 				m_gameManager.ResetSceneLists();
 				m_gameManager.LoadLevel(m_gameManager.m_levelIdx);
-				if(showTutorial)
+				if(m_gameManager.m_showTutorial)
 					m_gameManager.m_state = GameManager::State::TUTORIAL;
 				else
 					m_gameManager.m_state = GameManager::State::GAMEPLAY;
@@ -36,7 +36,7 @@ void Renderer::GameUI()
 			}
 
 			ImGui::SetCursorPosX(startX);
-			ImGui::Checkbox("Tutorial", &showTutorial);
+			ImGui::Checkbox("Tutorial", &m_gameManager.m_showTutorial);
 
 			ImGui::SetCursorPos(ImVec2(startX, ImGui::GetCursorPosY() + 50));
 			if(ImGui::Button("Quit", ImVec2(btnWidth, btnHeight)))
@@ -61,18 +61,32 @@ void Renderer::GameUI()
 			ImGui::SetCursorPos(ImVec2(100, centerY - btnHeight * 0.5f));
 			if(ImGui::Button("Next Level", ImVec2(btnWidth, btnHeight)))
 			{
+				m_gameManager.m_levelIdx++;
 				m_gameManager.ResetSceneLists();
 				m_gameManager.ResetGameplayStates();
-				m_gameManager.m_levelIdx++;
-				m_gameManager.LoadLevel(m_gameManager.m_levelIdx);
-				m_gameManager.m_state = GameManager::State::GAMEPLAY;
+				if(m_gameManager.m_levelIdx != GameManager::NUM_LEVELS)
+				{
+					m_gameManager.LoadLevel(m_gameManager.m_levelIdx);
+					m_gameManager.m_state = GameManager::State::GAMEPLAY;
+				}
+				else
+				{
+					if(m_gameManager.m_showTutorial)
+					{
+						m_gameManager.m_state = GameManager::State::TUTORIAL;
+					}
+					else
+					{
+						m_gameManager.LoadStartMenu();
+						m_gameManager.m_state = GameManager::State::START_MENU;
+					}
+					m_gameManager.m_levelIdx = 0;
+				}
 				resetAccumulator = true;
+
+				ImGui::End();
+				break;
 			}
-
-
-			ImGui::End();
-			break;
-		}
 
 
 		case GameManager::State::GAMEPLAY:
@@ -86,7 +100,7 @@ void Renderer::GameUI()
 
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 0, 0, 0.2f));  // Background color
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(1, 1, 1, 1));  // Fill color
-			ImGui::ProgressBar(progress, ImVec2(-1.0f, 30.0f), "");
+			ImGui::ProgressBar(m_gameManager.m_progress, ImVec2(-1.0f, 30.0f), "");
 			ImGui::PopStyleColor(2);
 
 
@@ -106,46 +120,46 @@ void Renderer::GameUI()
 			{
 				ImGui::SetCursorPosY(centerY - 175);
 				{
-					const string text = "Welcome to RAYMATIC!";
+					const string text = "Welcome to RAYMATIC - where form finds meaning in shadow.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				{
-					const string text = "A CPU-based Ray-Traced game about Shadow-Art.";
-					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
-					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
-					ImGui::Text(text.c_str());
-				}
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
-				{
-					const string text = "Hold and drag the left mouse button to contorl the pitch & yaw of the model,";
-					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
-					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
-					ImGui::Text(text.c_str());
-				}
-				{
-					const string text = "And hold and drag the right mouse button to control the roll.";
+					const string text = "A shadow-sculpting puzzle powered by CPU ray tracing.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				{
-					const string text = "Try to create meaningful shadows from meaningless shapes!";
+					const string text = "Left-click & drag: spin the shape (pitch & yaw)";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				{
-					const string text = "Get help from the bar on top to see how close you are.";
+					const string text = "Right-click & drag: twist it (roll)";
+					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
+					ImGui::Text(text.c_str());
+				}
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
+				{
+					const string text = "Your goal: cast meaningful shadows from meaningless shapes";
+					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
+					ImGui::Text(text.c_str());
+				}
+				{
+					const string text = "The bar at the top shows how close you are to the target.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				ImGui::SetCursorPosX(centerX - (btnWidth * 0.5f));
-				if(ImGui::Button("Ok!", ImVec2(btnWidth, btnHeight)))
+				if(ImGui::Button("Begin", ImVec2(btnWidth, btnHeight)))
 				{
 					m_gameManager.m_state = GameManager::State::GAMEPLAY;
 					m_gameManager.m_tutorialStage++;
@@ -155,37 +169,76 @@ void Renderer::GameUI()
 			{
 				ImGui::SetCursorPosY(centerY - 150);
 				{
-					const string text = "Congratulations on completing the first level!";
+					const string text = "Nice work! First shadow unlocked.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				{
-					const string text = "Before proceeding to the next level, you can examine the original model";
+					const string text = "Before diving into the next puzzle, take a moment to explore the original form.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				{
-					const string text = "by rotating it around, using the same mouse controls.";
+					const string text = "Use the same mouse controls to rotate and inspect it.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				{
-					const string text = "Note that some levels require the shadow to be in the correct roll, while some others don't.";
+					const string text = "Note that some levels require the correct roll. Others don’t.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				ImGui::SetCursorPosX(centerX - (btnWidth * 0.5f));
-				if(ImGui::Button("Ok!", ImVec2(btnWidth, btnHeight)))
+				if(ImGui::Button("Understood", ImVec2(btnWidth, btnHeight)))
 				{
 					m_gameManager.m_state = GameManager::State::WIN;
 					m_gameManager.m_tutorialStage++;
+				}
+			}
+			else if(m_gameManager.m_tutorialStage == 2)
+			{
+				ImGui::SetCursorPosY(centerY - 150);
+				{
+					const string text = "End of the demo - thanks for playing.";
+					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
+					ImGui::Text(text.c_str());
+				}
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
+				{
+					const string text = "Now try again with the guide bar off, and trust in the shadow.";
+					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
+					ImGui::Text(text.c_str());
+				}
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
+				{
+					const string text = "The full version will let you load and play with your own custom models.";
+					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
+					ImGui::Text(text.c_str());
+				}
+				{
+					const string text = "Stay tuned.";
+					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
+					ImGui::Text(text.c_str());
+				}
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
+				ImGui::SetCursorPosX(centerX - (btnWidth * 0.5f));
+				if(ImGui::Button("Main Menu", ImVec2(btnWidth, btnHeight)))
+				{
+					m_gameManager.m_tutorialStage = 0;
+					m_gameManager.LoadStartMenu();
+					m_gameManager.m_state = GameManager::State::START_MENU;
+					resetAccumulator = true;
 				}
 			}
 
@@ -193,9 +246,10 @@ void Renderer::GameUI()
 			ImGui::End();
 			break;
 		}
+		}
+
+
+
 	}
-
-
-
 }
 #endif
