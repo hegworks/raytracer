@@ -73,7 +73,10 @@ void GameManager::Tick(const float deltaTime)
 		{
 			scl = m_levelObjectScale * 1.5f;
 			m_isGrowFullFinished = true;
-			m_state = State::WIN;
+			if(m_levelIdx == 0 && m_renderer->showTutorial)
+				m_state = State::TUTORIAL;
+			else
+				m_state = State::WIN;
 		}
 		OnTransformChanged(m_levelObjectInstIdx + 1);
 	}
@@ -120,7 +123,8 @@ float GameManager::CalcProgressByAnyRot() const
 
 void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoord, const float2& screenCoordF, const int2& screenCoord)
 {
-	if((m_isGameWon && !m_isGrowFullFinished) || (m_state == State::START_MENU)) return;
+	if(m_state != State::GAMEPLAY && m_state != State::WIN) return;
+	if(m_isGameWon && !m_isGrowFullFinished) return;
 
 	m_windowCoordF = windowCoordF, m_windowCoord = windowCoord, m_screenCoordF = screenCoordF, m_screenCoord = screenCoord;
 	if(m_isMouseLeftBtnDown || m_isMouseRightBtnDown)

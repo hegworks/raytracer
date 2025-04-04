@@ -20,6 +20,7 @@ public:
 		START_MENU,
 		GAMEPLAY,
 		WIN,
+		TUTORIAL,
 	};
 
 	enum class WinType : int8_t
@@ -50,6 +51,7 @@ public:
 
 	int m_levelIdx = 0;
 	State m_state;
+	int m_tutorialStage = 0;
 
 	void LoadStartMenu() const;
 	void Init(Scene* scene, Renderer* renderer);

@@ -55,6 +55,7 @@ public:
 #ifdef _GAME
 	float progress = 0;
 	ImFont* font = nullptr;
+	bool showTutorial = true;
 #endif
 
 	int2 mousePos;
