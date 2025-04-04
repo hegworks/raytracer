@@ -14,12 +14,13 @@ enum class ModelType : uint8_t
 	HAMBURGER,
 	SNAKE,
 	LVL_SQUARE,
+	LVL_SQUARE_FULL,
 	LVL_TTORUS,
-	LVL_TEAPOT0,
-	LVL_TEAPOT1,
+	LVL_TTORUS_FULL,
+	LVL_TEAPOT,
 };
 
-constexpr int NUM_MODEL_TYPES = 14;
+constexpr int NUM_MODEL_TYPES = 15;
 
 inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 {
@@ -34,9 +35,10 @@ inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 	ModelType::HAMBURGER,
 	ModelType::SNAKE,
 	ModelType::LVL_SQUARE,
+	ModelType::LVL_SQUARE_FULL,
 	ModelType::LVL_TTORUS,
-	ModelType::LVL_TEAPOT0,
-	ModelType::LVL_TEAPOT1,
+	ModelType::LVL_TTORUS_FULL,
+	ModelType::LVL_TEAPOT,
 };
 
 inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
@@ -52,9 +54,10 @@ inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
 	"HAMBURGER",
 	"SNAKE",
 	"LVL_SQUARE",
+	"LVL_SQUARE_FULL",
 	"LVL_TTORUS",
-	"LVL_TEAPOT0",
-	"LVL_TEAPOT1",
+	"LVL_TTORUS_FULL",
+	"LVL_TEAPOT",
 };
 
 class ModelData
@@ -86,12 +89,14 @@ public:
 				return ASSETDIR + "Models/NakedSnake/Naked_Snake.obj";
 			case ModelType::LVL_SQUARE:
 				return ASSETDIR + "Models/Game/square.glb";
+			case ModelType::LVL_SQUARE_FULL:
+				return ASSETDIR + "Models/Game/square_full.glb";
 			case ModelType::LVL_TTORUS:
 				return ASSETDIR + "Models/Game/ttorus.glb";
-			case ModelType::LVL_TEAPOT0:
+			case ModelType::LVL_TTORUS_FULL:
+				return ASSETDIR + "Models/Game/ttorus_full.glb";
+			case ModelType::LVL_TEAPOT:
 				return ASSETDIR + "Models/Game/teapot.glb";
-			case ModelType::LVL_TEAPOT1:
-				return ASSETDIR + "Models/Game/teapot_1.obj";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

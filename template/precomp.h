@@ -344,6 +344,7 @@ public:
 	virtual void KeyUp(int key) = 0;
 	virtual void KeyDown(int key) = 0;
 	bool uiUpdated;
+	bool running = true;
 	Surface* screen = 0;
 };
 

@@ -25,7 +25,8 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 
 	m_scaleTimer = new CountdownTimer(SCALE_TIME, false);
 
-	LoadLevel(0);
+	LoadStartMenu();
+	//LoadLevel(0);
 }
 
 void GameManager::Tick(const float deltaTime)
@@ -70,6 +71,7 @@ void GameManager::Tick(const float deltaTime)
 		{
 			scl = m_levelObjectScale * 1.5f;
 			m_isGrowFullFinished = true;
+			m_state = State::WIN;
 		}
 		OnTransformChanged(m_levelObjectInstIdx + 1);
 	}
@@ -116,32 +118,36 @@ float GameManager::CalcProgressByAnyRot() const
 
 void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoord, const float2& screenCoordF, const int2& screenCoord)
 {
-	if(m_isGameWon) return;
+	if((m_isGameWon && !m_isGrowFullFinished) || (m_state == State::START_MENU)) return;
 
 	m_windowCoordF = windowCoordF, m_windowCoord = windowCoord, m_screenCoordF = screenCoordF, m_screenCoord = screenCoord;
 	if(m_isMouseLeftBtnDown || m_isMouseRightBtnDown)
 	{
+		const int objIdx = m_levelObjectInstIdx + (m_isGameWon ? 1 : 0);
 		m_mouseDelta = m_windowCoordF - m_mouseDownWindowPos;
 		const float3 axisSpeed = float3(m_mouseDelta.x, m_mouseDelta.y, 0) * DRAG_ROTATE_SPEED * m_deltaTime;
 		if(m_isMouseLeftBtnDown)
 		{
-			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[m_levelObjectInstIdx], {1,0,0}, -axisSpeed.y);
-			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[m_levelObjectInstIdx], {0,1,0}, -axisSpeed.x);
+			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[objIdx], {1,0,0}, -axisSpeed.y);
+			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[objIdx], {0,1,0}, -axisSpeed.x);
 		}
 		else if(m_isMouseRightBtnDown)
 		{
-			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[m_levelObjectInstIdx], {0,0,1}, -axisSpeed.x);
+			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[objIdx], {0,0,1}, -axisSpeed.x);
 		}
-		OnTransformChanged(m_levelObjectInstIdx);
+		OnTransformChanged(objIdx);
 		m_mouseDownWindowPos = windowCoord;
 
-		const float progress = CalcProgress();
-		UpdateProgressBar(progress);
-		//printf("%f\n", progress);
-		if(progress > WIN_PERCENTAGE)
+		if(!m_isGameWon)
 		{
-			m_isGameWon = true;
-			m_winTimeProgress = progress;
+			const float progress = CalcProgress();
+			UpdateProgressBar(progress);
+			//printf("%f\n", progress);
+			if(progress > WIN_PERCENTAGE)
+			{
+				m_isGameWon = true;
+				m_winTimeProgress = progress;
+			}
 		}
 	}
 	else
@@ -242,6 +248,25 @@ void GameManager::UpdateProgressBar(const float progress) const
 	m_renderer->progress = progress;
 }
 
+void GameManager::ResetSceneLists()
+{
+	m_scene->m_tranformList.clear();
+	m_scene->m_blasList.clear();
+	m_scene->m_modelList.clear();
+	m_scene->m_dirLightList.clear();
+	m_scene->m_bvhBaseList.clear();
+	m_scene->m_bvhList.clear();
+}
+
+void GameManager::ResetGameplayStates()
+{
+	m_isGameWon = false;
+	m_isWinSlerpFinished = false;
+	m_isShrinkDeformedFinished = false;
+	m_isGrowFullFinished = false;
+	m_scaleTimer->ForceEnd();
+}
+
 void GameManager::LoadLevel(const int levelIdx)
 {
 	Model& plane = m_scene->CreateModel(ModelType::PLANE);
@@ -252,49 +277,94 @@ void GameManager::LoadLevel(const int levelIdx)
 	m_scene->m_tranformList.back().m_scl = float3(30);
 	Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
 
-#if 0 // square level
-	Model& level0 = m_scene->CreateModel(ModelType::LVL_SQUARE, false);
-	m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-	m_scene->m_tranformList.back().m_scl = float3(0.2f);
+	switch(levelIdx)
+	{
+		case 0:
+		{
+			Model& level0 = m_scene->CreateModel(ModelType::LVL_SQUARE, false);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 0.2f;
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-	m_winType = WinType::ANY_ROT;
-	m_anyRotWinData.m_winQuat = quat::identity();
-#elif 0 // ttorus level
-	Model& level0 = m_scene->CreateModel(ModelType::LVL_TTORUS, false);
-	m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-	m_scene->m_tranformList.back().m_scl = float3(0.2f);
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_SQUARE_FULL, false, true);
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
-	m_winType = WinType::ANY_ROT;
-	m_anyRotWinData.m_winQuat = quat::identity();
-#elif 0 // unused situation
-	m_winType = WinType::SINGLE_SIDED;
-	m_singleSidedWinData.m_winRotDeg = 0;
-	m_singleSidedWinData.m_winRotWeights = 0.33f;
-#elif 0 // teapot level 1
-	Model& level0 = m_scene->CreateModel(ModelType::LVL_TEAPOT1, true);
-	m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-	m_scene->m_tranformList.back().m_scl = float3(0.2f);
+			m_winType = WinType::ANY_ROT;
+			m_anyRotWinData.m_winQuat = quat::identity();
 
-	m_winType = WinType::DOUBLE_SIDED;
-	m_doubleSidedWinData.m_winRotDeg0 = 0;
-	m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
-	m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
-	m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
-#elif 1 // teapot level 0
-	Model& level0 = m_scene->CreateModel(ModelType::DRAGON, true);
-	m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-	m_levelObjectScale = 1.2f;
-	m_scene->m_tranformList.back().m_scl = float3(1.2f);
 
-	Model& fullShape = m_scene->CreateModel(ModelType::DRAGON, false, true);
-	m_scene->m_tranformList.back().m_scl = float3(EPS);
+			break;
+		}
 
-	m_winType = WinType::DOUBLE_SIDED;
-	m_doubleSidedWinData.m_winRotDeg0 = 0;
-	m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
-	m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
-	m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
-#endif
+
+		case 1:
+		{
+			Model& level0 = m_scene->CreateModel(ModelType::LVL_TTORUS, false);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 0.2f;
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_TTORUS_FULL, false, true);
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::ANY_ROT;
+			m_anyRotWinData.m_winQuat = quat::identity();
+
+
+			break;
+		}
+
+
+		case 2:
+		{
+			Model& level0 = m_scene->CreateModel(ModelType::LVL_TEAPOT, true);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 1.2f;
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_TEAPOT, false, true);
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::DOUBLE_SIDED;
+			m_doubleSidedWinData.m_winRotDeg0 = 0;
+			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+
+
+			break;
+		}
+
+
+		case 3:
+		{
+			Model& level0 = m_scene->CreateModel(ModelType::DRAGON, true);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 1.2f;
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::DRAGON, false, true);
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::DOUBLE_SIDED;
+			m_doubleSidedWinData.m_winRotDeg0 = 0;
+			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+
+
+			break;
+		}
+
+
+		default:
+			throw std::runtime_error("Unhandled levelIdx");
+	}
+
+	// unused situation
+	//m_winType = WinType::SINGLE_SIDED;
+	//m_singleSidedWinData.m_winRotDeg = 0;
+	//m_singleSidedWinData.m_winRotWeights = 0.33f;
 
 	RotateUntilLeastDiff(0.01f);
 	UpdateProgressBar(CalcProgress());
@@ -305,5 +375,34 @@ void GameManager::LoadLevel(const int levelIdx)
 	DirLight& dirLight = m_scene->CreateDirLight();
 	dirLight.m_dir = float3(0, 0, 1);
 
+	m_scene->BuildTlas();
+}
+
+void GameManager::LoadStartMenu() const
+{
+	{
+		m_scene->CreateModel(ModelType::KENNY);
+	}
+	{
+		m_scene->CreateModel(ModelType::DRAGON);
+		m_scene->m_tranformList.back().m_pos = float3(-2, -0.8, -3);
+		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
+	}
+	{
+		m_scene->CreateModel(ModelType::SNAKE);
+		m_scene->m_tranformList.back().m_scl = float3(0.165f);
+		m_scene->m_tranformList.back().m_pos = float3(-2, -0.8, -1);
+		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
+	}
+	{
+		m_scene->CreateModel(ModelType::CUBE);
+		m_scene->m_tranformList.back().m_pos = float3(0, -0.8f, -3);
+		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
+	}
+	{
+		DirLight& light = m_scene->CreateDirLight();
+		light.m_intensity = 1.5f;
+		light.m_dir = normalize(float3(0, 0, 1.0f));
+	}
 	m_scene->BuildTlas();
 }

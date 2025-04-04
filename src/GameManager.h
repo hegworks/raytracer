@@ -19,6 +19,7 @@ public:
 	{
 		START_MENU,
 		GAMEPLAY,
+		WIN,
 	};
 
 	enum class WinType : int8_t
@@ -50,6 +51,7 @@ public:
 	int m_levelIdx = 0;
 	State m_state;
 
+	void LoadStartMenu() const;
 	void Init(Scene* scene, Renderer* renderer);
 	void Tick(const float deltaTime);
 	float CalcProgress() const;
@@ -63,10 +65,11 @@ public:
 	void RotateRandomly();
 	void RotateUntilLeastDiff(float leastDiff);
 	void UpdateProgressBar(float progress) const;
-
-private:
+	void ResetSceneLists();
+	void ResetGameplayStates();
 	void LoadLevel(const int levelIdx);
 
+private:
 	float2 m_windowCoordF = 0;
 	int2 m_windowCoord = 0;
 	float2 m_screenCoordF = 0;

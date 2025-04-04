@@ -125,11 +125,10 @@ private:
 	int norms = 0;
 #endif
 
-private:
+public:
 	std::vector<tinybvh::BVH8_CPU> m_bvhList;
 	std::vector<tinybvh::BVHBase*> m_bvhBaseList;
 	tinybvh::BVH m_tlas;
-public:
 	std::vector<Model> m_modelList;
 	std::vector<tinybvh::BLASInstance> m_blasList;
 	std::vector<Transform> m_tranformList;
