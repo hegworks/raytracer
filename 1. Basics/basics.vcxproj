@@ -222,6 +222,7 @@
     <ClInclude Include="..\src\CountdownTimer.h" />
     <ClInclude Include="..\src\DBG.h" />
     <ClInclude Include="..\src\GameManager.h" />
+    <ClInclude Include="..\src\ImGuiThemeManager.h" />
     <ClInclude Include="..\src\Model.h" />
     <ClInclude Include="..\src\ModelData.h" />
     <ClInclude Include="..\src\PerlinGenerator.h" />

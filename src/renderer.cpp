@@ -3,6 +3,7 @@
 #include <common.h>
 
 #include "DBG.h"
+#include "ImGuiThemeManager.h"
 #include "Material.h"
 #include "Model.h"
 
@@ -29,7 +30,10 @@ void Renderer::Init()
 	acmCounter = 1;
 
 #ifdef _GAME
+	ImGuiThemeManager::SetNewDarkTheme();
 	m_gameManager.Init(&scene, this);
+#elif defined(_ENINGE)
+	ImGuiThemeManager::SetDarkThemeColors();
 #endif
 
 	/*QuadLight& ql = scene.CreateQuadLight();
@@ -588,6 +592,24 @@ void Renderer::KeyDown(const int key)
 {
 #ifdef _GAME
 	m_gameManager.OnKeyDown(key);
+#endif
+
+#ifdef _ENGINE
+	static int theme = 0;
+	if(key == GLFW_KEY_T)
+	{
+		theme = (theme + 1) % 9;
+		printf("ThemeNumber: %i\n", theme);
+		if(theme == 0) ImGuiThemeManager::SetBessDarkThemeColors();
+		if(theme == 1) ImGuiThemeManager::SetCatpuccinMochaColors();
+		if(theme == 2) ImGuiThemeManager::SetDarkThemeColors();
+		if(theme == 3) ImGuiThemeManager::SetFluentUiLightTheme();
+		if(theme == 4) ImGuiThemeManager::SetFluentUiTheme();
+		if(theme == 5) ImGuiThemeManager::SetGlassTheme();
+		if(theme == 6) ImGuiThemeManager::SetMaterialYouColors();
+		if(theme == 7) ImGuiThemeManager::SetModernColors();
+		if(theme == 8) ImGuiThemeManager::SetNewDarkTheme();
+	}
 #endif
 
 	if(isDbgPixel && isDbgPixelClicked)

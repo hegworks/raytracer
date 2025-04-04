@@ -20,9 +20,9 @@ void Renderer::UI()
 	ImGui::PopFont();
 #endif
 
-	ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH - 300, 0));
-	ImGui::SetNextWindowSize(ImVec2(300, WINDOWHEIGHT));
-	ImGui::SetNextWindowBgAlpha(0.55f);
+	ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH - 350, 0));
+	ImGui::SetNextWindowSize(ImVec2(350, WINDOWHEIGHT));
+	ImGui::SetNextWindowBgAlpha(0.90f);
 	ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
 	if(ImGui::CollapsingHeader("Info", ImGuiTreeNodeFlags_DefaultOpen))
