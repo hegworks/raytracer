@@ -90,8 +90,8 @@ public:
 
 private:
 	void loadModel(std::string path);
-	void processNode(aiNode* node, const aiScene* scene);
-	void processMesh(aiMesh* mesh, const aiScene* scene);
+	void processNode(aiNode* node, const aiScene* scene, aiMatrix4x4 parentTransform);
+	void processMesh(aiMesh* mesh, const aiScene* scene, const aiMatrix4x4& transform);
 	void TextureFromFile(const std::string& path);
 	void TextureFromMemory(aiTexel* pcData, int mWidth);
 	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
@@ -112,7 +112,7 @@ inline void Model::loadModel(std::string path)
 	}
 	m_directory = path.substr(0, path.find_last_of('/'));
 
-	processNode(scene->mRootNode, scene);
+	processNode(scene->mRootNode, scene, {});
 }
 
 inline std::string Model::GetStrippedFileName() const
@@ -138,18 +138,20 @@ inline int Model::VertexToMeshIdx(const uint prim) const
 
 }
 
-inline void Model::processNode(aiNode* node, const aiScene* scene)
+inline void Model::processNode(aiNode* node, const aiScene* scene, aiMatrix4x4 parentTransform)
 {
+	aiMatrix4x4 nodeTransform = parentTransform * node->mTransformation;
+
 	// process all the node's meshes (if any)
 	for(unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		processMesh(mesh, scene);
+		processMesh(mesh, scene, nodeTransform);
 	}
 	// then do the same for each of its children
 	for(unsigned int i = 0; i < node->mNumChildren; i++)
 	{
-		processNode(node->mChildren[i], scene);
+		processNode(node->mChildren[i], scene, nodeTransform);
 	}
 }
 
@@ -158,20 +160,16 @@ inline void Model::processNode(aiNode* node, const aiScene* scene)
 //#define PERLIN
 //#define FIXED_MOVE
 
-inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
+inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatrix4x4& transform)
 {
-	// process indices
-	for(unsigned int i = 0; i < mesh->mNumFaces; i++)
+	for(uint i = 0; i < mesh->mNumFaces; ++i)
 	{
-		const aiFace face = mesh->mFaces[i];
-
-		for(unsigned int j = 0; j < face.mNumIndices; j++)
+		const aiFace& face = mesh->mFaces[i];
+		for(uint j = 0; j < face.mNumIndices; ++j)
 		{
 			const uint idx = face.mIndices[j];
 
-			VertexData& newVertexData = m_modelData.m_vertexDataList.emplace_back();
-			newVertexData.m_normal = float3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z);
-			float randZAddition = 0;
+			float randZAddition = 0.0f;
 			if(m_isRandZ)
 			{
 #if defined(FULLY_RANDOM)
@@ -212,17 +210,36 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 #endif
 			}
-			float4 vert(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z + randZAddition, 0);
-			m_modelData.m_vertices.emplace_back(vert);
-			if(mesh->mTextureCoords[0])
-				newVertexData.m_texCoord = float2(mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x, mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y);
-			else
-				newVertexData.m_texCoord = float2(0);
 
+			aiMatrix3x3 normalMatrix = aiMatrix3x3(transform);
+			normalMatrix.Inverse().Transpose();
+			const aiVector3D transformedPos = transform * mesh->mVertices[idx];
+			const aiVector3D transformedNormal = mesh->HasNormals() ? normalMatrix * mesh->mNormals[idx] : aiVector3D(0, 0, 1);
+
+			float3 position(transformedPos.x, transformedPos.y, transformedPos.z + randZAddition);
+
+			const float3 normal = float3(transformedNormal.x, transformedNormal.y, transformedNormal.z);
+
+			float2 texCoord = float2(0);
+			if(mesh->HasTextureCoords(0))
+			{
+				texCoord = float2(
+					mesh->mTextureCoords[0][idx].x * m_textureCoordScale.x,
+					mesh->mTextureCoords[0][idx].y * m_textureCoordScale.y
+				);
+			}
+
+			VertexData vertexData;
+			vertexData.m_normal = normal;
+			vertexData.m_texCoord = texCoord;
+
+			m_modelData.m_vertexDataList.push_back(vertexData);
+			m_modelData.m_vertices.emplace_back(float4(position, 0));
 		}
 	}
-	const int verticesSize = static_cast<int>(m_modelData.m_vertices.size());
-	m_modelData.m_meshVertexBorderList.emplace_back(verticesSize - 1);
+
+	const int vertCount = static_cast<int>(m_modelData.m_vertices.size());
+	m_modelData.m_meshVertexBorderList.emplace_back(vertCount - 1);
 
 	// process material
 	Material& mat = m_modelData.m_meshMaterialList.emplace_back();
