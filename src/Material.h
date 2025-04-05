@@ -22,7 +22,24 @@ struct ALIGNED(64) Material
 
 	char m_name[40];
 	float3 m_albedo = float3(1.0f);
+
+	/// <summary>
+	/// for DIFFUSE	-> UNUSED<br>
+	/// for GLOSSY	-> UNUSED<br>
+	/// for REFRACTIVE	-> density<br>
+	/// for EMISSIVE	-> intensity<br>
+	/// for PATH_TRACED	-> smoothness<br>
+	/// </summary>
 	float m_factor0 = 0.0f;
+
+	/// /// <summary>
+	/// for DIFFUSE	-> UNUSED<br>
+	/// for GLOSSY	-> UNUSED<br>
+	/// for REFRACTIVE	-> ior<br>
+	/// for EMISSIVE	-> UNUSED<br>
+	/// for PATH_TRACED	-> specularity<br>
+	/// </summary>
 	float m_factor1 = 0.0f;
+
 	Type m_type = Type::PATH_TRACED;
 };

@@ -73,7 +73,6 @@ public:
 	bool qlOneSided = true;
 	inline static int acmCounter;
 	bool useACM = false;
-	int maxDepth = 50;
 	Scene scene;
 	GameManager m_gameManager;
 

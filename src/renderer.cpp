@@ -44,9 +44,8 @@ void Renderer::Init()
 	ql.m_quad.invT = ql.m_quad.T.FastInvertedTransformNoScale();*/
 
 #ifdef _DEBUG
-	dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
-	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
-	dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
+	//dbgScrRangeX = {(SCRWIDTH / 2) - 150,(SCRWIDTH / 2) + 150};
+	//dbgScrRangeY = {(SCRHEIGHT / 2) - 150,(SCRHEIGHT / 2) + 150};
 #endif // _DEBUG
 }
 

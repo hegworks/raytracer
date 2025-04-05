@@ -18,9 +18,10 @@ enum class ModelType : uint8_t
 	LVL_TTORUS,
 	LVL_TTORUS_FULL,
 	LVL_TEAPOT,
+	WHITE_ROOM,
 };
 
-constexpr int NUM_MODEL_TYPES = 15;
+constexpr int NUM_MODEL_TYPES = 16;
 
 inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 {
@@ -39,6 +40,7 @@ inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 	ModelType::LVL_TTORUS,
 	ModelType::LVL_TTORUS_FULL,
 	ModelType::LVL_TEAPOT,
+	ModelType::WHITE_ROOM,
 };
 
 inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
@@ -58,6 +60,7 @@ inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
 	"LVL_TTORUS",
 	"LVL_TTORUS_FULL",
 	"LVL_TEAPOT",
+	"WHITE_ROOM",
 };
 
 class ModelData
@@ -97,6 +100,18 @@ public:
 				return ASSETDIR + "Models/Game/ttorus_full.glb";
 			case ModelType::LVL_TEAPOT:
 				return ASSETDIR + "Models/Game/teapot.glb";
+			case ModelType::WHITE_ROOM:
+				//return ASSETDIR + "Models/Game/andys_room.glb";
+				//return ASSETDIR + "Models/Game/living_room_night_-_custom_home_environment.glb";
+				//return ASSETDIR + "Models/Game/toy_box.glb";
+				//return ASSETDIR + "Models/Game/final_bedroom.glb";
+				//return ASSETDIR + "Models/Game/time-room.glb";
+				//return ASSETDIR + "Models/Game/the_morning_room.glb";
+				//return ASSETDIR + "Models/Game/abandoned_brick_room.glb";
+				//return ASSETDIR + "Models/Game/90/source/Retro-Room_v3.fbx";
+				//return ASSETDIR + "Models/Game/90-th_retro_room_with_dendy.glb";
+				//return ASSETDIR + "Models/Game/bedroom_interior.glb";
+				return ASSETDIR + "Models/Game/Home2_Night.glb";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

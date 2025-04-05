@@ -17,6 +17,20 @@ Scene::Scene()
 
 	stbi_set_flip_vertically_on_load(false);
 
+#pragma region RoomTest
+#pragma endregion
+
+	maxDepth = 1;
+	CreateModel(ModelType::WHITE_ROOM);
+	m_tranformList.back().m_scl = 0.025f;
+	SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	BuildTlas();
+
+	DirLight& dirLight = CreateDirLight();
+	dirLight.m_intensity = 1.5f;
+	//dirLight.m_dir = normalize(float3(-0.25f, -0.8f, -0.25f));
+
+
 #ifdef SIMD_TEST_SCENE
 	useSD = false;
 
@@ -407,7 +421,9 @@ float3 Scene::SampleTexture(const Ray& ray, const Model& model)
 		(1.0f - (ray.hit.u + ray.hit.v)) * v0.m_texCoord;
 	const int iu = static_cast<int>(uv.x * static_cast<float>(tex.width)) % tex.width;
 	const int iv = static_cast<int>(uv.y * static_cast<float>(tex.height)) % tex.height;
-	const float3 texel = tex.pixelsF[iu + iv * tex.width];
+	const int pixelIdx = iu + iv * tex.width;
+	if(pixelIdx < 0) return {1,0,1};
+	const float3 texel = tex.pixelsF[pixelIdx];
 	return texel;
 }
 

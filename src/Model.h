@@ -83,6 +83,7 @@ public:
 	std::string m_directory;
 	std::string m_fileName;
 	std::vector<Texture> m_texturesLoaded;
+	int m_fallbackTextureIdx = -1;
 
 	std::string GetStrippedFileName() const;
 	int VertexToMeshIdx(uint prim) const;
@@ -227,10 +228,39 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	Material& mat = m_modelData.m_meshMaterialList.emplace_back();
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	strcpy(mat.m_name, material->GetName().C_Str());
-	aiColor4D diffuse;
-	if(AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse))
+
+	aiColor3D diffuse, emisssion;
+	float metallic, ior, transmission, roughness;
+	material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
+	material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+	material->Get(AI_MATKEY_COLOR_EMISSIVE, emisssion);
+	material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+	material->Get(AI_MATKEY_REFRACTI, ior);
+	material->Get(AI_MATKEY_TRANSMISSION_FACTOR, transmission);
+
+	mat.m_albedo = {diffuse.r,diffuse.g,diffuse.b};
+
+	/*if (true)
 	{
-		mat.m_albedo = {diffuse.r,diffuse.g,diffuse.b};
+		mat.m_type = Material::Type::DIFFUSE;
+	}*/
+	if(emisssion.r > EPS || emisssion.g > EPS || emisssion.b > EPS)
+	{
+		mat.m_type = Material::Type::EMISSIVE;
+		mat.m_albedo = {emisssion.r,emisssion.g,emisssion.b};
+		mat.m_factor0 = 1.0f; // intensity
+	}
+	else if(ior > 1.0f)
+	{
+		mat.m_type = Material::Type::REFRACTIVE;
+		mat.m_factor0 = transmission;
+		mat.m_factor1 = ior;
+	}
+	else
+	{
+		mat.m_type = Material::Type::PATH_TRACED;
+		mat.m_factor0 = roughness;
+		mat.m_factor1 = metallic;
 	}
 
 	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
@@ -240,6 +270,32 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene)
 {
 	std::vector<Texture> textures;
+
+	const uint textureCount = mat->GetTextureCount(type);
+	if(textureCount == 0)
+	{
+		if(m_fallbackTextureIdx != -1) // fallback texture has been loaded before
+		{
+			textures.push_back(m_texturesLoaded[m_fallbackTextureIdx]);
+			m_modelData.m_surfaceIndexList.emplace_back(m_texturesLoaded[m_fallbackTextureIdx].m_surfaceIndex);
+		}
+		else
+		{
+			Texture texture;
+			const std::string path = ASSETDIR + "Models/4x4white.png";
+			std::cout << "Loading fallback texture at:  " << path << std::endl;
+			TextureFromFile(path);
+			texture.m_type = typeName;
+			texture.m_path = path;
+			texture.m_surfaceIndex = static_cast<int>(m_modelData.m_surfaceList.size()) - 1;
+			textures.push_back(texture);
+			m_texturesLoaded.push_back(texture);
+			m_fallbackTextureIdx = static_cast<int>(m_texturesLoaded.size()) - 1;
+			m_modelData.m_surfaceIndexList.emplace_back(texture.m_surfaceIndex);
+		}
+		return textures;
+	}
+
 	for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString str;

@@ -8,7 +8,11 @@
 #pragma once
 
 // default screen resolution
+#if defined(_DEBUG)
+constexpr float SCRSCALE = 5.0f;
+#else
 constexpr float SCRSCALE = 2.0f;
+#endif
 constexpr float INV_SCRSCALE = 1.0f / SCRSCALE;
 constexpr int WINDOWWIDTH = 1280;
 constexpr int WINDOWHEIGHT = 720;

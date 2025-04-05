@@ -28,6 +28,8 @@ inline bool useAA = false; /// Anti-Aliasing
 inline float dbgIor = 1.5f;
 inline bool dbgBeer = true; /// beer's law
 
+inline int maxDepth = 50;
+
 inline bool isDbgPixel = false;
 inline bool isDbgPixelClicked = false;
 inline bool isDbgPixelEntered = false;
