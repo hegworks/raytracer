@@ -423,10 +423,12 @@ float3 Scene::SampleTexture(const Ray& ray, const Model& model)
 		ray.hit.u * v1.m_texCoord +
 		ray.hit.v * v2.m_texCoord +
 		(1.0f - (ray.hit.u + ray.hit.v)) * v0.m_texCoord;
-	const int iu = static_cast<int>(uv.x * static_cast<float>(tex.width)) % tex.width;
-	const int iv = static_cast<int>(uv.y * static_cast<float>(tex.height)) % tex.height;
-	const int pixelIdx = iu + iv * tex.width;
-	if(pixelIdx < 0) return {1,0,1};
+	const int iu = static_cast<int>(uv.x * static_cast<float>(tex.width));
+	const int iv = static_cast<int>(uv.y * static_cast<float>(tex.height));
+	const int tiledIu = (iu % tex.width + tex.width) % tex.width;
+	const int tiledIv = (iv % tex.height + tex.height) % tex.height;
+	const int pixelIdx = tiledIu + tiledIv * tex.width;
+	//if(pixelIdx < 0) return {1,0,1};
 	const float3 texel = tex.pixelsF[pixelIdx];
 	return texel;
 }
