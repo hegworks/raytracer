@@ -273,7 +273,7 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 	if(emisssion.r > EPS || emisssion.g > EPS || emisssion.b > EPS)
 	{
 		mat.m_type = Material::Type::EMISSIVE;
-		mat.m_albedo = {emisssion.r,emisssion.g,emisssion.b};
+		mat.m_albedo = normalize(float3(emisssion.r, emisssion.g, emisssion.b));
 		mat.m_factor0 = 10.0f; // intensity
 	}
 	else if(ior > 1.0f)

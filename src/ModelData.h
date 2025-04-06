@@ -91,41 +91,31 @@ public:
 			case ModelType::LVL_TEAPOT:
 				return ASSETDIR + "Models/Game/teapot.glb";
 			case ModelType::WHITE_ROOM:
-				//reject:
-				//return ASSETDIR + "Models/Game/the_king_s_hall.glb";
-				//return ASSETDIR + "Models/Game/adiha.fbx";
-				//return ASSETDIR + "Models/Game/worm_hole_but_sphere.glb";
-				//return ASSETDIR + "Models/Game/time-room.glb";
-				//return ASSETDIR + "Models/Game/the_morning_room.glb";
-				//return ASSETDIR + "Models/Game/abandoned_brick_room.glb";
-				//return ASSETDIR + "Models/Game/toy_box.glb";
-				//return ASSETDIR + "Models/Game/final_bedroom.glb";
-				//return ASSETDIR + "Models/Game/bedroom_interior.glb";
-				//return ASSETDIR + "Models/Game/Home2_Night.glb";
-				//return ASSETDIR + "Models/Game/new/3d_modelling_my_cat_fripouille.glb"; // has no eyes
-				//return ASSETDIR + "Models/Game/new/the_cats_body.glb"; // worse than other cat models
-				//return ASSETDIR + "Models/Game/new/fokker_s-11.glb"; // front door is open :(
-
-				//testing:
-				//return ASSETDIR + "Models/Game/new/fokker_s-11.glb";
-
-
 				//maybe:
 				//return ASSETDIR + "Models/Game/spheres.glb"; // use in start screen
 				//return ASSETDIR + "Models/Game/andys_room.glb"; // remove roof
 
+				//return ASSETDIR + "Models/Game/Neon Calligraphy School.glb"; // make mats emissive in blender
+				//return ASSETDIR + "Models/Game/neon_mask.glb"; // change emissive mat colors in blender
+
+				//return ASSETDIR + "Models/Game/neon_spinners.glb"; // edit mats in blender
+				//return ASSETDIR + "Models/Game/arcade_machine.glb"; // edit mats in blender
+
+
 				//def:
 				// glass dragon
-				return ASSETDIR + "Models/Game/summer_drink.glb"; //100% change refractiveness and color of foam, glass, cocktail in code
+				return ASSETDIR + "Models/Game/balloon_dog.glb"; //change materials in blender to 0.8 & 0.15
+				//return ASSETDIR + "Models/Game/summer_drink.glb"; //100% change refractiveness and color of foam, glass, cocktail in code
 				//return ASSETDIR + "Models/Game/swapfiets.glb"; // fix materials in blender (remove emissive, make metallic etc.)
-				//return ASSETDIR + "Models/Game/chair.glb"; // increase metallic and smoothness of screws
 				//return ASSETDIR + "Models/Game/chair.glb"; // increase metallic and smoothness of screws
 				//return ASSETDIR + "Models/Game/metal_bucket.glb"; // increase smoothness in blender
 				//return ASSETDIR + "Models/Game/guitar.glb"; // make some parts metallic in blender
 				//return ASSETDIR + "Models/Game/miniature_cat.glb"; // level obj
 				//return ASSETDIR + "Models/Game/geometric_1.glb"; // use as level
 				//return ASSETDIR + "Models/Game/90-th_retro_room_with_dendy.glb"; // use in a level
+
 				//return ASSETDIR + "Models/Game/raymatic.glb"; // use in start screen - logo
+
 				//return ASSETDIR + "Models/Game/room_by_night.glb"; // def. use somewhere
 		}
 		throw std::runtime_error("Unhandled ModelType");
