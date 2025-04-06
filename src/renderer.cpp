@@ -528,17 +528,17 @@ bool Renderer::HandleKeyboardRotations(const float deltaTime)
 	bool rotChanged = false;
 
 	const float speed = 0.001f * deltaTime;
-	if(IsKeyDown(GLFW_KEY_U)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(1, 0, 0), speed), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_I)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 1, 0), speed), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_O)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 0, 1), speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_U)) RotateAroundWorldAxis(scene.m_tranformList[selectedInstIdx], float3(1, 0, 0), speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_I)) RotateAroundWorldAxis(scene.m_tranformList[selectedInstIdx], float3(0, 1, 0), speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_O)) RotateAroundWorldAxis(scene.m_tranformList[selectedInstIdx], float3(0, 0, 1), speed), rotChanged = true;
 
-	if(IsKeyDown(GLFW_KEY_J)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(1, 0, 0), -speed), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_K)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 1, 0), -speed), rotChanged = true;
-	if(IsKeyDown(GLFW_KEY_L)) RotateAroundWorldAxis(scene.m_tranformList[selectedIdx], float3(0, 0, 1), -speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_J)) RotateAroundWorldAxis(scene.m_tranformList[selectedInstIdx], float3(1, 0, 0), -speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_K)) RotateAroundWorldAxis(scene.m_tranformList[selectedInstIdx], float3(0, 1, 0), -speed), rotChanged = true;
+	if(IsKeyDown(GLFW_KEY_L)) RotateAroundWorldAxis(scene.m_tranformList[selectedInstIdx], float3(0, 0, 1), -speed), rotChanged = true;
 
 	if(rotChanged)
 	{
-		Scene::SetBlasTransform(scene.m_blasList[selectedIdx], scene.m_tranformList[selectedIdx]);
+		Scene::SetBlasTransform(scene.m_blasList[selectedInstIdx], scene.m_tranformList[selectedInstIdx]);
 		scene.BuildTlas();
 	}
 
@@ -580,9 +580,10 @@ void Renderer::MouseDown(int button)
 	}
 	else
 	{
-		if(button == GLFW_MOUSE_BUTTON_LEFT)
+		if(button == GLFW_MOUSE_BUTTON_LEFT && !ImGui::GetIO().WantCaptureMouse)
 		{
-			selectedIdx = hoveredInst;
+			selectedInstIdx = hoveredInst;
+			selectedMeshIdx = hoveredMesh;
 		}
 	}
 }

@@ -83,7 +83,7 @@ void Renderer::UI()
 		int blasIdx = hit ? scene.m_blasList[hoveredInst].blasIdx : -1;
 		//int prim = hit ? r.hit.prim : -1; // unused
 		int tri = hit ? r.hit.prim * 3 : -1;
-		int mesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
+		hoveredMesh = hit ? scene.m_modelList[blasIdx].VertexToMeshIdx(tri) : -1;
 
 		if(ImGui::BeginTable("CoordTable", 2, ImGuiTableFlags_Borders))
 		{
@@ -106,9 +106,9 @@ void Renderer::UI()
 			ImGui::TableHeadersRow();
 
 			ImGui::TableNextRow();
-			ImGui::TableSetColumnIndex(0); ImGui::Text("%i", selectedIdx);
+			ImGui::TableSetColumnIndex(0); ImGui::Text("%i", selectedInstIdx);
 			ImGui::TableSetColumnIndex(1); ImGui::Text("%i", hoveredInst);
-			ImGui::TableSetColumnIndex(2); ImGui::Text("%i", mesh);
+			ImGui::TableSetColumnIndex(2); ImGui::Text("%i", hoveredMesh);
 
 			ImGui::EndTable();
 		}
@@ -492,64 +492,97 @@ void Renderer::UI()
 					}
 					ImGui::EndTabItem();
 				}
-
 				ImGui::EndTabBar();
 			}
 			ImGui::EndTabItem();
 		}
-		ImGui::EndTabBar();
-	}
-	ImGui::End();
-
-	if(tdd)
-	{
-		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT / 2.0f));
-		ImGui::SetNextWindowBgAlpha(0.2f);
-		ImGui::Begin("2D Debugger", nullptr, ImGuiWindowFlags_NoResize);
-
-		if(ImGui::Button("Reset"))
+		
+		if(ImGui::BeginTabItem("Mesh Mat."))
 		{
-			tddSceneScale = 2.0f;
-			tddOffset = tddOffset = int2(0, 0);
-			tddResetCam = true;
+			if(selectedMeshIdx != -1)
+			{
+				constexpr int j = 9999999;
+				Model& model = scene.m_modelList[selectedInstIdx];
+				Material& mat = model.m_modelData.m_meshMaterialList[selectedMeshIdx];
+				ImGui::Text("Name: %s", mat.m_name[0] != '\0' ? mat.m_name : "UKNOWN");
+				int matInt = static_cast<int>(mat.m_type);
+				ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, MATERIAL_STRING, IM_ARRAYSIZE(MATERIAL_STRING));
+				mat.m_type = static_cast<Material::Type>(matInt);
+				ImGui::ColorEdit3(("Albedo##" + std::to_string(j)).c_str(), &mat.m_albedo.x);
+
+				switch(mat.m_type)
+				{
+					case Material::Type::DIFFUSE:
+					case Material::Type::GLOSSY:
+						break;
+					case Material::Type::REFRACTIVE:
+						ImGui::DragFloat(("Density##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
+						ImGui::DragFloat(("IOR##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.01f, 0.0f, 999999.0f);
+						break;
+					case Material::Type::PATH_TRACED:
+						ImGui::DragFloat(("Smoothness##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0, 1);
+						ImGui::DragFloat(("Specularity##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
+						break;
+					case Material::Type::EMISSIVE:
+						ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
+						break;
+				}
+				ImGui::TreePop();
+				ImGui::EndTabItem();
+			}
 		}
-		ImGui::SameLine();
-		ImGui::Checkbox("Black Background", &tddBBG);
-
-		ImGui::DragFloat("Scale", &tddSceneScale, 0.01f, 0.001f, 10.0f);
-		ImGui::DragInt2("Offset", &tddOffset.x);
-		ImGui::DragInt("Ray Count", &tddrx, 0.5f, 1, 200);
-		ImGui::SliderInt("Font Size", &tddFS, 0, 4);
-
-		ImGui::Separator();
-
-		ImGui::Checkbox("Single", &tddSXM);
-		ImGui::SameLine();
-		ImGui::DragInt("X", &tddSXX, 1.0f, 0, SCRWIDTH);
-
-		ImGui::Separator();
-
-		ImGui::Text("Ray");
-		ImGui::SameLine();
-		ImGui::Checkbox("##0", &tddPRay);
-		ImGui::SameLine();
-		ImGui::Checkbox("Length##0", &tddPRayL);
-		ImGui::SameLine();
-		ImGui::Checkbox("Coord##0", &tddRC);
-
-		ImGui::Text("Normal");
-		ImGui::SameLine();
-		ImGui::Checkbox("##1", &tddPN);
-		ImGui::SameLine();
-		ImGui::Checkbox("Length##1", &tddPNL);
-
-		ImGui::Text("PointLight");
-		ImGui::SameLine();
-		ImGui::Checkbox("Pos", &tddPLP);
-		ImGui::SameLine();
-		ImGui::Checkbox("Ray", &tddPLR);
-
 		ImGui::End();
+
+		if(tdd)
+		{
+			ImGui::SetNextWindowPos(ImVec2(0, 0));
+			ImGui::SetNextWindowSize(ImVec2(300, SCRHEIGHT / 2.0f));
+			ImGui::SetNextWindowBgAlpha(0.2f);
+			ImGui::Begin("2D Debugger", nullptr, ImGuiWindowFlags_NoResize);
+
+			if(ImGui::Button("Reset"))
+			{
+				tddSceneScale = 2.0f;
+				tddOffset = tddOffset = int2(0, 0);
+				tddResetCam = true;
+			}
+			ImGui::SameLine();
+			ImGui::Checkbox("Black Background", &tddBBG);
+
+			ImGui::DragFloat("Scale", &tddSceneScale, 0.01f, 0.001f, 10.0f);
+			ImGui::DragInt2("Offset", &tddOffset.x);
+			ImGui::DragInt("Ray Count", &tddrx, 0.5f, 1, 200);
+			ImGui::SliderInt("Font Size", &tddFS, 0, 4);
+
+			ImGui::Separator();
+
+			ImGui::Checkbox("Single", &tddSXM);
+			ImGui::SameLine();
+			ImGui::DragInt("X", &tddSXX, 1.0f, 0, SCRWIDTH);
+
+			ImGui::Separator();
+
+			ImGui::Text("Ray");
+			ImGui::SameLine();
+			ImGui::Checkbox("##0", &tddPRay);
+			ImGui::SameLine();
+			ImGui::Checkbox("Length##0", &tddPRayL);
+			ImGui::SameLine();
+			ImGui::Checkbox("Coord##0", &tddRC);
+
+			ImGui::Text("Normal");
+			ImGui::SameLine();
+			ImGui::Checkbox("##1", &tddPN);
+			ImGui::SameLine();
+			ImGui::Checkbox("Length##1", &tddPNL);
+
+			ImGui::Text("PointLight");
+			ImGui::SameLine();
+			ImGui::Checkbox("Pos", &tddPLP);
+			ImGui::SameLine();
+			ImGui::Checkbox("Ray", &tddPLR);
+
+			ImGui::End();
+		}
 	}
 }

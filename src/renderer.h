@@ -62,6 +62,7 @@ public:
 	float4* accumulator;
 	float4* illuminations;
 	int hoveredInst = -1;
+	int hoveredMesh = -1;
 	Camera camera;
 	bool resetAccumulator = false;
 	float anim_time = 0;
