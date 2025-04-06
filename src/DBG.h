@@ -55,8 +55,8 @@ inline float defocusAngle = 1;
 inline float focusDistance = 5;
 inline int spp = 1; /// SamplesPerPixels
 
-inline int selectedInstIdx = 0;
-inline int selectedMeshIdx = 0;
+inline int selectedInstIdx = -1;
+inline int selectedMeshIdx = -1;
 
 inline int dbgRotAxisInt = 1; /// 0->X 1->Y 2->Z
 inline float3 rotAxis(0, 1, 0);

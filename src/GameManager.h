@@ -1,4 +1,7 @@
 ﻿#pragma once
+
+#ifdef _GAME
+
 #include "RNG.h"
 
 class CountdownTimer;
@@ -113,3 +116,5 @@ private:
 	RNG m_rng;
 	CountdownTimer* m_scaleTimer = nullptr;
 };
+
+#endif

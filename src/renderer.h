@@ -75,7 +75,10 @@ public:
 	inline static int acmCounter;
 	bool useACM = false;
 	Scene scene;
+
+#ifdef _GAME
 	GameManager m_gameManager;
+#endif
 
 	union quadf { __m128 f4; float f[4]; };
 	union quadi { __m128i i4; int i[4]; };

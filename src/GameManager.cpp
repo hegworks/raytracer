@@ -1,5 +1,7 @@
 ﻿#include "precomp.h"
 
+#ifdef _GAME
+
 #include "GameManager.h"
 
 #include "CountdownTimer.h"
@@ -406,3 +408,5 @@ void GameManager::LoadStartMenu() const
 	}
 	m_scene->BuildTlas();
 }
+
+#endif

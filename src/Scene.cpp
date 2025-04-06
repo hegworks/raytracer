@@ -3,8 +3,6 @@
 #include "ModelData.h"
 #include "Scene.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
 #define TINYBVH_IMPLEMENTATION
@@ -14,8 +12,9 @@ Scene::Scene()
 {
 	printf("using tiny_bvh version %i.%i.%i\n", TINY_BVH_VERSION_MAJOR, TINY_BVH_VERSION_MINOR, TINY_BVH_VERSION_SUB);
 
-	m_modelList.reserve(NUM_MODEL_TYPES * 2);
-	m_bvhList.reserve(NUM_MODEL_TYPES * 2);
+	constexpr size_t numModels = NUM_MODEL_TYPES;
+	m_modelList.reserve(numModels * 2);
+	m_bvhList.reserve(numModels * 2);
 
 	LoadSkydome();
 
@@ -23,6 +22,7 @@ Scene::Scene()
 
 #pragma region RoomTest
 
+	/*
 	maxDepth = 3;
 	CreateModel(ModelType::WHITE_ROOM, false, false, true);
 	m_tranformList.back().m_scl = 1.1f;
@@ -32,7 +32,7 @@ Scene::Scene()
 	DirLight& dirLight = CreateDirLight();
 	dirLight.m_intensity = 1.5f;
 	//dirLight.m_dir = normalize(float3(-0.25f, -0.8f, -0.25f));
-
+	*/
 #pragma endregion
 
 #ifdef SIMD_TEST_SCENE

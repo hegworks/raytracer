@@ -526,6 +526,8 @@ float3 Renderer::CalcAllQuadLights(const float3& p, const float3& n, const float
 
 bool Renderer::HandleKeyboardRotations(const float deltaTime)
 {
+	if(selectedInstIdx == -1) return false;
+
 	bool rotChanged = false;
 
 	const float speed = 0.001f * deltaTime;
