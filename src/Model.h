@@ -246,21 +246,28 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	strcpy(mat.m_name, material->GetName().C_Str());
 
-	aiColor3D diffuse, emisssion;
-	float metallic, ior, transmission, roughness;
+	aiColor3D diffuse(DEFAULT_ALBEDO), emisssion(0.0f);
+	float metallic(0.0f), roughness(0.0f), ior(1.0f), transmission(1.0f);
 	material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
-	material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
 	material->Get(AI_MATKEY_COLOR_EMISSIVE, emisssion);
 	material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+	material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
 	material->Get(AI_MATKEY_REFRACTI, ior);
 	material->Get(AI_MATKEY_TRANSMISSION_FACTOR, transmission);
 
-	mat.m_albedo = {diffuse.r,diffuse.g,diffuse.b};
+#if 0
+	printf("Material: %s\n", mat.m_name);
+	printf("Diffuse: %f %f %f\n", diffuse.r, diffuse.g, diffuse.b);
+	printf("Emissive: %f %f %f\n", emisssion.r, emisssion.g, emisssion.b);
+	printf("Roughness: %f\n", roughness);
+	printf("Metallic: %f\n", metallic);
+	printf("IOR: %f\n", ior);
+	printf("Transmission: %f\n", transmission);
+#endif
 
-	/*if (true)
-	{
-		mat.m_type = Material::Type::DIFFUSE;
-	}*/
+	mat.m_albedo = {diffuse.r,diffuse.g,diffuse.b};
+	if(abs(mat.m_albedo.x - 0.6f) <= EPS && abs(mat.m_albedo.y - 0.6f) <= EPS && abs(mat.m_albedo.z - 0.6f) <= EPS) mat.m_albedo = DEFAULT_ALBEDO;
+
 	if(emisssion.r > EPS || emisssion.g > EPS || emisssion.b > EPS)
 	{
 		mat.m_type = Material::Type::EMISSIVE;
@@ -278,6 +285,12 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 		mat.m_type = Material::Type::PATH_TRACED;
 		mat.m_factor0 = roughness;
 		mat.m_factor1 = metallic;
+		if(dot(mat.m_albedo, mat.m_albedo) > 3.0f - EPS) mat.m_albedo *= DEFAULT_ALBEDO;
+	}
+
+	if(material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+	{
+		mat.m_albedo = DEFAULT_ALBEDO;
 	}
 
 	std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);

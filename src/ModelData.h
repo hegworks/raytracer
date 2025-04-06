@@ -102,16 +102,20 @@ public:
 				return ASSETDIR + "Models/Game/teapot.glb";
 			case ModelType::WHITE_ROOM:
 				//return ASSETDIR + "Models/Game/andys_room.glb";
-				//return ASSETDIR + "Models/Game/living_room_night_-_custom_home_environment.glb";
 				//return ASSETDIR + "Models/Game/toy_box.glb";
 				//return ASSETDIR + "Models/Game/final_bedroom.glb";
 				//return ASSETDIR + "Models/Game/time-room.glb";
 				//return ASSETDIR + "Models/Game/the_morning_room.glb";
 				//return ASSETDIR + "Models/Game/abandoned_brick_room.glb";
-				//return ASSETDIR + "Models/Game/90/source/Retro-Room_v3.fbx";
 				//return ASSETDIR + "Models/Game/90-th_retro_room_with_dendy.glb";
 				//return ASSETDIR + "Models/Game/bedroom_interior.glb";
-				return ASSETDIR + "Models/Game/Home2_Night.glb";
+				//return ASSETDIR + "Models/Game/Home2_Night.glb";
+				//return ASSETDIR + "Models/Game/the_king_s_hall.glb";
+				//return ASSETDIR + "Models/Game/adiha.fbx";
+				//return ASSETDIR + "Models/Game/worm_hole_but_sphere.glb";
+				return ASSETDIR + "Models/Game/room_by_night.glb";
+				//return ASSETDIR + "Models/Game/geometric_1.glb";
+				//return ASSETDIR + "Models/Game/spheres.glb";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

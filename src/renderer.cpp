@@ -171,7 +171,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 	float3 l(0);
 	const Model& model = scene.GetModel(ray);
 	const Material mat = scene.GetMaterial(ray);
-	const float3 albedo = model.m_modelData.m_surfaceList.empty() ? mat.m_albedo : scene.SampleTexture(ray, model);
+	const float3 albedo = mat.m_albedo * Scene::SampleTexture(ray, model);
 	const float3 brdf = albedo / PI; // for diffuse (matte) surfaces
 	switch(mat.m_type)
 	{
@@ -261,7 +261,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			else
 			{
 				finalDir = diffuseDir;
-				finalMatColor = brdf;
+				finalMatColor = albedo;
 			}
 
 			Ray finalRay(p + finalDir * EPS, finalDir);

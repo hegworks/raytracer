@@ -3,6 +3,10 @@
 #include "ModelData.h"
 #include "Scene.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+
 #define TINYBVH_IMPLEMENTATION
 #include "tiny_bvh.h"
 
@@ -18,18 +22,18 @@ Scene::Scene()
 	stbi_set_flip_vertically_on_load(false);
 
 #pragma region RoomTest
-#pragma endregion
-
-	maxDepth = 1;
+	
+	maxDepth = 3;
 	CreateModel(ModelType::WHITE_ROOM);
-	m_tranformList.back().m_scl = 0.025f;
+	m_tranformList.back().m_scl = 0.1f;
 	SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	BuildTlas();
 
 	DirLight& dirLight = CreateDirLight();
 	dirLight.m_intensity = 1.5f;
 	//dirLight.m_dir = normalize(float3(-0.25f, -0.8f, -0.25f));
-
+	
+#pragma endregion
 
 #ifdef SIMD_TEST_SCENE
 	useSD = false;

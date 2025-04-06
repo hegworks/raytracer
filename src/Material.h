@@ -9,6 +9,8 @@ inline const char* MATERIAL_STRING[] =
 	"EMISSIVE",
 };
 
+constexpr float DEFAULT_ALBEDO = 0.7f;
+
 struct ALIGNED(64) Material
 {
 	enum class Type : std::uint32_t
@@ -21,7 +23,7 @@ struct ALIGNED(64) Material
 	};
 
 	char m_name[40];
-	float3 m_albedo = float3(1.0f);
+	float3 m_albedo = float3(DEFAULT_ALBEDO);
 
 	/// <summary>
 	/// for DIFFUSE	-> UNUSED<br>
