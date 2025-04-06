@@ -93,7 +93,7 @@ public:
 	Material& GetMaterial(const Ray& ray);
 	static float3 SampleTexture(const Ray& ray, const Model& model);
 
-	Model& CreateModel(ModelType modelType, bool isRandZ = false, bool isUnique = false, bool isInvertMetallic = false);
+	Model& CreateModel(ModelType modelType, bool isRandZ = false, bool isUnique = false);
 
 	void CreatePointLight();
 	SpotLight& CreateSpotLight();

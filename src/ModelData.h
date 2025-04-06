@@ -146,4 +146,39 @@ public:
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}
+
+	static bool GetIsReverseMetallic(const ModelType modelType)
+	{
+		switch(modelType)
+		{
+			case ModelType::PLANE:
+			case ModelType::SPHERE:
+			case ModelType::CUBE:
+			case ModelType::TORUS:
+			case ModelType::DRAGON:
+			case ModelType::CORNELL:
+			case ModelType::GLASS:
+			case ModelType::FLAKE:
+			case ModelType::KENNY:
+			case ModelType::SCN_RAYMATIC:
+			case ModelType::SCN_SPHERES:
+			case ModelType::SCN_RETRO:
+			case ModelType::SCN_LIVING:
+			case ModelType::LVL_SQUARE:
+			case ModelType::LVL_SQUARE_FULL:
+			case ModelType::LVL_CAT:
+			case ModelType::LVL_DRAGON:
+				return false;
+			case ModelType::SCN_ANDYS:
+			case ModelType::LVL_BUCKET:
+			case ModelType::LVL_COCKTAIL:
+			case ModelType::LVL_BALLOON_DOG:
+			case ModelType::LVL_CHAIR:
+			case ModelType::LVL_SPINNER:
+			case ModelType::LVL_GUITAR:
+			case ModelType::LVL_RAYMATIC:
+				return true;
+		}
+		throw std::runtime_error("Unhandled ModelType");
+	}
 };

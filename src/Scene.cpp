@@ -433,7 +433,7 @@ float3 Scene::SampleTexture(const Ray& ray, const Model& model)
 	return texel;
 }
 
-Model& Scene::CreateModel(const ModelType modelType, bool isRandZ, const bool isUnique, bool isInvertMetallic)
+Model& Scene::CreateModel(const ModelType modelType, bool isRandZ, const bool isUnique)
 {
 	if(!isUnique)
 	{
@@ -448,7 +448,7 @@ Model& Scene::CreateModel(const ModelType modelType, bool isRandZ, const bool is
 			}
 		}
 	}
-	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType), 1.0f, isRandZ, isInvertMetallic);
+	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType), 1.0f, isRandZ, ModelData::GetIsReverseMetallic(modelType));
 	model.m_modelData.m_type = modelType;
 	const int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
 	auto& bvh = m_bvhList.emplace_back();
