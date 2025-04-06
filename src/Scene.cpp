@@ -22,17 +22,17 @@ Scene::Scene()
 	stbi_set_flip_vertically_on_load(false);
 
 #pragma region RoomTest
-	
+
 	maxDepth = 3;
-	CreateModel(ModelType::WHITE_ROOM);
-	m_tranformList.back().m_scl = 0.1f;
+	CreateModel(ModelType::WHITE_ROOM, false, false, false);
+	m_tranformList.back().m_scl = 0.75f;
 	SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	BuildTlas();
 
 	DirLight& dirLight = CreateDirLight();
 	dirLight.m_intensity = 1.5f;
 	//dirLight.m_dir = normalize(float3(-0.25f, -0.8f, -0.25f));
-	
+
 #pragma endregion
 
 #ifdef SIMD_TEST_SCENE
@@ -433,7 +433,7 @@ float3 Scene::SampleTexture(const Ray& ray, const Model& model)
 	return texel;
 }
 
-Model& Scene::CreateModel(const ModelType modelType, bool isRandZ, const bool isUnique)
+Model& Scene::CreateModel(const ModelType modelType, bool isRandZ, const bool isUnique, bool isInvertMetallic)
 {
 	if(!isUnique)
 	{
@@ -448,7 +448,7 @@ Model& Scene::CreateModel(const ModelType modelType, bool isRandZ, const bool is
 			}
 		}
 	}
-	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType), 1.0f, isRandZ);
+	Model& model = m_modelList.emplace_back(ModelData::GetAddress(modelType), 1.0f, isRandZ, isInvertMetallic);
 	model.m_modelData.m_type = modelType;
 	const int verticesListSize = static_cast<int>(model.m_modelData.m_vertices.size());
 	auto& bvh = m_bvhList.emplace_back();

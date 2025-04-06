@@ -101,21 +101,28 @@ public:
 			case ModelType::LVL_TEAPOT:
 				return ASSETDIR + "Models/Game/teapot.glb";
 			case ModelType::WHITE_ROOM:
-				//return ASSETDIR + "Models/Game/andys_room.glb";
-				//return ASSETDIR + "Models/Game/toy_box.glb";
-				//return ASSETDIR + "Models/Game/final_bedroom.glb";
-				//return ASSETDIR + "Models/Game/time-room.glb";
-				//return ASSETDIR + "Models/Game/the_morning_room.glb";
-				//return ASSETDIR + "Models/Game/abandoned_brick_room.glb";
-				//return ASSETDIR + "Models/Game/90-th_retro_room_with_dendy.glb";
-				//return ASSETDIR + "Models/Game/bedroom_interior.glb";
-				//return ASSETDIR + "Models/Game/Home2_Night.glb";
+				//reject:
 				//return ASSETDIR + "Models/Game/the_king_s_hall.glb";
 				//return ASSETDIR + "Models/Game/adiha.fbx";
 				//return ASSETDIR + "Models/Game/worm_hole_but_sphere.glb";
-				return ASSETDIR + "Models/Game/room_by_night.glb";
-				//return ASSETDIR + "Models/Game/geometric_1.glb";
-				//return ASSETDIR + "Models/Game/spheres.glb";
+				//return ASSETDIR + "Models/Game/time-room.glb";
+				//return ASSETDIR + "Models/Game/the_morning_room.glb";
+				//return ASSETDIR + "Models/Game/abandoned_brick_room.glb";
+				//return ASSETDIR + "Models/Game/toy_box.glb";
+				//return ASSETDIR + "Models/Game/final_bedroom.glb";
+				//return ASSETDIR + "Models/Game/bedroom_interior.glb";
+				//return ASSETDIR + "Models/Game/Home2_Night.glb";
+
+
+				//maybe:
+				//return ASSETDIR + "Models/Game/spheres.glb"; // use in start screen
+				//return ASSETDIR + "Models/Game/andys_room.glb"; // remove roof
+
+				//def:
+				//return ASSETDIR + "Models/Game/geometric_1.glb"; // use as level
+				//return ASSETDIR + "Models/Game/90-th_retro_room_with_dendy.glb"; // use in a level
+				//return ASSETDIR + "Models/Game/raymatic.glb"; // use in start screen - logo
+				//return ASSETDIR + "Models/Game/room_by_night.glb"; // def. use somewhere
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

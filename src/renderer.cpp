@@ -126,10 +126,11 @@ void Renderer::Tick(const float deltaTime)
 
 	const bool cameraChanged = camera.HandleInput(deltaTime);
 	const bool objectRotationChanged = HandleKeyboardRotations(deltaTime);
-	if(cameraChanged || objectRotationChanged || !useACM)
+	if(cameraChanged || objectRotationChanged || resetAccumulator || !useACM)
 	{
 		memset(accumulator, 0, SCRSIZE * 16);
 		acmCounter = 1;
+		resetAccumulator = false;
 	}
 
 	if(tdd)
@@ -611,6 +612,11 @@ void Renderer::KeyDown(const int key)
 		if(theme == 8) ImGuiThemeManager::SetNewDarkTheme();
 	}
 #endif
+
+	if(key == GLFW_KEY_Q)
+	{
+		resetAccumulator = true;
+	}
 
 	if(isDbgPixel && isDbgPixelClicked)
 	{

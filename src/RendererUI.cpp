@@ -496,7 +496,7 @@ void Renderer::UI()
 			}
 			ImGui::EndTabItem();
 		}
-		
+
 		if(ImGui::BeginTabItem("Mesh Mat."))
 		{
 			if(selectedMeshIdx != -1)
@@ -504,6 +504,8 @@ void Renderer::UI()
 				constexpr int j = 9999999;
 				Model& model = scene.m_modelList[selectedInstIdx];
 				Material& mat = model.m_modelData.m_meshMaterialList[selectedMeshIdx];
+				ImGui::Text("Hovered  MeshIdx: %i", hoveredMesh);
+				ImGui::Text("Selected MeshIdx: %i", selectedMeshIdx);
 				ImGui::Text("Name: %s", mat.m_name[0] != '\0' ? mat.m_name : "UKNOWN");
 				int matInt = static_cast<int>(mat.m_type);
 				ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, MATERIAL_STRING, IM_ARRAYSIZE(MATERIAL_STRING));
@@ -521,7 +523,7 @@ void Renderer::UI()
 						break;
 					case Material::Type::PATH_TRACED:
 						ImGui::DragFloat(("Smoothness##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0, 1);
-						ImGui::DragFloat(("Specularity##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
+						ImGui::DragFloat(("Metallic##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
 						break;
 					case Material::Type::EMISSIVE:
 						ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);
@@ -529,6 +531,10 @@ void Renderer::UI()
 				}
 				ImGui::TreePop();
 				ImGui::EndTabItem();
+			}
+			else
+			{
+				ImGui::Text("Click on a mesh first!");
 			}
 		}
 		ImGui::End();

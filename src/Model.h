@@ -25,12 +25,13 @@ struct Texture
 class Model
 {
 public:
-	Model(std::string const& path, const float2 textureCoordScale = float2(1), const bool isRandZ = false)
+	Model(std::string const& path, const float2 textureCoordScale = float2(1), const bool isRandZ = false, const bool isInvertMetallic = false)
 	{
 		//stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 
 		m_textureCoordScale = textureCoordScale;
 		m_isRandZ = isRandZ;
+		m_isInvertMetallic = isInvertMetallic;
 
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
@@ -97,6 +98,7 @@ private:
 	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
 
 	bool m_isRandZ = false;
+	bool m_isInvertMetallic = false;
 };
 
 inline void Model::loadModel(std::string path)
@@ -252,7 +254,7 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 	material->Get(AI_MATKEY_COLOR_EMISSIVE, emisssion);
 	material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
 	material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
-	material->Get(AI_MATKEY_REFRACTI, ior);
+	material->Get(AI_MATKEY_REFRACTI, ior); // ior is not exported to formats like fbx obj glb etc. this is line is mostly useless
 	material->Get(AI_MATKEY_TRANSMISSION_FACTOR, transmission);
 
 #if 0
@@ -272,7 +274,7 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 	{
 		mat.m_type = Material::Type::EMISSIVE;
 		mat.m_albedo = {emisssion.r,emisssion.g,emisssion.b};
-		mat.m_factor0 = 1.0f; // intensity
+		mat.m_factor0 = 10.0f; // intensity
 	}
 	else if(ior > 1.0f)
 	{
@@ -283,12 +285,12 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 	else
 	{
 		mat.m_type = Material::Type::PATH_TRACED;
-		mat.m_factor0 = roughness;
-		mat.m_factor1 = metallic;
+		mat.m_factor0 = 1.0f - roughness;
+		if(m_isInvertMetallic) metallic = 1.0f - metallic;
 		if(dot(mat.m_albedo, mat.m_albedo) > 3.0f - EPS) mat.m_albedo *= DEFAULT_ALBEDO;
 	}
 
-	if(material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+	if(material->GetTextureCount(aiTextureType_DIFFUSE) > 0 && mat.m_type == Material::Type::PATH_TRACED)
 	{
 		mat.m_albedo = DEFAULT_ALBEDO;
 	}
