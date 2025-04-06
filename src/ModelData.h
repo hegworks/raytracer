@@ -11,15 +11,25 @@ enum class ModelType : uint8_t
 	GLASS,
 	FLAKE,
 	KENNY,
+	SCN_RAYMATIC,
+	SCN_SPHERES,
+	SCN_ANDYS,
+	SCN_RETRO,
+	SCN_LIVING,
 	LVL_SQUARE,
 	LVL_SQUARE_FULL,
-	LVL_TTORUS,
-	LVL_TTORUS_FULL,
-	LVL_TEAPOT,
-	WHITE_ROOM,
+	LVL_BUCKET,
+	LVL_COCKTAIL,
+	LVL_BALLOON_DOG,
+	LVL_CHAIR,
+	LVL_SPINNER,
+	LVL_CAT,
+	LVL_DRAGON,
+	LVL_GUITAR,
+	LVL_RAYMATIC,
 };
 
-constexpr int NUM_MODEL_TYPES = 14;
+constexpr int NUM_MODEL_TYPES = 24;
 
 inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 {
@@ -31,12 +41,22 @@ inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 	ModelType::CORNELL,
 	ModelType::GLASS,
 	ModelType::KENNY,
+	ModelType::SCN_RAYMATIC,
+	ModelType::SCN_SPHERES,
+	ModelType::SCN_ANDYS,
+	ModelType::SCN_RETRO,
+	ModelType::SCN_LIVING,
 	ModelType::LVL_SQUARE,
 	ModelType::LVL_SQUARE_FULL,
-	ModelType::LVL_TTORUS,
-	ModelType::LVL_TTORUS_FULL,
-	ModelType::LVL_TEAPOT,
-	ModelType::WHITE_ROOM,
+	ModelType::LVL_BUCKET,
+	ModelType::LVL_COCKTAIL,
+	ModelType::LVL_BALLOON_DOG,
+	ModelType::LVL_CHAIR,
+	ModelType::LVL_SPINNER,
+	ModelType::LVL_CAT,
+	ModelType::LVL_DRAGON,
+	ModelType::LVL_GUITAR,
+	ModelType::LVL_RAYMATIC,
 };
 
 inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
@@ -49,18 +69,28 @@ inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
 	"CORNELL",
 	"GLASS",
 	"KENNY",
+	"SCN_RAYMATIC",
+	"SCN_SPHERES",
+	"SCN_ANDYS",
+	"SCN_RETRO",
+	"SCN_LIVING",
 	"LVL_SQUARE",
 	"LVL_SQUARE_FULL",
-	"LVL_TTORUS",
-	"LVL_TTORUS_FULL",
-	"LVL_TEAPOT",
-	"WHITE_ROOM",
+	"LVL_BUCKET",
+	"LVL_COCKTAIL",
+	"LVL_BALLOON_DOG",
+	"LVL_CHAIR",
+	"LVL_SPINNER",
+	"LVL_CAT",
+	"LVL_DRAGON",
+	"LVL_GUITAR",
+	"LVL_RAYMATIC",
 };
 
 class ModelData
 {
 public:
-	static std::string GetAddress(ModelType modelType)
+	static std::string GetAddress(const ModelType modelType)
 	{
 		switch(modelType)
 		{
@@ -80,43 +110,39 @@ public:
 				return ASSETDIR + "Models/ikea_glass.glb";
 			case ModelType::KENNY:
 				return ASSETDIR + "Models/kennyscene.glb";
+			case ModelType::SCN_RAYMATIC:
+				return ASSETDIR + "Models/Game/Scene/raymatic.glb";
+			case ModelType::SCN_SPHERES:
+				return ASSETDIR + "Models/Game/Scene/spheres.glb";
+			case ModelType::SCN_ANDYS:
+				return ASSETDIR + "Models/Game/Scene/andys_room.glb"; // remove roof
+			case ModelType::SCN_RETRO:
+				return ASSETDIR + "Models/Game/Scene/90-th_retro_room_with_dendy.glb";
+			case ModelType::SCN_LIVING:
+				return ASSETDIR + "Models/Game/Scene/room_by_night.glb";
 			case ModelType::LVL_SQUARE:
 				return ASSETDIR + "Models/Game/square.glb";
 			case ModelType::LVL_SQUARE_FULL:
 				return ASSETDIR + "Models/Game/square_full.glb";
-			case ModelType::LVL_TTORUS:
-				return ASSETDIR + "Models/Game/ttorus.glb";
-			case ModelType::LVL_TTORUS_FULL:
-				return ASSETDIR + "Models/Game/ttorus_full.glb";
-			case ModelType::LVL_TEAPOT:
-				return ASSETDIR + "Models/Game/teapot.glb";
-			case ModelType::WHITE_ROOM:
-				//maybe:
-				//return ASSETDIR + "Models/Game/spheres.glb"; // use in start screen
-				//return ASSETDIR + "Models/Game/andys_room.glb"; // remove roof
-
-				//return ASSETDIR + "Models/Game/Neon Calligraphy School.glb"; // make mats emissive in blender
-				//return ASSETDIR + "Models/Game/neon_mask.glb"; // change emissive mat colors in blender
-
-				//return ASSETDIR + "Models/Game/neon_spinners.glb"; // edit mats in blender
-				//return ASSETDIR + "Models/Game/arcade_machine.glb"; // edit mats in blender
-
-
-				//def:
-				// glass dragon
+			case ModelType::LVL_BUCKET:
+				return ASSETDIR + "Models/Game/metal_bucket.glb"; // increase smoothness in blender
+			case ModelType::LVL_COCKTAIL:
+				return ASSETDIR + "Models/Game/summer_drink.glb"; //100% change refractiveness and color of foam, glass, cocktail in code
+			case ModelType::LVL_BALLOON_DOG:
 				return ASSETDIR + "Models/Game/balloon_dog.glb"; //change materials in blender to 0.8 & 0.15
-				//return ASSETDIR + "Models/Game/summer_drink.glb"; //100% change refractiveness and color of foam, glass, cocktail in code
-				//return ASSETDIR + "Models/Game/swapfiets.glb"; // fix materials in blender (remove emissive, make metallic etc.)
-				//return ASSETDIR + "Models/Game/chair.glb"; // increase metallic and smoothness of screws
-				//return ASSETDIR + "Models/Game/metal_bucket.glb"; // increase smoothness in blender
-				//return ASSETDIR + "Models/Game/guitar.glb"; // make some parts metallic in blender
-				//return ASSETDIR + "Models/Game/miniature_cat.glb"; // level obj
-				//return ASSETDIR + "Models/Game/geometric_1.glb"; // use as level
-				//return ASSETDIR + "Models/Game/90-th_retro_room_with_dendy.glb"; // use in a level
-
-				//return ASSETDIR + "Models/Game/raymatic.glb"; // use in start screen - logo
-
-				//return ASSETDIR + "Models/Game/room_by_night.glb"; // def. use somewhere
+			case ModelType::LVL_CHAIR:
+				return ASSETDIR + "Models/Game/chair.glb"; // increase metallic and smoothness of screws
+			case ModelType::LVL_SPINNER:
+				return ASSETDIR + "Models/Game/neon_spinners.glb"; // edit mats in blender
+			case ModelType::LVL_CAT:
+				return ASSETDIR + "Models/Game/miniature_cat.glb";
+			case ModelType::LVL_DRAGON:
+				return ASSETDIR + "Models/Game/dragon.glb";
+			case ModelType::LVL_GUITAR:
+				return ASSETDIR + "Models/Game/guitar.glb"; // make some parts metallic in blender
+			case ModelType::LVL_RAYMATIC:
+				return ASSETDIR + "Models/Game/raymatic.glb"; // use in start screen - logo
+				//return ASSETDIR + "Models/Game/arcade_machine.glb"; // edit mats in blender // RESERVE
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}
