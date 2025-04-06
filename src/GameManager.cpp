@@ -395,12 +395,6 @@ void GameManager::LoadStartMenu() const
 		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
 	}
 	{
-		m_scene->CreateModel(ModelType::SNAKE);
-		m_scene->m_tranformList.back().m_scl = float3(0.165f);
-		m_scene->m_tranformList.back().m_pos = float3(-2, -0.8, -1);
-		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
-	}
-	{
 		m_scene->CreateModel(ModelType::CUBE);
 		m_scene->m_tranformList.back().m_pos = float3(0, -0.8f, -3);
 		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());

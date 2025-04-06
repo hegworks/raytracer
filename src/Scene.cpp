@@ -24,8 +24,8 @@ Scene::Scene()
 #pragma region RoomTest
 
 	maxDepth = 3;
-	CreateModel(ModelType::WHITE_ROOM, false, false, false);
-	m_tranformList.back().m_scl = 0.75f;
+	CreateModel(ModelType::WHITE_ROOM, false, false, true);
+	m_tranformList.back().m_scl = 1.1f;
 	SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	BuildTlas();
 

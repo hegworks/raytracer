@@ -11,8 +11,6 @@ enum class ModelType : uint8_t
 	GLASS,
 	FLAKE,
 	KENNY,
-	HAMBURGER,
-	SNAKE,
 	LVL_SQUARE,
 	LVL_SQUARE_FULL,
 	LVL_TTORUS,
@@ -21,7 +19,7 @@ enum class ModelType : uint8_t
 	WHITE_ROOM,
 };
 
-constexpr int NUM_MODEL_TYPES = 16;
+constexpr int NUM_MODEL_TYPES = 14;
 
 inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 {
@@ -33,8 +31,6 @@ inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 	ModelType::CORNELL,
 	ModelType::GLASS,
 	ModelType::KENNY,
-	ModelType::HAMBURGER,
-	ModelType::SNAKE,
 	ModelType::LVL_SQUARE,
 	ModelType::LVL_SQUARE_FULL,
 	ModelType::LVL_TTORUS,
@@ -53,8 +49,6 @@ inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
 	"CORNELL",
 	"GLASS",
 	"KENNY",
-	"HAMBURGER",
-	"SNAKE",
 	"LVL_SQUARE",
 	"LVL_SQUARE_FULL",
 	"LVL_TTORUS",
@@ -79,17 +73,13 @@ public:
 			case ModelType::TORUS:
 				return ASSETDIR + "Models/Primitives/Torus/Torus.glb";
 			case ModelType::DRAGON:
-				return ASSETDIR + "Models/dragon2.glb";
+				return ASSETDIR + "Models/dragon.glb";
 			case ModelType::CORNELL:
 				return ASSETDIR + "Models/cornell-box.obj";
 			case ModelType::GLASS:
 				return ASSETDIR + "Models/ikea_glass.glb";
 			case ModelType::KENNY:
 				return ASSETDIR + "Models/kennyscene.glb";
-			case ModelType::HAMBURGER:
-				return ASSETDIR + "Models/Hamburger/Hamburger.fbx";
-			case ModelType::SNAKE:
-				return ASSETDIR + "Models/NakedSnake/Naked_Snake.obj";
 			case ModelType::LVL_SQUARE:
 				return ASSETDIR + "Models/Game/square.glb";
 			case ModelType::LVL_SQUARE_FULL:
@@ -112,6 +102,12 @@ public:
 				//return ASSETDIR + "Models/Game/final_bedroom.glb";
 				//return ASSETDIR + "Models/Game/bedroom_interior.glb";
 				//return ASSETDIR + "Models/Game/Home2_Night.glb";
+				//return ASSETDIR + "Models/Game/new/3d_modelling_my_cat_fripouille.glb"; // has no eyes
+				//return ASSETDIR + "Models/Game/new/the_cats_body.glb"; // worse than other cat models
+				//return ASSETDIR + "Models/Game/new/fokker_s-11.glb"; // front door is open :(
+
+				//testing:
+				//return ASSETDIR + "Models/Game/new/fokker_s-11.glb";
 
 
 				//maybe:
@@ -119,6 +115,14 @@ public:
 				//return ASSETDIR + "Models/Game/andys_room.glb"; // remove roof
 
 				//def:
+				// glass dragon
+				return ASSETDIR + "Models/Game/summer_drink.glb"; //100% change refractiveness and color of foam, glass, cocktail in code
+				//return ASSETDIR + "Models/Game/swapfiets.glb"; // fix materials in blender (remove emissive, make metallic etc.)
+				//return ASSETDIR + "Models/Game/chair.glb"; // increase metallic and smoothness of screws
+				//return ASSETDIR + "Models/Game/chair.glb"; // increase metallic and smoothness of screws
+				//return ASSETDIR + "Models/Game/metal_bucket.glb"; // increase smoothness in blender
+				//return ASSETDIR + "Models/Game/guitar.glb"; // make some parts metallic in blender
+				//return ASSETDIR + "Models/Game/miniature_cat.glb"; // level obj
 				//return ASSETDIR + "Models/Game/geometric_1.glb"; // use as level
 				//return ASSETDIR + "Models/Game/90-th_retro_room_with_dendy.glb"; // use in a level
 				//return ASSETDIR + "Models/Game/raymatic.glb"; // use in start screen - logo

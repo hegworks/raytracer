@@ -463,7 +463,7 @@ void Renderer::UI()
 							{
 								if(j > 0) ImGui::Separator();
 								Material& mat = model.m_modelData.m_meshMaterialList[j];
-								if(mat.m_name[0] != '\0') ImGui::Text(mat.m_name);
+								ImGui::Text("%i %s", j, mat.m_name);
 								int matInt = static_cast<int>(mat.m_type);
 								ImGui::Combo(("Type##" + std::to_string(j)).c_str(), &matInt, MATERIAL_STRING, IM_ARRAYSIZE(MATERIAL_STRING));
 								mat.m_type = static_cast<Material::Type>(matInt);

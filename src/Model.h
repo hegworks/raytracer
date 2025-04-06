@@ -287,6 +287,7 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 		mat.m_type = Material::Type::PATH_TRACED;
 		mat.m_factor0 = 1.0f - roughness;
 		if(m_isInvertMetallic) metallic = 1.0f - metallic;
+		mat.m_factor1 = metallic;
 		if(dot(mat.m_albedo, mat.m_albedo) > 3.0f - EPS) mat.m_albedo *= DEFAULT_ALBEDO;
 	}
 
