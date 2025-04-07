@@ -11,7 +11,7 @@
 #if defined(_DEBUG)
 constexpr float SCRSCALE = 5.0f;
 #else
-constexpr float SCRSCALE = 2.0f;
+constexpr float SCRSCALE = 1.75f;
 #endif
 constexpr float INV_SCRSCALE = 1.0f / SCRSCALE;
 constexpr int WINDOWWIDTH = 1280;

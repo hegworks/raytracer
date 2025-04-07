@@ -9,11 +9,11 @@ class Camera
 public:
 	Camera()
 	{
-		camPos = {0.00000000f,	7.12173700f, -11.5624228f};
-		camTarget = {0.00000000f,	6.55436277f, -10.7389631f};
-		topLeft = {-1.77777767f,	6.81044817f, -9.34812832f};
-		topRight = {1.77777767f,	6.81044817f, -9.34812832f};
-		bottomLeft = {-1.77777767f,	5.16352797f, -10.4828768f};
+		camPos = {0.00000000f	,5.84618282f ,-9.78223801f};
+		camTarget = {0.00000000f	,5.54261971f ,-8.82942677f};
+		topLeft = {-1.77777779f	,6.19186783f ,-7.57305241f};
+		topRight = {1.77777779f	,6.19186783f ,-7.57305241f};
+		bottomLeft = {-1.77777779f	,4.28624535f ,-8.18017864f};
 	}
 	Ray GetPrimaryRay(const float x, const float y, const float2 randOnUnitDisk)
 	{

@@ -133,7 +133,7 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 	{
 		const int objIdx = m_levelObjectInstIdx + (m_isGameWon ? 1 : 0);
 		m_mouseDelta = m_windowCoordF - m_mouseDownWindowPos;
-		const float3 axisSpeed = float3(m_mouseDelta.x, m_mouseDelta.y, 0) * DRAG_ROTATE_SPEED * m_deltaTime;
+		const float3 axisSpeed = float3(m_mouseDelta.x, m_mouseDelta.y, 0) * SCRSCALE * DRAG_ROTATE_SPEED * m_deltaTime;
 		if(m_isMouseLeftBtnDown)
 		{
 			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[objIdx], {1,0,0}, -axisSpeed.y);
@@ -173,6 +173,8 @@ void GameManager::OnTransformChanged(const int instanceIdx) const
 
 void GameManager::OnMouseDown(const int button)
 {
+	if(ImGui::GetIO().WantCaptureMouse && m_state != State::WIN) return; //TODO remove this before release
+
 	if(button == GLFW_MOUSE_BUTTON_LEFT)
 	{
 		m_mouseDownWindowPos = m_windowCoord;
@@ -264,6 +266,10 @@ void GameManager::ResetSceneLists()
 	m_scene->m_dirLightList.clear();
 	m_scene->m_bvhBaseList.clear();
 	m_scene->m_bvhList.clear();
+	m_scene->m_pointLightList.clear();
+	m_scene->m_dirLightList.clear();
+	m_scene->m_spotLightList.clear();
+	m_scene->m_quadLightList.clear();
 }
 
 void GameManager::ResetGameplayStates()
@@ -277,21 +283,46 @@ void GameManager::ResetGameplayStates()
 
 void GameManager::LoadLevel(const int levelIdx)
 {
-	Model& plane = m_scene->CreateModel(ModelType::PLANE);
-	plane.m_modelData.m_meshMaterialList.front().m_type = Material::Type::DIFFUSE;
-	m_scene->m_tranformList.back().m_pos = float3(0, 0, 20);
-	m_scene->m_tranformList.back().m_rotAngles = float3(-90, 0, 0);
-	m_scene->m_tranformList.back().m_rot = quat::fromEuler(DEG_TO_RAD(float3(-90, 0, 0)));
-	m_scene->m_tranformList.back().m_scl = float3(30);
+	DirLight& frontLight = m_scene->CreateDirLight();
+	frontLight.m_dir = float3(0, 0, 1);
+
+	//DirLight& downLight = m_scene->CreateDirLight();
+
+	//DirLight& leftLight = m_scene->CreateDirLight();
+	//leftLight.m_dir = {-1,0,0};
+
+	//DirLight& rightLight = m_scene->CreateDirLight();
+	//rightLight.m_dir = {1,0,0};
+
+	Model& scenery = m_scene->CreateModel(ModelType::SCN_ROOM_LEVEL);
+	for(Material& material : scenery.m_modelData.m_meshMaterialList)
+	{
+		if(strcmp(material.m_name, "window_glass") == 0)
+		{
+			material.m_type = Material::Type::REFRACTIVE;
+			material.m_albedo = {0,0,1};
+			material.m_factor0 = 0.03f;
+			material.m_factor1 = 1.5f;
+		}
+		if(strcmp(material.m_name, "shadow_bg") == 0)
+		{
+			material.m_type = Material::Type::DIFFUSE;
+			material.m_albedo = 1.0f;
+		}
+	}
+	m_scene->m_tranformList.back().m_pos = float3(-8.1f, -10.05f, -4.0f);
+	//m_scene->m_tranformList.back().m_rotAngles = float3(-90, 0, 0);
+	//m_scene->m_tranformList.back().m_rot = quat::fromEuler(DEG_TO_RAD(float3(-90, 0, 0)));
+	m_scene->m_tranformList.back().m_scl = float3(1.8f);
 	Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
 
 	switch(levelIdx)
 	{
 		case 0:
 		{
-			Model& level0 = m_scene->CreateModel(ModelType::LVL_SQUARE, false);
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SQUARE, false);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-			m_levelObjectScale = 0.2f;
+			m_levelObjectScale = 0.135f;
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
 			Model& fullShape = m_scene->CreateModel(ModelType::LVL_SQUARE_FULL, false, true);
@@ -307,12 +338,12 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 1:
 		{
-			Model& level0 = m_scene->CreateModel(ModelType::LVL_TTORUS, false);
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BUCKET);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 0.2f;
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_TTORUS_FULL, false, true);
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_BUCKET, false, true);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::ANY_ROT;
@@ -325,12 +356,12 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 2:
 		{
-			Model& level0 = m_scene->CreateModel(ModelType::LVL_TEAPOT, true);
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_COCKTAIL, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.2f;
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_TEAPOT, false, true);
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_COCKTAIL, false, true);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::DOUBLE_SIDED;
@@ -346,7 +377,7 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 3:
 		{
-			Model& level0 = m_scene->CreateModel(ModelType::DRAGON, true);
+			Model& lvlObj = m_scene->CreateModel(ModelType::DRAGON, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.2f;
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
@@ -379,10 +410,6 @@ void GameManager::LoadLevel(const int levelIdx)
 
 	Scene::SetBlasTransform(m_scene->m_blasList[m_levelObjectInstIdx], m_scene->m_tranformList[m_levelObjectInstIdx]);
 	Scene::SetBlasTransform(m_scene->m_blasList[m_levelObjectInstIdx + 1], m_scene->m_tranformList[m_levelObjectInstIdx + 1]);
-
-	DirLight& dirLight = m_scene->CreateDirLight();
-	dirLight.m_dir = float3(0, 0, 1);
-
 	m_scene->BuildTlas();
 }
 

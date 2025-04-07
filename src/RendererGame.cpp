@@ -42,6 +42,7 @@ void Renderer::Tick(const float deltaTime)
 	dfps = fps, drps = rps, davg = avg;
 	//printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps);
 
+	//TODO disable camera movement and keyboard object rotation in _GAME
 	const bool cameraChanged = camera.HandleInput(deltaTime);
 	const bool objectRotationChanged = HandleKeyboardRotations(deltaTime);
 	if(cameraChanged || objectRotationChanged || resetAccumulator || !useACM)

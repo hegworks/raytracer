@@ -3,8 +3,6 @@
 #include "ModelData.h"
 #include "Scene.h"
 
-#include <assimp/scene.h>
-
 #define TINYBVH_IMPLEMENTATION
 #include "tiny_bvh.h"
 
@@ -21,10 +19,9 @@ Scene::Scene()
 	stbi_set_flip_vertically_on_load(false);
 
 #pragma region RoomTest
-
 	/*
 	maxDepth = 3;
-	CreateModel(ModelType::WHITE_ROOM, false, false, true);
+	CreateModel(ModelType::SCN_ROOM_MAIN, false, false);
 	m_tranformList.back().m_scl = 1.1f;
 	SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	BuildTlas();
@@ -339,7 +336,7 @@ Scene::Scene()
 
 void Scene::LoadSkydome()
 {
-	m_skyPixels = stbi_loadf((ASSETDIR + "Skydome/tears_of_steel_bridge_4k.hdr").c_str(), &m_skyWidth, &m_skyHeight, &m_skyBpp, 0);
+	m_skyPixels = stbi_loadf((ASSETDIR + "Skydome/golden_gate_hills_4k.hdr").c_str(), &m_skyWidth, &m_skyHeight, &m_skyBpp, 0);
 	m_skySize = m_skyWidth * m_skyHeight;
 	m_skyWidthF = static_cast<float>(m_skyWidth);
 	m_skyHeightF = static_cast<float>(m_skyHeight);

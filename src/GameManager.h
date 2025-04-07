@@ -105,7 +105,7 @@ private:
 	SingleSidedWinData m_singleSidedWinData;
 	DoubleSidedWinData m_doubleSidedWinData;
 
-	static constexpr float DRAG_ROTATE_SPEED = 0.001f;
+	static constexpr float DRAG_ROTATE_SPEED = 0.00025f;
 	static constexpr float WIN_SLERP_SPEED = 0.0025f;
 	static constexpr float WIN_PERCENTAGE = 0.98f;
 	static constexpr float WIN_SLERP_END_PROGRESS = 1.0f - 1e-4f;

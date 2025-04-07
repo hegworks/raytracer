@@ -13,9 +13,8 @@ enum class ModelType : uint8_t
 	KENNY,
 	SCN_RAYMATIC,
 	SCN_SPHERES,
-	SCN_ANDYS,
-	SCN_RETRO,
-	SCN_LIVING,
+	SCN_ROOM_LEVEL,
+	SCN_ROOM_MAIN,
 	LVL_SQUARE,
 	LVL_SQUARE_FULL,
 	LVL_BUCKET,
@@ -29,7 +28,7 @@ enum class ModelType : uint8_t
 	LVL_RAYMATIC,
 };
 
-constexpr int NUM_MODEL_TYPES = 24;
+constexpr int NUM_MODEL_TYPES = 23;
 
 inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 {
@@ -43,9 +42,8 @@ inline constexpr ModelType ALL_MODEL_TYPES[NUM_MODEL_TYPES] =
 	ModelType::KENNY,
 	ModelType::SCN_RAYMATIC,
 	ModelType::SCN_SPHERES,
-	ModelType::SCN_ANDYS,
-	ModelType::SCN_RETRO,
-	ModelType::SCN_LIVING,
+	ModelType::SCN_ROOM_LEVEL,
+	ModelType::SCN_ROOM_MAIN,
 	ModelType::LVL_SQUARE,
 	ModelType::LVL_SQUARE_FULL,
 	ModelType::LVL_BUCKET,
@@ -71,9 +69,8 @@ inline const std::string ALL_MODEL_NAMES[NUM_MODEL_TYPES] =
 	"KENNY",
 	"SCN_RAYMATIC",
 	"SCN_SPHERES",
-	"SCN_ANDYS",
-	"SCN_RETRO",
-	"SCN_LIVING",
+	"SCN_ROOM_LEVEL",
+	"SCN_ROOM_MAIN",
 	"LVL_SQUARE",
 	"LVL_SQUARE_FULL",
 	"LVL_BUCKET",
@@ -114,11 +111,9 @@ public:
 				return ASSETDIR + "Models/Game/Scene/raymatic.glb";
 			case ModelType::SCN_SPHERES:
 				return ASSETDIR + "Models/Game/Scene/spheres.glb";
-			case ModelType::SCN_ANDYS:
-				return ASSETDIR + "Models/Game/Scene/andys_room.glb"; // remove roof
-			case ModelType::SCN_RETRO:
-				return ASSETDIR + "Models/Game/Scene/90-th_retro_room_with_dendy.glb";
-			case ModelType::SCN_LIVING:
+			case ModelType::SCN_ROOM_LEVEL:
+				return ASSETDIR + "Models/Game/Scene/room_Level.glb";
+			case ModelType::SCN_ROOM_MAIN:
 				return ASSETDIR + "Models/Game/Scene/room_by_night.glb";
 			case ModelType::LVL_SQUARE:
 				return ASSETDIR + "Models/Game/square.glb";
@@ -162,14 +157,13 @@ public:
 			case ModelType::KENNY:
 			case ModelType::SCN_RAYMATIC:
 			case ModelType::SCN_SPHERES:
-			case ModelType::SCN_RETRO:
-			case ModelType::SCN_LIVING:
+			case ModelType::SCN_ROOM_MAIN:
 			case ModelType::LVL_SQUARE:
 			case ModelType::LVL_SQUARE_FULL:
 			case ModelType::LVL_CAT:
 			case ModelType::LVL_DRAGON:
+			case ModelType::SCN_ROOM_LEVEL:
 				return false;
-			case ModelType::SCN_ANDYS:
 			case ModelType::LVL_BUCKET:
 			case ModelType::LVL_COCKTAIL:
 			case ModelType::LVL_BALLOON_DOG:

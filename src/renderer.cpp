@@ -283,7 +283,8 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		}
 	}
 
-#ifdef _ENGINE
+	//TODO uncomment ifdefs
+//#ifdef _ENGINE
 	switch(ndal)
 	{
 		case 0:
@@ -297,9 +298,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		default:
 			throw std::runtime_error("Unhandled situation");
 	}
-#elif defined(_GAME)
-	return l;
-#endif
+//#elif defined(_GAME)
+	//return l;
+//#endif
 }
 
 float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex)
