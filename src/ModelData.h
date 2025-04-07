@@ -165,9 +165,9 @@ public:
 			case ModelType::SCN_ROOM_LEVEL:
 			case ModelType::LVL_BALLOON_DOG:
 			case ModelType::LVL_COCKTAIL:
+			case ModelType::LVL_CHAIR:
 				return false;
 			case ModelType::LVL_BUCKET:
-			case ModelType::LVL_CHAIR:
 			case ModelType::LVL_SPINNER:
 			case ModelType::LVL_GUITAR:
 			case ModelType::LVL_RAYMATIC:
