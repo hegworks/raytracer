@@ -249,7 +249,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 			float smoothness = mat.m_factor0;
 			float specularity = mat.m_factor1;
 
-			float3 diffuseDir = normalize(n + threadRng.RandomPointOnHemisphere(pixelSeeds[pixelIndex], n));
+			float3 diffuseDir = normalize(n + threadRng.RandomPointOnSphere(pixelSeeds[pixelIndex]));
 
 			float3 finalDir(0);
 			float3 finalMatColor(0);
