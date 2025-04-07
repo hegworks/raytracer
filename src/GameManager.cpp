@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 4;
+	m_levelIdx = 5;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
@@ -78,7 +78,11 @@ void GameManager::Tick(const float deltaTime)
 			if(m_levelIdx == 0 && m_showTutorial)
 				m_state = State::TUTORIAL;
 			else
+			{
 				m_state = State::WIN;
+				if(m_levelIdx == SPINNER_LEVEL) dbgSDBF = 0.1f, m_scene->m_dirLightList.clear();
+				else dbgSDBF = dbgSDBF_DEFAULT;
+			}
 		}
 		OnTransformChanged(m_levelObjectInstIdx + 1);
 	}
@@ -283,6 +287,8 @@ void GameManager::ResetGameplayStates()
 
 void GameManager::LoadLevel(const int levelIdx)
 {
+	//dbgSDBF = 1.75f;
+
 	DirLight& frontLight = m_scene->CreateDirLight();
 	frontLight.m_dir = float3(0, 0, 1);
 
@@ -474,6 +480,32 @@ void GameManager::LoadLevel(const int levelIdx)
 			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
 			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
 			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+
+
+			break;
+		}
+
+		case 5:
+		{
+			dbgSDBF = 0.1f;
+
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SPINNER, true, false, true);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 1.0f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(0.5f) * DEFAULT_ALBEDO;
+				material.m_factor0 = 0.0f;
+				material.m_factor1 = 0.0f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_SPINNER, false, true, false);
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::ANY_ROT;
+			m_anyRotWinData.m_winQuat = quat::identity();
 
 
 			break;

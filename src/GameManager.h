@@ -12,7 +12,6 @@ class Renderer;
 }
 
 class Scene;
-constexpr int LEVEL_COUNT = 1;
 
 class GameManager
 {
@@ -59,7 +58,8 @@ public:
 	bool m_showProgressBar = true;
 	float m_progress = 0;
 
-	static constexpr int NUM_LEVELS = 4;
+	static constexpr int NUM_LEVELS = 10;
+	static constexpr int SPINNER_LEVEL = 5;
 
 	void LoadStartMenu() const;
 	void Init(Scene* scene, Renderer* renderer);
