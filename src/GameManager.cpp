@@ -320,12 +320,26 @@ void GameManager::LoadLevel(const int levelIdx)
 	{
 		case 0:
 		{
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SQUARE, false);
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SQUARE, false, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 0.135f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(0, 1, 0) * DEFAULT_ALBEDO;
+				material.m_factor0 = 0.0f;
+				material.m_factor1 = 0.0f;
+			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_SQUARE_FULL, false, true);
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_SQUARE_FULL, false, true, false);
+			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = {0,1,0};
+				material.m_factor0 = 0.985f;
+				material.m_factor1 = 0.5f;
+			}
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::ANY_ROT;

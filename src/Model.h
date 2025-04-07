@@ -25,13 +25,14 @@ struct Texture
 class Model
 {
 public:
-	Model(std::string const& path, const float2 textureCoordScale = float2(1), const bool isRandZ = false, const bool isInvertMetallic = false)
+	Model(std::string const& path, const float2 textureCoordScale = float2(1), const bool isRandZ = false, const bool isInvertMetallic = false, const bool isForceNoTexture = false)
 	{
 		//stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 
 		m_textureCoordScale = textureCoordScale;
 		m_isRandZ = isRandZ;
 		m_isInvertMetallic = isInvertMetallic;
+		m_isForceNoTexture = isForceNoTexture;
 
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
@@ -99,6 +100,7 @@ private:
 
 	bool m_isRandZ = false;
 	bool m_isInvertMetallic = false;
+	bool m_isForceNoTexture = false;
 };
 
 inline void Model::loadModel(std::string path)
@@ -305,7 +307,7 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 	std::vector<Texture> textures;
 
 	const uint textureCount = mat->GetTextureCount(type);
-	if(textureCount == 0)
+	if(textureCount == 0 || m_isForceNoTexture)
 	{
 		if(m_fallbackTextureIdx != -1) // fallback texture has been loaded before
 		{

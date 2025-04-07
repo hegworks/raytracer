@@ -58,7 +58,7 @@ void Renderer::GameUI()
 		case GameManager::State::WIN:
 		{
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
-			ImGui::SetNextWindowSize(ImVec2(WINDOWWIDTH, WINDOWHEIGHT));
+			ImGui::SetNextWindowSize(ImVec2(WINDOWWIDTH - 350, WINDOWHEIGHT));
 			ImGui::Begin("WinMenu", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
 			ImGui::SetCursorPos(ImVec2(100, centerY - btnHeight * 0.5f));
