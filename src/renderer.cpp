@@ -100,6 +100,7 @@ void Renderer::Tick(const float deltaTime)
 			accumulator[pixelIndex] += float4(traced, 0);
 			float4 avg = accumulator[pixelIndex] * scale;
 			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
+			avg = aces(avg);
 			float4 gammaCorrected = float4(sqrtf(avg.x), sqrtf(avg.y), sqrtf(avg.z), 1);
 			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&gammaCorrected);
 			illuminations[pixelIndex] = gammaCorrected;

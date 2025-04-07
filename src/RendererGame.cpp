@@ -3,6 +3,7 @@
 #include <common.h>
 
 #ifdef _GAME
+
 void Renderer::Tick(const float deltaTime)
 {
 	const Timer t;
@@ -28,7 +29,8 @@ void Renderer::Tick(const float deltaTime)
 			float3 traced = stochasticDOFTraced / static_cast<float>(spp);
 			if(dot(traced, traced) > dbgFF * dbgFF) traced = dbgFF * normalize(traced); // firefly suppressor
 			accumulator[pixelIndex] += float4(traced, 0);
-			const float4 avg = accumulator[pixelIndex] * scale;
+			float4 avg = accumulator[pixelIndex] * scale;
+			avg = aces(avg);
 			float4 gammaCorrected = float4(sqrtf(avg.x), sqrtf(avg.y), sqrtf(avg.z), 1);
 			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&gammaCorrected);
 		}

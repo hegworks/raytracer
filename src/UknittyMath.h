@@ -25,6 +25,12 @@ inline float hsum256_ps_avx(const __m256 v)
 	return hsum_ps_sse3(vlow);
 }
 
+// Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
+inline float3 aces(const float3& x)
+{
+	return clamp((x * (2.51f * x + 0.03f)) / (x * (2.43f * x + 0.59f) + 0.14f), 0.0f, 1.0f);
+}
+
 inline float ease_out_2_quadratic(const float x)
 {
 	const float invX = 1.0f - x;
