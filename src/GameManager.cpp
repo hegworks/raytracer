@@ -349,8 +349,42 @@ void GameManager::LoadLevel(const int levelIdx)
 			break;
 		}
 
-
 		case 1:
+		{
+			Model& lvlObj = m_scene->CreateModel(ModelType::DRAGON, true, false, true);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 1.2f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(1, 0, 0) * DEFAULT_ALBEDO;
+				material.m_factor0 = 0.0f;
+				material.m_factor1 = 0.0f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::DRAGON, false, true, false);
+			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::REFRACTIVE;
+				material.m_albedo = 1.0f - float3(1, 0, 0);
+				material.m_factor0 = 2.0f;
+				material.m_factor1 = 1.5f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::DOUBLE_SIDED;
+			m_doubleSidedWinData.m_winRotDeg0 = 0;
+			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+
+
+			break;
+		}
+
+
+		case 10:
 		{
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BUCKET);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
