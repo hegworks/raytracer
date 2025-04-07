@@ -163,10 +163,10 @@ public:
 			case ModelType::LVL_CAT:
 			case ModelType::LVL_DRAGON:
 			case ModelType::SCN_ROOM_LEVEL:
+			case ModelType::LVL_BALLOON_DOG:
+			case ModelType::LVL_COCKTAIL:
 				return false;
 			case ModelType::LVL_BUCKET:
-			case ModelType::LVL_COCKTAIL:
-			case ModelType::LVL_BALLOON_DOG:
 			case ModelType::LVL_CHAIR:
 			case ModelType::LVL_SPINNER:
 			case ModelType::LVL_GUITAR:
