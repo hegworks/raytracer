@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 0;
+	m_levelIdx = 6;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
@@ -521,6 +521,33 @@ void GameManager::LoadLevel(const int levelIdx)
 
 			m_winType = WinType::ANY_ROT;
 			m_anyRotWinData.m_winQuat = quat::identity();
+
+
+			break;
+		}
+
+		case 6:
+		{
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_CAT, true, false, true);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 1.2f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(1, 1, 1) * DEFAULT_ALBEDO;
+				material.m_factor0 = 0.0f;
+				material.m_factor1 = 0.0f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_CAT, false, true, false);
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::DOUBLE_SIDED;
+			m_doubleSidedWinData.m_winRotDeg0 = 0;
+			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
 
 
 			break;
