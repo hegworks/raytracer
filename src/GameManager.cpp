@@ -374,76 +374,6 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 1:
 		{
-			m_levelObjectModelType = ModelType::LVL_DRAGON;
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_DRAGON, true, false, true);
-			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-			m_levelObjectScale = 1.2f;
-			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
-			{
-				material.m_type = Material::Type::PATH_TRACED;
-				material.m_albedo = float3(1, 0, 0) * DEFAULT_ALBEDO;
-				material.m_factor0 = 0.0f;
-				material.m_factor1 = 0.0f;
-			}
-			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
-
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_DRAGON, false, true, false);
-			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
-			{
-				material.m_type = Material::Type::REFRACTIVE;
-				material.m_albedo = 1.0f - float3(1, 0, 0);
-				material.m_factor0 = 2.0f;
-				material.m_factor1 = 1.5f;
-			}
-			m_scene->m_tranformList.back().m_scl = float3(EPS);
-
-			m_winType = WinType::DOUBLE_SIDED;
-			m_doubleSidedWinData.m_winRotDeg0 = 0;
-			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
-			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
-			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
-
-
-			break;
-		}
-
-		case 2:
-		{
-			m_levelObjectModelType = ModelType::LVL_BALLOON_DOG;
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BALLOON_DOG, true, false, false);
-			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-			m_levelObjectScale = 0.7f;
-			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
-			{
-				material.m_type = Material::Type::PATH_TRACED;
-				material.m_albedo = float3(0, 0, 1) * DEFAULT_ALBEDO;
-				material.m_factor0 = 0.0f;
-				material.m_factor1 = 0.0f;
-			}
-			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
-
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_BALLOON_DOG, false, true, false);
-			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
-			{
-				material.m_type = Material::Type::PATH_TRACED;
-				material.m_albedo = float3(0, 0, 1);
-				material.m_factor0 = 0.7f;
-				material.m_factor1 = 0.8f;
-			}
-			m_scene->m_tranformList.back().m_scl = float3(EPS);
-
-			m_winType = WinType::DOUBLE_SIDED;
-			m_doubleSidedWinData.m_winRotDeg0 = 0;
-			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
-			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
-			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
-
-
-			break;
-		}
-
-		case 3:
-		{
 			m_levelObjectModelType = ModelType::LVL_COCKTAIL;
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_COCKTAIL, true, false, true, Axis::Y, Model::RandType::FIXED_MOVE);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
@@ -478,35 +408,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			break;
 		}
 
-		case 4:
-		{
-			m_levelObjectModelType = ModelType::LVL_CHAIR;
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_CHAIR, true, false, true, Axis::Y);
-			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-			m_levelObjectScale = 1.0f;
-			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
-			{
-				material.m_type = Material::Type::PATH_TRACED;
-				material.m_albedo = float3(1, 1, 1) * DEFAULT_ALBEDO;
-				material.m_factor0 = 0.0f;
-				material.m_factor1 = 0.0f;
-			}
-			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
-
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_CHAIR, false, true, false);
-			m_scene->m_tranformList.back().m_scl = float3(EPS);
-
-			m_winType = WinType::DOUBLE_SIDED;
-			m_doubleSidedWinData.m_winRotDeg0 = 0;
-			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
-			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
-			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
-
-
-			break;
-		}
-
-		case 5:
+		case 2:
 		{
 			m_levelObjectModelType = ModelType::LVL_SPINNER;
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SPINNER, true, false, true, Axis::Y, Model::RandType::FIXED_MOVE);
@@ -531,22 +433,60 @@ void GameManager::LoadLevel(const int levelIdx)
 			break;
 		}
 
-		case 6:
+		case 3:
 		{
-			m_levelObjectModelType = ModelType::LVL_CAT;
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_CAT, true, false, true);
+			m_levelObjectModelType = ModelType::LVL_RAYMATIC;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_RAYMATIC, true, false, true);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 0.65f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(1.0f) * DEFAULT_ALBEDO;
+				material.m_factor0 = 1.0f;
+				material.m_factor1 = 1.0f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_RAYMATIC, false, true, false);
+			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::REFRACTIVE;
+				material.m_factor0 = 1.25f;
+				material.m_factor1 = 1.0f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::SINGLE_SIDED;
+			m_singleSidedWinData.m_winRotDeg = 0;
+
+
+			break;
+		}
+
+		case 4:
+		{
+			m_levelObjectModelType = ModelType::LVL_DRAGON;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_DRAGON, true, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.2f;
 			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
 			{
 				material.m_type = Material::Type::PATH_TRACED;
-				material.m_albedo = float3(1, 1, 1) * DEFAULT_ALBEDO;
+				material.m_albedo = float3(1, 0, 0) * DEFAULT_ALBEDO;
 				material.m_factor0 = 0.0f;
 				material.m_factor1 = 0.0f;
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_CAT, false, true, false);
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_DRAGON, false, true, false);
+			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::REFRACTIVE;
+				material.m_albedo = 1.0f - float3(1, 0, 0);
+				material.m_factor0 = 2.0f;
+				material.m_factor1 = 1.5f;
+			}
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::DOUBLE_SIDED;
@@ -559,7 +499,42 @@ void GameManager::LoadLevel(const int levelIdx)
 			break;
 		}
 
-		case 7:
+		case 5:
+		{
+			m_levelObjectModelType = ModelType::LVL_BALLOON_DOG;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BALLOON_DOG, true, false, false);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 0.7f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(0, 0, 1) * DEFAULT_ALBEDO;
+				material.m_factor0 = 0.0f;
+				material.m_factor1 = 0.0f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_BALLOON_DOG, false, true, false);
+			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(0, 0, 1);
+				material.m_factor0 = 0.7f;
+				material.m_factor1 = 0.8f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::DOUBLE_SIDED;
+			m_doubleSidedWinData.m_winRotDeg0 = 0;
+			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+
+
+			break;
+		}
+
+		case 6:
 		{
 			m_levelObjectModelType = ModelType::LVL_BUCKET;
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BUCKET, true, false, true, Axis::Z);
@@ -575,6 +550,34 @@ void GameManager::LoadLevel(const int levelIdx)
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
 			Model& fullShape = m_scene->CreateModel(ModelType::LVL_BUCKET, false, true, false);
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::DOUBLE_SIDED;
+			m_doubleSidedWinData.m_winRotDeg0 = 0;
+			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+
+
+			break;
+		}
+
+		case 7:
+		{
+			m_levelObjectModelType = ModelType::LVL_CAT;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_CAT, true, false, true);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 1.2f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(1, 1, 1) * DEFAULT_ALBEDO;
+				material.m_factor0 = 0.0f;
+				material.m_factor1 = 0.0f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_CAT, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::DOUBLE_SIDED;
@@ -614,30 +617,27 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 9:
 		{
-			m_levelObjectModelType = ModelType::LVL_RAYMATIC;
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_RAYMATIC, true, false, true);
+			m_levelObjectModelType = ModelType::LVL_CHAIR;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_CHAIR, true, false, true, Axis::Y);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-			m_levelObjectScale = 0.65f;
+			m_levelObjectScale = 1.0f;
 			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
 			{
 				material.m_type = Material::Type::PATH_TRACED;
-				material.m_albedo = float3(1.0f) * DEFAULT_ALBEDO;
-				material.m_factor0 = 1.0f;
-				material.m_factor1 = 1.0f;
+				material.m_albedo = float3(1, 1, 1) * DEFAULT_ALBEDO;
+				material.m_factor0 = 0.0f;
+				material.m_factor1 = 0.0f;
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_RAYMATIC, false, true, false);
-			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
-			{
-				material.m_type = Material::Type::REFRACTIVE;
-				material.m_factor0 = 1.25f;
-				material.m_factor1 = 1.0f;
-			}
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_CHAIR, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
-			m_winType = WinType::SINGLE_SIDED;
-			m_singleSidedWinData.m_winRotDeg = 0;
+			m_winType = WinType::DOUBLE_SIDED;
+			m_doubleSidedWinData.m_winRotDeg0 = 0;
+			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
 
 
 			break;
