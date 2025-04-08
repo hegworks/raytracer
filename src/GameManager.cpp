@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 7;
+	m_levelIdx = 8;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
@@ -68,12 +68,13 @@ void GameManager::Tick(const float deltaTime)
 	}
 	else if(m_isShrinkDeformedFinished && !m_isGrowFullFinished)
 	{
+		const float targetScale = m_levelObjectScale * SCALE_FACTOR;
 		float3& scl = m_scene->m_tranformList[m_levelObjectInstIdx + 1].m_scl;
 		m_scaleTimer->Update(deltaTime);
-		scl = lerp(EPS, m_levelObjectScale * 1.5f, ease_out_bounce(m_scaleTimer->GetProgress()));
-		if(scl.x > m_levelObjectScale * 1.5f)
+		scl = lerp(EPS, targetScale, ease_out_bounce(m_scaleTimer->GetProgress()));
+		if(scl.x > targetScale)
 		{
-			scl = m_levelObjectScale * 1.5f;
+			scl = targetScale;
 			m_isGrowFullFinished = true;
 			if(m_levelIdx == 0 && m_showTutorial)
 				m_state = State::TUTORIAL;
@@ -568,6 +569,33 @@ void GameManager::LoadLevel(const int levelIdx)
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
 			Model& fullShape = m_scene->CreateModel(ModelType::LVL_BUCKET, false, true, false);
+			m_scene->m_tranformList.back().m_scl = float3(EPS);
+
+			m_winType = WinType::DOUBLE_SIDED;
+			m_doubleSidedWinData.m_winRotDeg0 = 0;
+			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
+			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
+			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+
+
+			break;
+		}
+
+		case 8:
+		{
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_GUITAR, true, false, true);
+			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
+			m_levelObjectScale = 0.7f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(0.5f) * DEFAULT_ALBEDO;
+				material.m_factor0 = 0.0f;
+				material.m_factor1 = 0.0f;
+			}
+			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
+
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_GUITAR, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::DOUBLE_SIDED;

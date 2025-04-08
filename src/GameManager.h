@@ -112,6 +112,7 @@ private:
 	static constexpr float WIN_PERCENTAGE = 0.97f;
 	static constexpr float WIN_SLERP_END_PROGRESS = 1.0f - 1e-6f;
 	static constexpr float SCALE_TIME = 2750.0f;
+	static constexpr float SCALE_FACTOR = 1.8f;
 
 	Scene* m_scene = nullptr;
 	Renderer* m_renderer = nullptr;

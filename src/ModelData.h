@@ -168,8 +168,8 @@ public:
 			case ModelType::LVL_CHAIR:
 			case ModelType::LVL_SPINNER:
 			case ModelType::LVL_BUCKET:
-				return false;
 			case ModelType::LVL_GUITAR:
+				return false;
 			case ModelType::LVL_RAYMATIC:
 				return true;
 		}
