@@ -984,7 +984,7 @@ public:
 		else
 		{
 			float angle = acosf(cosTheta);
-			float s1 = sinf(1 - t), s2 = sinf(t * angle), s3 = sinf(angle);
+			float s1 = sinf((1 - t) * angle), s2 = sinf(t * angle), s3 = sinf(angle);
 			r.w = (s1 * a.w + s2 * r.w) / s3;
 			r.x = (s1 * a.x + s2 * r.x) / s3;
 			r.y = (s1 * a.y + s2 * r.y) / s3;
@@ -1015,9 +1015,8 @@ public:
 
 		return qr;
 	}
-
 	/// <summary>
-	/// Extract Euler angles from quaternion
+	/// Extract Euler angles from quaternion<br>
 	/// Note: This uses XYZ rotation order
 	/// </summary>
 	// This function is written by claude.ai
@@ -1079,9 +1078,9 @@ public:
 	}
 	quat operator + (const quat& q) const { return quat(w + q.w, x + q.x, y + q.y, z + q.z); }
 	quat operator - (const quat& q) const { return quat(w - q.w, x - q.x, y - q.y, z - q.z); }
-	quat operator / (const float s) const { return quat(w / s, x / s, y / s, z / s); }
-	quat operator * (const float s) const { return scale(s); }
-	quat scale(const float s) const { return quat(w * s, x * s, y * s, z * s); }
+	quat operator / (float s) const { return quat(w / s, x / s, y / s, z / s); }
+	quat operator * (float s) const { return scale(s); }
+	quat scale(float s) const { return quat(w * s, x * s, y * s, z * s); }
 	float w = 1, x = 0, y = 0, z = 0;
 };
 inline float dot(const quat& a, const quat& b) { return a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z; }

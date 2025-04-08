@@ -67,6 +67,7 @@ public:
 	float CalcProgress() const;
 	float CalcProgressByFixedRot(const float3& targetRotDeg, const float3& weight) const;
 	float CalcProgressByAnyRot() const;
+	float CalcProgressByQuat(const quat& a, const quat& b);
 	void OnMouseMove(const float2& windowCoordF, const int2& windowCoord, const float2& screenCoordF, const int2& screenCoord);
 	void OnTransformChanged(int instanceIdx) const;
 	void OnMouseDown(int button);
@@ -94,6 +95,7 @@ private:
 	uint m_seed = 0;
 	float m_levelObjectScale = 0;
 	float m_winTimeProgress = 0;
+	quat m_winQuat;
 
 	bool m_isGameWon = false;
 	bool m_isWinSlerpFinished = false;
@@ -105,10 +107,10 @@ private:
 	SingleSidedWinData m_singleSidedWinData;
 	DoubleSidedWinData m_doubleSidedWinData;
 
-	static constexpr float DRAG_ROTATE_SPEED = 0.00025f;
-	static constexpr float WIN_SLERP_SPEED = 0.0025f;
-	static constexpr float WIN_PERCENTAGE = 0.98f;
-	static constexpr float WIN_SLERP_END_PROGRESS = 1.0f - 1e-4f;
+	static constexpr float DRAG_ROTATE_SPEED = 0.0005f;
+	static constexpr float WIN_SLERP_SPEED = 0.01f;
+	static constexpr float WIN_PERCENTAGE = 0.97f;
+	static constexpr float WIN_SLERP_END_PROGRESS = 1.0f - 1e-6f;
 	static constexpr float SCALE_TIME = 2750.0f;
 
 	Scene* m_scene = nullptr;

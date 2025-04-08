@@ -40,7 +40,7 @@ inline int2 dbgScrRangeY = {0,SCRHEIGHT};
 
 inline bool useSD = true; /// UseSkyDome
 inline bool useBI = true; /// UseBilinearInterpolation
-inline constexpr static float dbgSDBF_DEFAULT = 0.5f; /// SkyDomeBrightnessFactor
+inline constexpr static float dbgSDBF_DEFAULT = 1.0f; /// SkyDomeBrightnessFactor
 inline float dbgSDBF = dbgSDBF_DEFAULT; /// SkyDomeBrightnessFactor
 inline float EPS = 1e-3f;
 inline float TWO_EPS = 2e-3f;

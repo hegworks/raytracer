@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 5;
+	m_levelIdx = 0;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
@@ -39,12 +39,12 @@ void GameManager::Tick(const float deltaTime)
 	if(m_isGameWon && !m_isWinSlerpFinished)
 	{
 		quat& q = m_scene->m_tranformList[m_levelObjectInstIdx].m_rot;
-		q = quat::slerp2(q, quat::identity(), WIN_SLERP_SPEED * deltaTime);
+		q = quat::slerp(q, m_winQuat, WIN_SLERP_SPEED * deltaTime);
 		float progress = lerp(m_winTimeProgress, 1.0f, WIN_SLERP_SPEED * deltaTime);
 		m_winTimeProgress = progress;
-		if(CalcProgress() > WIN_SLERP_END_PROGRESS)
+		if(CalcProgressByQuat(q, m_winQuat) > WIN_SLERP_END_PROGRESS)
 		{
-			q = quat::identity();
+			q = m_winQuat;
 			m_isWinSlerpFinished = true;
 			m_scaleTimer->Reset();
 			progress = 1.0f;
@@ -127,6 +127,19 @@ float GameManager::CalcProgressByAnyRot() const
 	return abs(clamp(dot(qn, wn), -1.0f, 1.0f));
 }
 
+float GameManager::CalcProgressByQuat(const quat& a, const quat& b)
+{
+	quat aa = a;
+	aa.normalize();
+	const float3 an = aa * float3(0.0f, 0.0f, -1.0f);
+
+	quat bb = b;
+	bb.normalize();
+	const float3 bn = bb * float3(0.0f, 0.0f, -1.0f);
+
+	return clamp(dot(an, bn), -1.0f, 1.0f);
+}
+
 void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoord, const float2& screenCoordF, const int2& screenCoord)
 {
 	if(m_state != State::GAMEPLAY && m_state != State::WIN) return;
@@ -137,7 +150,7 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 	{
 		const int objIdx = m_levelObjectInstIdx + (m_isGameWon ? 1 : 0);
 		m_mouseDelta = m_windowCoordF - m_mouseDownWindowPos;
-		const float3 axisSpeed = float3(m_mouseDelta.x, m_mouseDelta.y, 0) * SCRSCALE * DRAG_ROTATE_SPEED * m_deltaTime;
+		const float3 axisSpeed = float3(m_mouseDelta.x, m_mouseDelta.y, 0) * INV_SCRSCALE * DRAG_ROTATE_SPEED * m_deltaTime;
 		if(m_isMouseLeftBtnDown)
 		{
 			Renderer::RotateAroundWorldAxis(m_scene->m_tranformList[objIdx], {1,0,0}, -axisSpeed.y);
@@ -157,6 +170,10 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 			//printf("%f\n", progress);
 			if(progress > WIN_PERCENTAGE)
 			{
+				const float p0 = CalcProgressByFixedRot(0, 0.33f);
+				const float p1 = CalcProgressByFixedRot(float3(180, 0, 180), 0.33f);
+				m_winQuat = p0 >= p1 ? quat::identity() : quat(0, 0, 1, 0);
+
 				m_isGameWon = true;
 				m_winTimeProgress = progress;
 			}
@@ -308,7 +325,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			material.m_type = Material::Type::REFRACTIVE;
 			material.m_albedo = {0,0,1};
 			material.m_factor0 = 0.03f;
-			material.m_factor1 = 1.5f;
+			material.m_factor1 = 1.33f;
 		}
 		if(strcmp(material.m_name, "shadow_bg") == 0)
 		{
@@ -487,8 +504,6 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 5:
 		{
-			dbgSDBF = 0.1f;
-
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SPINNER, true, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.0f;
