@@ -169,9 +169,10 @@ public:
 			case ModelType::LVL_SPINNER:
 			case ModelType::LVL_BUCKET:
 			case ModelType::LVL_GUITAR:
-				return false;
 			case ModelType::LVL_RAYMATIC:
-				return true;
+				return false;
+				//case ModelType::LVL_RAYMATIC:
+					//return true;
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}

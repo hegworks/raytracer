@@ -67,7 +67,7 @@ public:
 	float CalcProgress() const;
 	float CalcProgressByFixedRot(const float3& targetRotDeg, const float3& weight) const;
 	float CalcProgressByAnyRot() const;
-	float CalcProgressByQuat(const quat& a, const quat& b);
+	float CalcProgressByQuat(quat a, quat b);
 	void OnMouseMove(const float2& windowCoordF, const int2& windowCoord, const float2& screenCoordF, const int2& screenCoord);
 	void OnTransformChanged(int instanceIdx) const;
 	void OnMouseDown(int button);

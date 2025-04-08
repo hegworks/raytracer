@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 8;
+	m_levelIdx = 0;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
@@ -128,15 +128,13 @@ float GameManager::CalcProgressByAnyRot() const
 	return abs(clamp(dot(qn, wn), -1.0f, 1.0f));
 }
 
-float GameManager::CalcProgressByQuat(const quat& a, const quat& b)
+float GameManager::CalcProgressByQuat(quat a, quat b)
 {
-	quat aa = a;
-	aa.normalize();
-	const float3 an = aa * float3(0.0f, 0.0f, -1.0f);
+	a.normalize();
+	const float3 an = a * float3(0.0f, 0.0f, -1.0f);
 
-	quat bb = b;
-	bb.normalize();
-	const float3 bn = bb * float3(0.0f, 0.0f, -1.0f);
+	b.normalize();
+	const float3 bn = b * float3(0.0f, 0.0f, -1.0f);
 
 	return clamp(dot(an, bn), -1.0f, 1.0f);
 }
@@ -175,7 +173,7 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 				const float p1 = CalcProgressByFixedRot(float3(180, 0, 180), 0.33f);
 				m_winQuat = p0 >= p1 ? quat::identity() : quat(0, 0, 1, 0);
 
-				m_isGameWon = true;
+				//m_isGameWon = true;
 				m_winTimeProgress = progress;
 			}
 		}
@@ -608,60 +606,31 @@ void GameManager::LoadLevel(const int levelIdx)
 			break;
 		}
 
-		case 10:
+		case 9:
 		{
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BUCKET);
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_RAYMATIC, true, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-			m_levelObjectScale = 0.2f;
+			m_levelObjectScale = 0.65f;
+			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::PATH_TRACED;
+				material.m_albedo = float3(1.0f) * DEFAULT_ALBEDO;
+				material.m_factor0 = 1.0f;
+				material.m_factor1 = 1.0f;
+			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_BUCKET, false, true);
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_RAYMATIC, false, true, false);
+			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
+			{
+				material.m_type = Material::Type::REFRACTIVE;
+				material.m_factor0 = 1.25f;
+				material.m_factor1 = 1.0f;
+			}
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
-			m_winType = WinType::ANY_ROT;
-			m_anyRotWinData.m_winQuat = quat::identity();
-
-
-			break;
-		}
-
-
-		case 20:
-		{
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_COCKTAIL, true);
-			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-			m_levelObjectScale = 1.2f;
-			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
-
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_COCKTAIL, false, true);
-			m_scene->m_tranformList.back().m_scl = float3(EPS);
-
-			m_winType = WinType::DOUBLE_SIDED;
-			m_doubleSidedWinData.m_winRotDeg0 = 0;
-			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
-			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
-			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
-
-
-			break;
-		}
-
-
-		case 30:
-		{
-			Model& lvlObj = m_scene->CreateModel(ModelType::DRAGON, true);
-			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
-			m_levelObjectScale = 1.2f;
-			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
-
-			Model& fullShape = m_scene->CreateModel(ModelType::DRAGON, false, true);
-			m_scene->m_tranformList.back().m_scl = float3(EPS);
-
-			m_winType = WinType::DOUBLE_SIDED;
-			m_doubleSidedWinData.m_winRotDeg0 = 0;
-			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
-			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
-			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+			m_winType = WinType::SINGLE_SIDED;
+			m_singleSidedWinData.m_winRotDeg = 0;
 
 
 			break;
