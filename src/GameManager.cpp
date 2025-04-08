@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 0;
+	m_levelIdx = 8;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
@@ -81,7 +81,7 @@ void GameManager::Tick(const float deltaTime)
 			else
 			{
 				m_state = State::WIN;
-				if(m_levelIdx == SPINNER_LEVEL) dbgSDBF = 0.1f, m_scene->m_dirLightList.clear();
+				if(m_levelObjectModelType == ModelType::LVL_SPINNER) dbgSDBF = 0.1f, m_scene->m_dirLightList.clear();
 				else dbgSDBF = dbgSDBF_DEFAULT;
 			}
 		}
@@ -173,7 +173,7 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 				const float p1 = CalcProgressByFixedRot(float3(180, 0, 180), 0.33f);
 				m_winQuat = p0 >= p1 ? quat::identity() : quat(0, 0, 1, 0);
 
-				//m_isGameWon = true;
+				m_isGameWon = true;
 				m_winTimeProgress = progress;
 			}
 		}
@@ -303,7 +303,7 @@ void GameManager::ResetGameplayStates()
 
 void GameManager::LoadLevel(const int levelIdx)
 {
-	//dbgSDBF = 1.75f;
+	dbgSDBF = dbgSDBF_DEFAULT;
 
 	DirLight& frontLight = m_scene->CreateDirLight();
 	frontLight.m_dir = float3(0, 0, 1);
@@ -342,6 +342,7 @@ void GameManager::LoadLevel(const int levelIdx)
 	{
 		case 0:
 		{
+			m_levelObjectModelType = ModelType::LVL_SQUARE;
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SQUARE, false, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 0.135f;
@@ -373,6 +374,7 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 1:
 		{
+			m_levelObjectModelType = ModelType::DRAGON;
 			Model& lvlObj = m_scene->CreateModel(ModelType::DRAGON, true, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.2f;
@@ -407,6 +409,7 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 2:
 		{
+			m_levelObjectModelType = ModelType::LVL_BALLOON_DOG;
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BALLOON_DOG, true, false, false);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 0.7f;
@@ -441,7 +444,8 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 3:
 		{
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_COCKTAIL, true, false, true);
+			m_levelObjectModelType = ModelType::LVL_COCKTAIL;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_COCKTAIL, true, false, true, Axis::Y, Model::RandType::FIXED_MOVE);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.2f;
 			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
@@ -476,7 +480,8 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 4:
 		{
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_CHAIR, true, false, true);
+			m_levelObjectModelType = ModelType::LVL_CHAIR;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_CHAIR, true, false, true, Axis::Y);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.0f;
 			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
@@ -503,7 +508,8 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 5:
 		{
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SPINNER, true, false, true);
+			m_levelObjectModelType = ModelType::LVL_SPINNER;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_SPINNER, true, false, true, Axis::Y, Model::RandType::FIXED_MOVE);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.0f;
 			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
@@ -527,6 +533,7 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 6:
 		{
+			m_levelObjectModelType = ModelType::LVL_CAT;
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_CAT, true, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.2f;
@@ -554,7 +561,8 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 7:
 		{
-			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BUCKET, true, false, true);
+			m_levelObjectModelType = ModelType::LVL_BUCKET;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_BUCKET, true, false, true, Axis::Z);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.0f;
 			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
@@ -581,6 +589,7 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 8:
 		{
+			m_levelObjectModelType = ModelType::LVL_GUITAR;
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_GUITAR, true, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 0.7f;
@@ -596,11 +605,8 @@ void GameManager::LoadLevel(const int levelIdx)
 			Model& fullShape = m_scene->CreateModel(ModelType::LVL_GUITAR, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
-			m_winType = WinType::DOUBLE_SIDED;
-			m_doubleSidedWinData.m_winRotDeg0 = 0;
-			m_doubleSidedWinData.m_winRotDeg1 = float3(180, 0, 180);
-			m_doubleSidedWinData.m_winRotWeights0 = 0.33f;
-			m_doubleSidedWinData.m_winRotWeights1 = 0.33f;
+			m_winType = WinType::ANY_ROT;
+			m_anyRotWinData.m_winQuat = quat::identity();
 
 
 			break;
@@ -608,6 +614,7 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 9:
 		{
+			m_levelObjectModelType = ModelType::LVL_RAYMATIC;
 			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_RAYMATIC, true, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 0.65f;

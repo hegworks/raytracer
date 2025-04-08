@@ -1,5 +1,7 @@
 #pragma once
 
+enum class Axis : uint8_t { X, Y, Z };
+
 /// <summary>
 /// map the number n from the range [x, y] to [a, b]
 /// </summary>

@@ -4,6 +4,7 @@
 
 #include "RNG.h"
 
+enum class ModelType : uint8_t;
 class CountdownTimer;
 
 namespace Tmpl8
@@ -59,7 +60,6 @@ public:
 	float m_progress = 0;
 
 	static constexpr int NUM_LEVELS = 10;
-	static constexpr int SPINNER_LEVEL = 5;
 
 	void LoadStartMenu() const;
 	void Init(Scene* scene, Renderer* renderer);
@@ -90,6 +90,7 @@ private:
 	bool m_isMouseLeftBtnDown = false;
 	bool m_isMouseRightBtnDown = false;
 
+	ModelType m_levelObjectModelType = {};
 	int m_levelObjectInstIdx = -1;
 	float m_deltaTime = 0;
 	uint m_seed = 0;

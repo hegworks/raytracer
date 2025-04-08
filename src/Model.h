@@ -25,14 +25,18 @@ struct Texture
 class Model
 {
 public:
-	Model(std::string const& path, const float2 textureCoordScale = float2(1), const bool isRandZ = false, const bool isInvertMetallic = false, const bool isForceNoTexture = false)
+	enum class RandType : uint8_t { SINE, FIXED_MOVE };
+
+	Model(std::string const& path, const float2 textureCoordScale = float2(1), const bool isRandAxis = false, const bool isInvertMetallic = false, const bool isForceNoTexture = false, const Axis randAxis = Axis::X, const RandType randType = RandType::SINE)
 	{
 		//stbi_set_flip_vertically_on_load(shouldVerticallyFlipTexture);
 
 		m_textureCoordScale = textureCoordScale;
-		m_isRandZ = isRandZ;
+		m_isRandAxis = isRandAxis;
 		m_isInvertMetallic = isInvertMetallic;
 		m_isForceNoTexture = isForceNoTexture;
+		m_randAxis = randAxis;
+		m_randType = randType;
 
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
@@ -98,9 +102,11 @@ private:
 	void TextureFromMemory(aiTexel* pcData, int mWidth);
 	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
 
-	bool m_isRandZ = false;
+	bool m_isRandAxis = false;
 	bool m_isInvertMetallic = false;
 	bool m_isForceNoTexture = false;
+	Axis m_randAxis = Axis::X;
+	RandType m_randType = RandType::SINE;
 };
 
 inline void Model::loadModel(std::string path)
@@ -159,11 +165,6 @@ inline void Model::processNode(aiNode* node, const aiScene* scene, aiMatrix4x4 p
 	}
 }
 
-//#define FULLY_RANDOM
-#define SINE
-//#define PERLIN
-//#define FIXED_MOVE
-
 inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatrix4x4& transform)
 {
 	for(uint i = 0; i < mesh->mNumFaces; ++i)
@@ -174,45 +175,35 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 			const uint idx = face.mIndices[j];
 
 			float randZAddition = 0.0f;
-			if(m_isRandZ)
+			if(m_isRandAxis)
 			{
-#if defined(FULLY_RANDOM)
-				constexpr float amplitude = 0.5f;
-				const float randSign = RandomFloat() > 0.5f ? 1.0f : -1.0f;
-				randZAddition = randSign * RandomFloat() * amplitude;
+				float axis;
+				switch(m_randAxis)
+				{
+					case Axis::X: { axis = mesh->mVertices[idx].x; break; }
+					case Axis::Y: { axis = mesh->mVertices[idx].y; break; }
+					case Axis::Z: { axis = mesh->mVertices[idx].z; break; }
+				}
 
+				switch(m_randType)
+				{
+					case RandType::SINE:
+					{
+						constexpr float frequency = 5.0f, amplitude = 1.5f;
+						randZAddition = sin(axis * frequency) * amplitude;
+						break;
+					}
+					case RandType::FIXED_MOVE:
+					{
+						constexpr float frequency = 0.5f;
+						constexpr float amplitude = 1.2f;
+						const int sectionIndex = static_cast<int>(axis / frequency);
+						randZAddition = amplitude * sinf(sectionIndex + axis * frequency);
+						break;
+					}
 
-#elif defined(SINE)
-				constexpr float frequency = 5.0f, amplitude = 1.5f;
-				const float axis = mesh->mVertices[idx].x;
-				randZAddition = sin(axis * frequency) * amplitude;
-
-
-#elif defined (PERLIN)
-				PerlinGenerator::m_numOctaves = 1;
-				PerlinGenerator::m_amplitude = 0.5f;
-				PerlinGenerator::m_persistence = 0.5f;
-				randZAddition = PerlinGenerator::noise3D(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z);
-
-
-#elif defined (FIXED_MOVE)
-				constexpr float frequency = 0.5f;
-				constexpr float amplitude = 0.85f;
-				const float axis = mesh->mVertices[idx].z;
-				const int sectionIndex = static_cast<int>(axis / frequency);
-#if 0
-				randZAddition = (sectionIndex * amplitude);
-#elif 0
-				randZAddition = (sectionIndex % 2 == 0 ? 1.0f : -1.0f) * (sectionIndex * amplitude);
-#elif 0
-				randZAddition = amplitude * sinf(sectionIndex * TWOPI * 0.1f);
-#elif 1
-				randZAddition = amplitude * sinf(sectionIndex + axis * frequency);
-#endif
-
-
-
-#endif
+					default: throw runtime_error("Unhandled m_randType");
+				}
 			}
 
 			aiMatrix3x3 normalMatrix = aiMatrix3x3(transform);
