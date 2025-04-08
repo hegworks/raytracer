@@ -1,6 +1,25 @@
 ﻿#include "precomp.h"
 
 #ifdef _GAME
+static string GetLevelModelTypeName(const ModelType modelType)
+{
+	switch(modelType)
+	{
+		case ModelType::LVL_SQUARE: return "Cube";
+		case ModelType::LVL_BUCKET: return "Bucket";
+		case ModelType::LVL_COCKTAIL: return "Cocktail";
+		case ModelType::LVL_BALLOON_DOG: return "Balloon Dog";
+		case ModelType::LVL_CHAIR: return "Chair";
+		case ModelType::LVL_SPINNER: return "Spinner";
+		case ModelType::LVL_CAT: return "Cat";
+		case ModelType::LVL_DRAGON: return "Dragon";
+		case ModelType::LVL_GUITAR: return "Guitar";
+		case ModelType::LVL_RAYMATIC: return "RAYMATIC!";
+		default: printf("Unhandled modelType: %hhu", static_cast<uint8_t>(modelType)), throw runtime_error("Unhandled modelType");
+	}
+	throw runtime_error("Unhandled modelType");
+}
+
 void Renderer::GameUI()
 {
 	constexpr float centerX = WINDOWWIDTH * 0.5f;
@@ -61,7 +80,20 @@ void Renderer::GameUI()
 			ImGui::SetNextWindowSize(ImVec2(WINDOWWIDTH - 350, WINDOWHEIGHT));
 			ImGui::Begin("WinMenu", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
-			ImGui::SetCursorPos(ImVec2(100, centerY - btnHeight * 0.5f));
+			// Draw background
+			ImGui::GetWindowDrawList()->AddRectFilled(
+				ImVec2(centerX - 150.0f, 25.0f),
+				ImVec2(centerX + 150.0f, 60.0f),
+				IM_COL32(100, 100, 100, 100) // RGBA
+			);
+			{
+				const string text = to_string(m_gameManager.m_levelIdx + 1) + "/" + to_string(GameManager::NUM_LEVELS) + " - " + GetLevelModelTypeName(m_gameManager.m_levelObjectModelType);
+				const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+				ImGui::SetCursorPos(ImVec2(centerX - (textSize.x * 0.5f), 25.0f));
+				ImGui::Text(text.c_str());
+			}
+
+			ImGui::SetCursorPos(ImVec2(25.0f, 25.0f));
 			if(ImGui::Button("Next Level", ImVec2(btnWidth, btnHeight)))
 			{
 				m_gameManager.m_levelIdx++;
@@ -86,11 +118,10 @@ void Renderer::GameUI()
 					m_gameManager.m_levelIdx = 0;
 				}
 				resetAccumulator = true;
-
-				ImGui::End();
-				break;
 			}
-
+			ImGui::End();
+			break;
+		}
 
 		case GameManager::State::GAMEPLAY:
 		{
@@ -98,7 +129,7 @@ void Renderer::GameUI()
 
 			constexpr float progressBarWidth = 600.0f;
 			constexpr float progressBarHeight = 100.0f;
-			ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH * 0.5f - progressBarWidth * 0.5f, 20));
+			ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH * 0.5f - progressBarWidth * 0.5f, 17));
 			ImGui::SetNextWindowSize(ImVec2(progressBarWidth, progressBarHeight));
 			ImGui::SetNextWindowBgAlpha(0.55f);
 			ImGui::Begin("ProgressBar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
@@ -251,10 +282,7 @@ void Renderer::GameUI()
 			ImGui::End();
 			break;
 		}
-		}
-
-
-
 	}
+
 }
 #endif

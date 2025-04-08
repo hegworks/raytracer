@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 8;
+	m_levelIdx = 0;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
@@ -374,8 +374,8 @@ void GameManager::LoadLevel(const int levelIdx)
 
 		case 1:
 		{
-			m_levelObjectModelType = ModelType::DRAGON;
-			Model& lvlObj = m_scene->CreateModel(ModelType::DRAGON, true, false, true);
+			m_levelObjectModelType = ModelType::LVL_DRAGON;
+			Model& lvlObj = m_scene->CreateModel(ModelType::LVL_DRAGON, true, false, true);
 			m_levelObjectInstIdx = static_cast<int>(m_scene->m_tranformList.size()) - 1;
 			m_levelObjectScale = 1.2f;
 			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
@@ -387,7 +387,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::DRAGON, false, true, false);
+			Model& fullShape = m_scene->CreateModel(ModelType::LVL_DRAGON, false, true, false);
 			for(Material& material : fullShape.m_modelData.m_meshMaterialList)
 			{
 				material.m_type = Material::Type::REFRACTIVE;

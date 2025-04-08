@@ -52,6 +52,7 @@ public:
 		float3 m_winRotWeights1 = 0.33f;
 	};
 
+	ModelType m_levelObjectModelType = {};
 	int m_levelIdx = 0;
 	State m_state;
 	int m_tutorialStage = 0;
@@ -90,7 +91,6 @@ private:
 	bool m_isMouseLeftBtnDown = false;
 	bool m_isMouseRightBtnDown = false;
 
-	ModelType m_levelObjectModelType = {};
 	int m_levelObjectInstIdx = -1;
 	float m_deltaTime = 0;
 	uint m_seed = 0;
