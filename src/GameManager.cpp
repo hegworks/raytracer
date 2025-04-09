@@ -184,6 +184,7 @@ void GameManager::OnMouseMove(const float2& windowCoordF, const int2& windowCoor
 
 				m_isGameWon = true;
 				m_winTimeProgress = progress;
+				m_audioManager->OnWin();
 			}
 		}
 	}

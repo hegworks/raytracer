@@ -11,8 +11,10 @@ namespace Uknitty
 
 enum class AudioType
 {
+	WIN0,
+	WIN1,
+	WIN2,
 	BGM,
-	WIN,
 };
 
 class AudioPlayer

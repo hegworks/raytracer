@@ -9,18 +9,18 @@ AudioManager::AudioManager()
 {
 	m_audioPlayer = new Uknitty::AudioPlayer();
 
-	m_audioPlayer->CreateSound(Uknitty::AudioType::BGM, ASSETDIR + "Audio/BGM_Slow.ogg", Audio::Sound::Type::Music);
-	m_audioPlayer->CreateSound(Uknitty::AudioType::WIN, ASSETDIR + "Audio/BGM_Fast.ogg", Audio::Sound::Type::Sound);
+	m_audioPlayer->CreateSound(Uknitty::AudioType::BGM, ASSETDIR + "Audio/BGM.mp3", Audio::Sound::Type::Music);
+	m_audioPlayer->CreateSound(Uknitty::AudioType::WIN0, ASSETDIR + "Audio/Win0.mp3", Audio::Sound::Type::Sound);
+	m_audioPlayer->CreateSound(Uknitty::AudioType::WIN1, ASSETDIR + "Audio/Win1.mp3", Audio::Sound::Type::Sound);
+	m_audioPlayer->CreateSound(Uknitty::AudioType::WIN2, ASSETDIR + "Audio/Win2.mp3", Audio::Sound::Type::Sound);
 
-	//m_audioPlayer->SetVolume(Uknitty::AudioType::BGM, 0.5f);
-	//m_audioPlayer->SetVolume(Uknitty::AudioType::WIN, 0.25f);
-
-	//m_audioPlayer->Replay(Uknitty::AudioType::BGM);
+	m_audioPlayer->SetVolume(Uknitty::AudioType::BGM, 0.55f);
 }
 
-void AudioManager::OnWin() const
+void AudioManager::OnWin()
 {
-	m_audioPlayer->Replay(Uknitty::AudioType::WIN);
+	m_lastPlayedWinSoundIdx = (m_lastPlayedWinSoundIdx + 1) % NUM_WIN_SOUNDS;
+	m_audioPlayer->Replay(static_cast<Uknitty::AudioType>(m_lastPlayedWinSoundIdx));
 }
 
 void AudioManager::OnStartGame() const
