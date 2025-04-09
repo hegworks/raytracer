@@ -309,7 +309,7 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 		{
 			Texture texture;
 			const std::string path = ASSETDIR + "Models/4x4white.png";
-			std::cout << "Loading fallback texture at:  " << path << std::endl;
+			std::cout << "Loading default texture at:  " << path << std::endl;
 			TextureFromFile(path);
 			texture.m_type = typeName;
 			texture.m_path = path;
@@ -346,7 +346,6 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 			{
 				texturePath = texturePath.substr(pos + 1);
 			}
-			std::cout << "Loading: " << m_directory << "/" << texturePath.c_str() << std::endl;
 
 			Texture texture;
 			std::string path = m_directory + '/' + std::string(texturePath);
@@ -355,10 +354,12 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 			mat->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureFile);
 			if(const aiTexture* tex = scene->GetEmbeddedTexture(textureFile.C_Str()))
 			{
+				std::cout << "Loading embedded texture: " << m_directory << "/" << texturePath.c_str() << std::endl;
 				TextureFromMemory(tex->pcData, tex->mWidth);
 			}
 			else
 			{
+				std::cout << "Loading texture from file: " << m_directory << "/" << texturePath.c_str() << std::endl;
 				TextureFromFile(path);
 			}
 			texture.m_type = typeName;
