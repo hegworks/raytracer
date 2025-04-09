@@ -106,16 +106,9 @@ void Renderer::GameUI()
 				}
 				else
 				{
-					if(m_gameManager.m_showTutorial)
-					{
-						m_gameManager.m_state = GameManager::State::TUTORIAL;
-					}
-					else
-					{
-						m_gameManager.LoadStartMenu();
-						m_gameManager.m_state = GameManager::State::START_MENU;
-					}
+					m_gameManager.m_tutorialStage = 2;
 					m_gameManager.m_levelIdx = 0;
+					m_gameManager.m_state = GameManager::State::TUTORIAL;
 				}
 				resetAccumulator = true;
 			}

@@ -110,7 +110,7 @@ private:
 
 	static constexpr float DRAG_ROTATE_SPEED = 0.0005f;
 	static constexpr float WIN_SLERP_SPEED = 0.01f;
-	static constexpr float WIN_PERCENTAGE = 0.965f;
+	static constexpr float WIN_PERCENTAGE = 0.96f;
 	static constexpr float WIN_SLERP_END_PROGRESS = 1.0f - 1e-6f;
 	static constexpr float SCALE_TIME = 2000.0f;
 	static constexpr float SCALE_FACTOR = 1.8f;

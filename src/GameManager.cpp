@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 0;
+	m_levelIdx = 9;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
