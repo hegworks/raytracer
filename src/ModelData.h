@@ -114,7 +114,7 @@ public:
 			case ModelType::SCN_ROOM_LEVEL:
 				return ASSETDIR + "Models/Game/Scene/room_Level.glb";
 			case ModelType::SCN_ROOM_MAIN:
-				return ASSETDIR + "Models/Game/Scene/room_by_night.glb";
+				return ASSETDIR + "Models/Game/Scene/main_menu.glb";
 			case ModelType::LVL_SQUARE:
 				return ASSETDIR + "Models/Game/square.glb";
 			case ModelType::LVL_SQUARE_FULL:

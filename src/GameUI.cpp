@@ -32,10 +32,10 @@ void Renderer::GameUI()
 		case GameManager::State::START_MENU:
 		{
 			constexpr float startX = 50.0f;
-			constexpr float startY = centerY - 50.0f;
+			constexpr float startY = centerY + 75.0f;
 
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
-			ImGui::SetNextWindowSize(ImVec2(WINDOWWIDTH, WINDOWHEIGHT));
+			ImGui::SetNextWindowSize(ImVec2(500, WINDOWHEIGHT));
 			ImGui::Begin("StartMenu", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
 			const ImVec2 textSize = ImGui::CalcTextSize("RAYMATIC");
@@ -60,7 +60,7 @@ void Renderer::GameUI()
 			ImGui::SetCursorPosX(startX);
 			ImGui::Checkbox("Guide bar", &m_gameManager.m_showProgressBar);
 
-			ImGui::SetCursorPos(ImVec2(startX, ImGui::GetCursorPosY() + 50));
+			ImGui::SetCursorPos(ImVec2(startX, ImGui::GetCursorPosY()));
 			if(ImGui::Button("Quit", ImVec2(btnWidth, btnHeight)))
 			{
 				running = false;

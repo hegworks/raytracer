@@ -14,10 +14,12 @@ void Renderer::UI()
 {
 	ImGui::End();
 
+	//TODO fix ifdefs
 #ifdef _GAME
 	ImGui::PushFont(font);
 	GameUI();
 	ImGui::PopFont();
+	//return;
 #endif
 
 	ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH - 350, 0));

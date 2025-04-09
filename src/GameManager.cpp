@@ -15,7 +15,7 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 	useAA = true;
 
 	m_state = State::START_MENU;
-	m_levelIdx = 9;
+	m_levelIdx = 0;
 
 	const uint time = static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count());
 	m_seed = m_rng.InitSeed(time);
@@ -663,10 +663,35 @@ void GameManager::LoadLevel(const int levelIdx)
 
 void GameManager::LoadStartMenu() const
 {
+	Model& mainMenu = m_scene->CreateModel(ModelType::SCN_ROOM_MAIN);
+	m_scene->m_tranformList.back().m_pos = float3(-3.2f, -1.2f, -3.9f);
+	m_scene->m_tranformList.back().m_rotAngles = float3(20.0f, 35.0f, 10.0f);
+	m_scene->m_tranformList.back().m_rot = quat::fromEuler(DEG_TO_RAD(m_scene->m_tranformList.back().m_rotAngles));
+	Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
+	for(Material& material : mainMenu.m_modelData.m_meshMaterialList)
 	{
-		m_scene->CreateModel(ModelType::KENNY);
+		if(strcmp(material.m_name, "raymatic") == 0)
+		{
+			material.m_type = Material::Type::REFRACTIVE;
+			material.m_factor0 = 15.0f;
+			material.m_factor1 = 1.0;
+		}
+		else if(strcmp(material.m_name, "glass ball") == 0)
+		{
+			material.m_type = Material::Type::REFRACTIVE;
+			material.m_albedo = 1.0f;
+			material.m_factor0 = 0.0f;
+			material.m_factor1 = 1.54f;
+		}
+		else if(strcmp(material.m_name, "window") == 0)
+		{
+			material.m_type = Material::Type::REFRACTIVE;
+			//material.m_albedo = 1.0f;
+			material.m_factor0 = 2.0f;
+			material.m_factor1 = 1.54f;
+		}
 	}
-	{
+	/*{
 		m_scene->CreateModel(ModelType::DRAGON);
 		m_scene->m_tranformList.back().m_pos = float3(-2, -0.8, -3);
 		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
@@ -676,10 +701,11 @@ void GameManager::LoadStartMenu() const
 		m_scene->m_tranformList.back().m_pos = float3(0, -0.8f, -3);
 		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
 	}
+	*/
 	{
 		DirLight& light = m_scene->CreateDirLight();
-		light.m_intensity = 1.5f;
-		light.m_dir = normalize(float3(0, 0, 1.0f));
+		light.m_intensity = 0.3f;
+		light.m_dir = float3(0.593f, -0.237f, 0.769f);
 	}
 	m_scene->BuildTlas();
 }
