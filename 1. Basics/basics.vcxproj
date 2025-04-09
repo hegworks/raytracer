@@ -5,6 +5,10 @@
       <Configuration>Engine_Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Game_Debug|x64">
+      <Configuration>Game_Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Game_Release|x64">
       <Configuration>Game_Release</Configuration>
       <Platform>x64</Platform>
@@ -47,17 +51,24 @@
     <MultiProcessorCompilation>true</MultiProcessorCompilation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Engine_Debug'">
-    <TargetName>$(ProjectName)_debug</TargetName>
+    <TargetName>raymatic_engine_debug</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Game_Debug'">
+    <TargetName>raymatic_debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">
     <ExternalIncludePath>$(ProjectDir)..\template;$(ProjectDir)..\lib;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">
+    <ExternalIncludePath>$(ProjectDir)..\template;$(ProjectDir)..\lib;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Engine_Release|x64'">
     <ExternalIncludePath>$(ProjectDir)..\template;$(ProjectDir)..\lib;$(ExternalIncludePath)</ExternalIncludePath>
+    <TargetName>raymatic_engine</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game_Release|x64'">
     <ExternalIncludePath>$(ProjectDir)..\template;$(ProjectDir)..\lib;$(ExternalIncludePath)</ExternalIncludePath>
-    <TargetName>$(ProjectName)_game</TargetName>
+    <TargetName>raymatic</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -97,6 +108,29 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mtd.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Debug</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Game_Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>_GAME;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">stdcpp17</LanguageStandard>
+      <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">false</OpenMPSupport>
+      <ExternalWarningLevel Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">TurnOffAllWarnings</ExternalWarningLevel>
+      <ExternalTemplatesDiagnostics Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">false</ExternalTemplatesDiagnostics>
+    </ClCompile>
+    <Link>
+      <IgnoreSpecificDefaultLibraries>msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mtd.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Engine_Release'">
@@ -182,6 +216,7 @@
     <ClCompile Include="..\lib\imgui\imgui.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_demo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Engine_Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Game_Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -201,6 +236,7 @@
     <ClCompile Include="..\template\surface.cpp" />
     <ClCompile Include="..\template\template.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Engine_Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Game_Release|x64'">Create</PrecompiledHeader>
     </ClCompile>

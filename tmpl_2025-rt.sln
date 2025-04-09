@@ -10,6 +10,7 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Engine_Debug|x64 = Engine_Debug|x64
 		Engine_Release|x64 = Engine_Release|x64
+		Game_Debug|x64 = Game_Debug|x64
 		Game_Release|x64 = Game_Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
@@ -17,12 +18,16 @@ Global
 		{1B482D44-6893-42E7-ADF6-E497E4FCE916}.Engine_Debug|x64.Build.0 = Engine_Debug|x64
 		{1B482D44-6893-42E7-ADF6-E497E4FCE916}.Engine_Release|x64.ActiveCfg = Engine_Release|x64
 		{1B482D44-6893-42E7-ADF6-E497E4FCE916}.Engine_Release|x64.Build.0 = Engine_Release|x64
+		{1B482D44-6893-42E7-ADF6-E497E4FCE916}.Game_Debug|x64.ActiveCfg = Game_Debug|x64
+		{1B482D44-6893-42E7-ADF6-E497E4FCE916}.Game_Debug|x64.Build.0 = Game_Debug|x64
 		{1B482D44-6893-42E7-ADF6-E497E4FCE916}.Game_Release|x64.ActiveCfg = Game_Release|x64
 		{1B482D44-6893-42E7-ADF6-E497E4FCE916}.Game_Release|x64.Build.0 = Game_Release|x64
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Engine_Debug|x64.ActiveCfg = Engine_Debug|x64
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Engine_Debug|x64.Build.0 = Engine_Debug|x64
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Engine_Release|x64.ActiveCfg = Engine_Release|x64
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Engine_Release|x64.Build.0 = Engine_Release|x64
+		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Game_Debug|x64.ActiveCfg = Game_Debug|x64
+		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Game_Debug|x64.Build.0 = Game_Debug|x64
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Game_Release|x64.ActiveCfg = Game_Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
