@@ -13,6 +13,9 @@ void GameManager::Init(Scene* scene, Renderer* renderer)
 
 	m_renderer->useACM = true;
 	useAA = true;
+	useDOF = false;
+	defocusAngle = 1.0f;
+	focusDistance = 10.2f;
 
 	m_state = State::START_MENU;
 	m_levelIdx = 0;
@@ -76,6 +79,7 @@ void GameManager::Tick(const float deltaTime)
 		{
 			scl = targetScale;
 			m_isGrowFullFinished = true;
+			useDOF = true;
 			if(m_levelIdx == 0 && m_showTutorial)
 				m_state = State::TUTORIAL;
 			else
@@ -304,6 +308,7 @@ void GameManager::ResetGameplayStates()
 void GameManager::LoadLevel(const int levelIdx)
 {
 	dbgSDBF = dbgSDBF_DEFAULT;
+	useDOF = false;
 
 	DirLight& frontLight = m_scene->CreateDirLight();
 	frontLight.m_dir = float3(0, 0, 1);

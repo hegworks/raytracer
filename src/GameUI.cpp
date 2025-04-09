@@ -32,7 +32,7 @@ void Renderer::GameUI()
 		case GameManager::State::START_MENU:
 		{
 			constexpr float startX = 50.0f;
-			constexpr float startY = centerY + 75.0f;
+			constexpr float startY = centerY + 85.0f;
 
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
 			ImGui::SetNextWindowSize(ImVec2(500, WINDOWHEIGHT));
@@ -196,7 +196,7 @@ void Renderer::GameUI()
 			}
 			else if(m_gameManager.m_tutorialStage == 1)
 			{
-				ImGui::SetCursorPosY(centerY - 150);
+				ImGui::SetCursorPosY(centerY - 200);
 				{
 					const string text = "Nice work! First shadow unlocked.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
@@ -219,6 +219,13 @@ void Renderer::GameUI()
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				{
 					const string text = "Note that some levels require the correct roll. Others don't.";
+					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
+					ImGui::Text(text.c_str());
+				}
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
+				{
+					const string text = "Click \"Next Level\" after inspecting the model.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
@@ -265,6 +272,7 @@ void Renderer::GameUI()
 				if(ImGui::Button("Main Menu", ImVec2(btnWidth, btnHeight)))
 				{
 					m_gameManager.m_tutorialStage = 0;
+					useDOF = false;
 					m_gameManager.LoadStartMenu();
 					m_gameManager.m_state = GameManager::State::START_MENU;
 					resetAccumulator = true;
