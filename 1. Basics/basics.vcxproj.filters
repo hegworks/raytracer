@@ -55,6 +55,12 @@
     <ClCompile Include="..\src\GameUI.cpp">
       <Filter>Src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\AudioManager.cpp">
+      <Filter>Src\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AudioPlayer.cpp">
+      <Filter>Src\Audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\template\common.h">
@@ -162,6 +168,12 @@
     <ClInclude Include="..\src\ImGuiThemeManager.h">
       <Filter>Src\Tools</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\AudioManager.h">
+      <Filter>Src\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AudioPlayer.h">
+      <Filter>Src\Audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\template\LICENSE">
@@ -192,6 +204,9 @@
     </Filter>
     <Filter Include="Src\_Game">
       <UniqueIdentifier>{8a7e5639-7fb9-400b-932e-19f2e9e1d044}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Audio">
+      <UniqueIdentifier>{1d1f6d37-e455-444c-abc7-1bba2055c6c2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -1,15 +1,20 @@
 ﻿#include "precomp.h"
 
+
 #ifdef _GAME
 
 #include "GameManager.h"
 
+#include "AudioManager.h"
 #include "CountdownTimer.h"
 
 void GameManager::Init(Scene* scene, Renderer* renderer)
 {
 	m_scene = scene;
 	m_renderer = renderer;
+
+	m_audioManager = new AudioManager();
+	m_audioManager->OnStartGame();
 
 	m_renderer->useACM = true;
 	useAA = true;

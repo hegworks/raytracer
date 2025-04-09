@@ -72,7 +72,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\template;.;..\lib;..\lib\imgui;..\lib\glad;..\lib\glfw\include;..\lib\OpenCL\inc;..\lib\zlib;..\src;..\lib\assimp\include;..\lib\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\template;.;..\lib;..\lib\imgui;..\lib\glad;..\lib\glfw\include;..\lib\OpenCL\inc;..\lib\zlib;..\src;..\lib\assimp\include;..\lib\glm;..\lib\Audio\inc</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
@@ -106,8 +106,8 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mtd.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">Audio.lib;winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mtd.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Engine_Debug|x64'">../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Debug;../lib/Audio/lib/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Game_Debug'">
@@ -129,8 +129,8 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mtd.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">Audio.lib;winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mtd.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Game_Debug|x64'">../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Debug;../lib/Audio/lib/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Engine_Release'">
@@ -193,8 +193,8 @@
       <ExternalTemplatesDiagnostics>false</ExternalTemplatesDiagnostics>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mt.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Audio.lib;winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mt.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Release;../lib/Audio/lib/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Game_Release|x64'">
@@ -207,8 +207,8 @@
       <ExternalTemplatesDiagnostics>false</ExternalTemplatesDiagnostics>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mt.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Audio.lib;winmm.lib;advapi32.lib;user32.lib;glfw3.lib;gdi32.lib;shell32.lib;OpenCL.lib;OpenGL32.lib;libz-static.lib;assimp-vc143-mt.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../lib/glfw/lib-vc2022;../lib/zlib;../lib/OpenCL/lib;../lib/assimp/lib/Release;../lib/Audio/lib/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <!-- END Custom section -->
@@ -225,6 +225,8 @@
     <ClCompile Include="..\lib\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\lib\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\src\AudioManager.cpp" />
+    <ClCompile Include="..\src\AudioPlayer.cpp" />
     <ClCompile Include="..\src\GameManager.cpp" />
     <ClCompile Include="..\src\GameUI.cpp" />
     <ClCompile Include="..\src\renderer.cpp" />
@@ -253,6 +255,8 @@
     <ClInclude Include="..\lib\imgui\imstb_textedit.h" />
     <ClInclude Include="..\lib\imgui\imstb_truetype.h" />
     <ClInclude Include="..\lib\tiny_bvh.h" />
+    <ClInclude Include="..\src\AudioManager.h" />
+    <ClInclude Include="..\src\AudioPlayer.h" />
     <ClInclude Include="..\src\CountdownTimer.h" />
     <ClInclude Include="..\src\DBG.h" />
     <ClInclude Include="..\src\GameManager.h" />

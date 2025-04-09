@@ -4,6 +4,7 @@
 
 #include "RNG.h"
 
+class AudioManager;
 enum class ModelType : uint8_t;
 class CountdownTimer;
 
@@ -119,6 +120,7 @@ private:
 	Renderer* m_renderer = nullptr;
 	RNG m_rng;
 	CountdownTimer* m_scaleTimer = nullptr;
+	AudioManager* m_audioManager = nullptr;
 };
 
 #endif
