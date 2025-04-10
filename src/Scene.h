@@ -10,9 +10,10 @@
 constexpr int STOCH_SAMPLES = 16;
 constexpr int SUPPORTED_POINT_LIGHTS = 512;
 
-//#define STOCH //Stochastic (preprocessor only for PointLights)
+//#define STOCH //Stochastic
 
 // enable one and only one at a time:
+// use SIMD or AVX only in _ENGINE, because _GAME doesn't have 4 lights
 #define SCALAR //AOS
 //#define DOD //SOA
 //#define SIMD //SSE
