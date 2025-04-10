@@ -120,24 +120,23 @@ public:
 			case ModelType::LVL_SQUARE_FULL:
 				return ASSETDIR + "Models/Game/square_full.glb";
 			case ModelType::LVL_BUCKET:
-				return ASSETDIR + "Models/Game/metal_bucket.glb"; // increase smoothness in blender
+				return ASSETDIR + "Models/Game/metal_bucket.glb";
 			case ModelType::LVL_COCKTAIL:
-				return ASSETDIR + "Models/Game/summer_drink.glb"; //100% change refractiveness and color of foam, glass, cocktail in code
+				return ASSETDIR + "Models/Game/summer_drink.glb";
 			case ModelType::LVL_BALLOON_DOG:
-				return ASSETDIR + "Models/Game/balloon_dog.glb"; //change materials in blender to 0.8 & 0.15
+				return ASSETDIR + "Models/Game/balloon_dog.glb";
 			case ModelType::LVL_CHAIR:
-				return ASSETDIR + "Models/Game/chair.glb"; // increase metallic and smoothness of screws
+				return ASSETDIR + "Models/Game/chair.glb";
 			case ModelType::LVL_SPINNER:
-				return ASSETDIR + "Models/Game/neon_spinners.glb"; // edit mats in blender
+				return ASSETDIR + "Models/Game/neon_spinners.glb";
 			case ModelType::LVL_CAT:
 				return ASSETDIR + "Models/Game/miniature_cat.glb";
 			case ModelType::LVL_DRAGON:
 				return ASSETDIR + "Models/Game/dragon.glb";
 			case ModelType::LVL_GUITAR:
-				return ASSETDIR + "Models/Game/guitar.glb"; // make some parts metallic in blender
+				return ASSETDIR + "Models/Game/guitar.glb";
 			case ModelType::LVL_RAYMATIC:
-				return ASSETDIR + "Models/Game/raymatic.glb"; // use in start screen - logo
-				//return ASSETDIR + "Models/Game/arcade_machine.glb"; // edit mats in blender // RESERVE
+				return ASSETDIR + "Models/Game/raymatic.glb";
 		}
 		throw std::runtime_error("Unhandled ModelType");
 	}
