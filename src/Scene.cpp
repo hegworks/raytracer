@@ -198,7 +198,7 @@ Scene::Scene()
 	}
 	{
 		Model& model = CreateModel(ModelType::CUBE);
-		model.m_modelData.m_meshMaterialList.front().m_type = Material::Type::EMISSIVE;
+		//model.m_modelData.m_meshMaterialList.front().m_type = Material::Type::EMISSIVE;
 		model.m_modelData.m_meshMaterialList.front().m_albedo = 1;
 		m_tranformList.back().m_pos = float3(-3, 0, 0);
 		m_tranformList.back().m_scl = float3(2);
@@ -209,16 +209,28 @@ Scene::Scene()
 		m_tranformList.back().m_pos = float3(3, 0.5, 0);
 		SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	}
-	//{
-	//	Model& model = CreateModel(ModelType::CORNELL);
-	//	m_tranformList.back().m_pos = float3(0, 0, 3);
-	//	//m_tranformList.back().m_rot = float3(0, 180, 0);
-	//	SetBlasTransform(m_blasList.back(), m_tranformList.back());
-	//}
+	{
+		Model& model = CreateModel(ModelType::CORNELL);
+		m_tranformList.back().m_pos = float3(-3, 0, 3);
+		//m_tranformList.back().m_rot = float3(0, 180, 0);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	{
+		Model& model = CreateModel(ModelType::KENNY);
+		m_tranformList.back().m_pos = float3(5, 0, 3);
+		//m_tranformList.back().m_rot = float3(0, 180, 0);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
+	{
+		Model& model = CreateModel(ModelType::TORUS);
+		m_tranformList.back().m_pos = float3(-5, 0, 0);
+		//m_tranformList.back().m_rot = float3(0, 180, 0);
+		SetBlasTransform(m_blasList.back(), m_tranformList.back());
+	}
 	BuildTlas();
-	SpotLight& spotLight = CreateSpotLight();
-	spotLight.m_intensity = 64.0f;
-	spotLight.m_pos.y = 10;
+	//SpotLight& spotLight = CreateSpotLight();
+	//spotLight.m_intensity = 64.0f;
+	//spotLight.m_pos.y = 10;
 	*/
 #pragma endregion
 
@@ -230,8 +242,8 @@ Scene::Scene()
 	m_tranformList.back().m_pos = float3(0, -2, 0);
 	SetBlasTransform(m_blasList.back(), m_tranformList.back());
 	BuildTlas();
-	SpotLight& spotLight = CreateSpotLight();
-	spotLight.m_intensity = 3.0f;
+	//SpotLight& spotLight = CreateSpotLight();
+	//spotLight.m_intensity = 3.0f;
 	*/
 #pragma endregion
 

@@ -96,12 +96,12 @@ void Renderer::Tick(const float deltaTime)
 				stochasticDOFTraced += Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY);
 			}
 			float3 traced = stochasticDOFTraced / (float)spp;
-			if(dot(traced, traced) > dbgFF * dbgFF) traced = dbgFF * normalize(traced); // firefly suppressor
+			if(ndal == 3 && dot(traced, traced) > dbgFF * dbgFF) traced = dbgFF * normalize(traced); // firefly suppressor
 			accumulator[pixelIndex] += float4(traced, 0);
 			float4 avg = accumulator[pixelIndex] * scale;
 			if(tdd && tddBBG || tdd && screen->pixels[pixelIndex] != 0x0) continue;
-			avg = aces(avg);
-			float4 gammaCorrected = float4(sqrtf(avg.x), sqrtf(avg.y), sqrtf(avg.z), 1);
+			if(ndal == 3) avg = aces(avg);
+			float4 gammaCorrected = ndal == 3 ? float4(sqrtf(avg.x), sqrtf(avg.y), sqrtf(avg.z), 1) : avg;
 			screen->pixels[pixelIndex] = RGBF32_to_RGB8(&gammaCorrected);
 			illuminations[pixelIndex] = gammaCorrected;
 			if(isDbgFixSeed) pixelSeeds[pixelIndex] = lastPixelSeeds[pixelIndex];
@@ -299,9 +299,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		default:
 			throw std::runtime_error("Unhandled situation");
 	}
-//#elif defined(_GAME)
-	//return l;
-//#endif
+	//#elif defined(_GAME)
+		//return l;
+	//#endif
 }
 
 float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex)
