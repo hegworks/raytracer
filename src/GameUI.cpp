@@ -82,12 +82,12 @@ void Renderer::GameUI()
 
 			// Draw background
 			ImGui::GetWindowDrawList()->AddRectFilled(
-				ImVec2(centerX - 150.0f, 25.0f),
-				ImVec2(centerX + 150.0f, 60.0f),
+				ImVec2(centerX - 160.0f, 25.0f),
+				ImVec2(centerX + 160.0f, 60.0f),
 				IM_COL32(100, 100, 100, 100) // RGBA
 			);
 			{
-				const string text = to_string(m_gameManager.m_levelIdx + 1) + "/" + to_string(GameManager::NUM_LEVELS) + " - " + GetLevelModelTypeName(m_gameManager.m_levelObjectModelType);
+				const string text = "Level " + to_string(m_gameManager.m_levelIdx + 1) + "/" + to_string(GameManager::NUM_LEVELS) + " - " + GetLevelModelTypeName(m_gameManager.m_levelObjectModelType);
 				const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 				ImGui::SetCursorPos(ImVec2(centerX - (textSize.x * 0.5f), 25.0f));
 				ImGui::Text(text.c_str());
@@ -162,13 +162,13 @@ void Renderer::GameUI()
 				}
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				{
-					const string text = "Left-click & drag: spin the shape (pitch & yaw)";
+					const string text = "Left-click & drag horizontally/vertically: spin the shape (pitch & yaw)";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
 				}
 				{
-					const string text = "Right-click & drag: twist it (roll)";
+					const string text = "Right-click & drag horizontally: twist it (roll)";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
@@ -225,7 +225,7 @@ void Renderer::GameUI()
 				}
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 50.0f);
 				{
-					const string text = "Click \"Next Level\" after inspecting the model.";
+					const string text = "Click \"Next Level\" at the top-left after inspecting the model.";
 					const ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
 					ImGui::SetCursorPosX(centerX - (textSize.x * 0.5f));
 					ImGui::Text(text.c_str());
