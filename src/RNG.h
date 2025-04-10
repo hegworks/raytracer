@@ -48,8 +48,8 @@ public:
 	// from Sebastian Lague https://youtu.be/Qz0KTGYJtUk?si=YTTg56J1Yi21FZYJ&t=1979
 	float2 RandomPointOnCircle(uint& customSeed)
 	{
-		float angle = RandomFloat(customSeed) * 2.0f * PI;
-		float2 pointOnCircle = float2(cos(angle), sin(angle));
+		const float angle = RandomFloat(customSeed) * 2.0f * PI;
+		const float2 pointOnCircle = float2(cos(angle), sin(angle));
 		return pointOnCircle * sqrt(RandomFloat(customSeed));
 	}
 
@@ -64,7 +64,7 @@ public:
 				RandomFloat(customSeed,-1.0f,1.0f),
 				RandomFloat(customSeed,-1.0f,1.0f),
 			};
-			float len = length(randPoint);
+			const float len = length(randPoint);
 			if(len > 1e-160 && len <= 1.0f)
 			{
 				return normalize(randPoint);
@@ -74,7 +74,7 @@ public:
 
 	float3 RandomPointOnHemisphere(uint& customSeed, const float3& normal)
 	{
-		float3 dir = RandomPointOnSphere(customSeed);
+		const float3 dir = RandomPointOnSphere(customSeed);
 		return dot(dir, normal) > 0.0f ? dir : -dir;
 	}
 

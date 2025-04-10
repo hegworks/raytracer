@@ -40,7 +40,7 @@ public:
 
 		printf("Loading Model:%s\n", path.c_str());
 		loadModel(path);
-		size_t pos = path.find_last_of("/\\");
+		const size_t pos = path.find_last_of("/\\");
 		m_fileName = (pos != std::string::npos) ? path.substr(pos + 1) : path;
 	}
 	~Model()
@@ -95,12 +95,12 @@ public:
 	int VertexToMeshIdx(uint prim) const;
 
 private:
-	void loadModel(std::string path);
-	void processNode(aiNode* node, const aiScene* scene, aiMatrix4x4 parentTransform);
+	void loadModel(const std::string& path);
+	void processNode(const aiNode* node, const aiScene* scene, const aiMatrix4x4& parentTransform);
 	void processMesh(aiMesh* mesh, const aiScene* scene, const aiMatrix4x4& transform);
 	void TextureFromFile(const std::string& path);
 	void TextureFromMemory(aiTexel* pcData, int mWidth);
-	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
+	std::vector<Texture> loadMaterialTextures(const aiMaterial* mat, aiTextureType type, const std::string& typeName, const aiScene* scene);
 
 	bool m_isRandAxis = false;
 	bool m_isInvertMetallic = false;
@@ -109,14 +109,14 @@ private:
 	RandType m_randType = RandType::SINE;
 };
 
-inline void Model::loadModel(std::string path)
+inline void Model::loadModel(const std::string& path)
 {
 	Assimp::Importer importer;
-	unsigned int flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace;
+	constexpr unsigned int flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace;
 	const aiScene* scene = importer.ReadFile(path, flags);
 	if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
-		std::string e = importer.GetErrorString();
+		const std::string e = importer.GetErrorString();
 		std::cerr << "ERROR::ASSIMP::IMPORTER " << e;
 		throw std::runtime_error(importer.GetErrorString());
 	}
@@ -148,9 +148,9 @@ inline int Model::VertexToMeshIdx(const uint prim) const
 
 }
 
-inline void Model::processNode(aiNode* node, const aiScene* scene, aiMatrix4x4 parentTransform)
+inline void Model::processNode(const aiNode* node, const aiScene* scene, const aiMatrix4x4& parentTransform)
 {
-	aiMatrix4x4 nodeTransform = parentTransform * node->mTransformation;
+	const aiMatrix4x4 nodeTransform = parentTransform * node->mTransformation;
 
 	// process all the node's meshes (if any)
 	for(unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -294,7 +294,7 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 	m_modelData.m_textureList.insert(m_modelData.m_textureList.end(), diffuseMaps.begin(), diffuseMaps.end());
 }
 
-inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene)
+inline std::vector<Texture> Model::loadMaterialTextures(const aiMaterial* mat, const aiTextureType type, const std::string& typeName, const aiScene* scene)
 {
 	std::vector<Texture> textures;
 
@@ -342,7 +342,7 @@ inline std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextu
 		{
 			// if texture path contains backslash, change it to be the last part after backslash (fix for some fbx files)
 			std::string texturePath = str.C_Str();
-			size_t pos = texturePath.find_last_of('\\');
+			const size_t pos = texturePath.find_last_of('\\');
 			if(pos != std::string::npos)
 			{
 				texturePath = texturePath.substr(pos + 1);

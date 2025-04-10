@@ -16,7 +16,7 @@ public:
 	float3 m_dir = float3(0, 1, 0);
 
 	Quad() = default;
-	Quad(float s, mat4 transform = mat4::Identity())
+	Quad(const float s, const mat4& transform = mat4::Identity())
 	{
 		size = s * 0.5f;
 		T = transform, invT = transform.FastInvertedTransformNoScale();

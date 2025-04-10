@@ -71,7 +71,7 @@ void AudioPlayer::SetVolume(const AudioType audioType, const float volume)
 	CheckExistance(audioType);
 	m_settings[audioType]->volume = volume;
 
-	for(auto& sound : m_soundInstances[audioType])
+	for(const auto& sound : m_soundInstances[audioType])
 	{
 		if(sound->isPlaying())
 		{
@@ -85,7 +85,7 @@ void AudioPlayer::SetPitch(const AudioType audioType, const float pitch)
 	CheckExistance(audioType);
 	m_settings[audioType]->pitch = pitch;
 
-	for(auto& sound : m_soundInstances[audioType])
+	for(const auto& sound : m_soundInstances[audioType])
 	{
 		if(sound->isPlaying())
 		{

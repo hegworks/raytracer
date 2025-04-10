@@ -79,7 +79,7 @@ inline bool IsCloseF(const float a, const float b)
 }
 
 /// World To Screen
-static int2 WTS(float3 p)
+static int2 WTS(const float3 p)
 {
 	int x = static_cast<int>(floorf(range_to_range(-4.0f * tddSceneScale, 4.0f * tddSceneScale, 0, SCRWIDTH, p.x))) + tddOffset.x;
 	int y = static_cast<int>(floorf(range_to_range(2.25f * tddSceneScale, -2.25f * tddSceneScale, 0, SCRHEIGHT, p.z))) + tddOffset.y;
@@ -87,9 +87,9 @@ static int2 WTS(float3 p)
 }
 
 /// 2D Debugger Primary/Point
-inline void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool tddIsPixelX, bool tddIsPixelY, bool tddIsCameraY)
+inline void TDDP(const Ray& ray, const float3 p, const float3 n, Surface* screen, const int depth, const bool tddIsPixelX, const bool tddIsPixelY, const bool tddIsCameraY)
 {
-	int2 pd = WTS(p); /// intersection point debug
+	const int2 pd = WTS(p); /// intersection point debug
 	if(tddIsCameraY)
 	{
 		screen->Plot(pd.x, pd.y, 0xffffff);
@@ -100,17 +100,17 @@ inline void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 		// ray
 		if(tddPRay)
 		{
-			float2 o = WTS(ray.O);
-			float2 d = pd;
+			const float2 o = WTS(ray.O);
+			const float2 d = pd;
 			uint color = 0xffffff;
 			if(depth > 0)
 			{
-				int colordepth = (depth - 1) % 3;
+				const int colordepth = (depth - 1) % 3;
 				if(colordepth == 0) color = 0xff0000;
 				if(colordepth == 1) color = 0x00ff00;
 				if(colordepth == 2) color = 0x0000ff;
 			}
-			bool inside = dot(ray.D, n) > 0;
+			const bool inside = dot(ray.D, n) > 0;
 			if(inside)
 			{
 				color = 0xffff00;
@@ -131,7 +131,7 @@ inline void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 		// ray length
 		if(tddPRayL)
 		{
-			int2 o = {pd.x, pd.y - 5};
+			const int2 o = {pd.x, pd.y - 5};
 
 			char t[20];
 			sprintf(t, "%.2f", ray.hit.t);
@@ -141,15 +141,15 @@ inline void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 		// normal
 		if(tddPN)
 		{
-			float2 o = pd;
-			float2 d = WTS(p + n * 0.2f);
+			const float2 o = pd;
+			const float2 d = WTS(p + n * 0.2f);
 			screen->Line(o.x, o.y, d.x, d.y, 0xff00ff);
 		}
 
 		// normal length
 		if(tddPNL)
 		{
-			int2 o = WTS(p + n * 0.2f); /// normal debug point
+			const int2 o = WTS(p + n * 0.2f); /// normal debug point
 
 			char t[20];
 			sprintf(t, "%.2f", length(n));

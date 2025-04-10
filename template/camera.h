@@ -20,31 +20,31 @@ public:
 		bottomLeft =
 		{-1.77858877f 	,6.06978941f, -7.31875038f};
 	}
-	Ray GetPrimaryRay(const float x, const float y, const float2 randOnUnitDisk)
+	Ray GetPrimaryRay(const float x, const float y, const float2 randOnUnitDisk) const
 	{
 		// pixel coord -> point on virutal screen plane
-		const float u = (float)x * (1.0f / SCRWIDTH);
-		const float v = (float)y * (1.0f / SCRHEIGHT);
-		float3 vsp = topLeft + u * (topRight - topLeft) + v * (bottomLeft - topLeft); /// VirtualScreenPoint
+		const float u = static_cast<float>(x) * (1.0f / SCRWIDTH);
+		const float v = static_cast<float>(y) * (1.0f / SCRHEIGHT);
+		const float3 vsp = topLeft + u * (topRight - topLeft) + v * (bottomLeft - topLeft); /// VirtualScreenPoint
 
 		if(!useDOF) return Ray(camPos, vsp - camPos);
 
 #pragma region DepthOfField
 		// direction from camPos to vsp
-		float3 vspDir = normalize(vsp - camPos);
+		const float3 vspDir = normalize(vsp - camPos);
 
 		// Point on focal plane
-		float3 fpp = camPos + vspDir * focusDistance; /// FocalPlanePoint
+		const float3 fpp = camPos + vspDir * focusDistance; /// FocalPlanePoint
 
 		// Calculate defocus radius
-		float apertureRadius = focusDistance * tan(DEG_TO_RAD(defocusAngle / 2.0f));
+		const float apertureRadius = focusDistance * tan(DEG_TO_RAD(defocusAngle / 2.0f));
 
 		// Create orthonormal basis around the ray direction
-		float3 w = vspDir;
-		float3 apertureU = normalize(cross(w, float3(0, 1, 0)));
-		float3 apertureV = cross(w, apertureU);
+		const float3 w = vspDir;
+		const float3 apertureU = normalize(cross(w, float3(0, 1, 0)));
+		const float3 apertureV = cross(w, apertureU);
 
-		float3 randOrigin = camPos + (randOnUnitDisk.x * apertureRadius * apertureU) + (randOnUnitDisk.y * apertureRadius * apertureV);
+		const float3 randOrigin = camPos + (randOnUnitDisk.x * apertureRadius * apertureU) + (randOnUnitDisk.y * apertureRadius * apertureV);
 
 		return Ray(randOrigin, fpp - randOrigin);
 #pragma endregion
@@ -53,9 +53,9 @@ public:
 	{
 		if(!WindowHasFocus()) return false;
 		if(tddResetCam) { Reset(); tddResetCam = false; return false; }
-		float speed = 0.0025f * t;
+		const float speed = 0.0025f * t;
 		float3 ahead = normalize(camTarget - camPos);
-		float3 tmpUp(0, 1, 0);
+		const float3 tmpUp(0, 1, 0);
 		float3 right = normalize(cross(tmpUp, ahead));
 		float3 up = normalize(cross(ahead, right));
 		bool changed = false;
@@ -98,7 +98,7 @@ public:
 		topRight = {1.77777779f,	1.15576923f,-7.21826935f};
 		bottomLeft = {-1.77777779f,	-0.843606114f,-7.26825333f};
 	}
-	float aspect = (float)SCRWIDTH / (float)SCRHEIGHT;
+	float aspect = static_cast<float>(SCRWIDTH) / static_cast<float>(SCRHEIGHT);
 	float3 camPos, camTarget;
 	float3 topLeft, topRight, bottomLeft;
 };

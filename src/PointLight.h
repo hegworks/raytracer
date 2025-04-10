@@ -11,7 +11,7 @@ public:
 	float dummy;
 
 	PointLight() = default;
-	PointLight(float3 pos, float3 color, float intensity)
+	PointLight(const float3 pos, const float3 color, const float intensity)
 	{
 		m_pos = pos;
 		m_color = color;

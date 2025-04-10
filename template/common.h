@@ -47,13 +47,13 @@ struct ScopedTimer
 	{
 		if(counter++ < SAMPLES)
 		{
-			float seconds = t.elapsed();
+			const float seconds = t.elapsed();
 			summ += seconds * 1000 * 1000;
 		}
 		else
 		{
 			if(resultPrinted) return;
-			printf("Avg %s: %f Ms \n", name, summ / (float)SAMPLES);
+			printf("Avg %s: %f Ms \n", name, summ / static_cast<float>(SAMPLES));
 			resultPrinted = true;
 		}
 	}

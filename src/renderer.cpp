@@ -77,21 +77,21 @@ void Renderer::Tick(const float deltaTime)
 #pragma omp parallel for schedule(dynamic)
 	for(int y = dbgScrRangeY.x; y < dbgScrRangeY.y; y++)
 	{
-		int yTimesSCRWDTH = y * SCRWIDTH;
-		bool tddIsPixelY = tdd && y == tddSliceY;
+		const int yTimesSCRWDTH = y * SCRWIDTH;
+		const bool tddIsPixelY = tdd && y == tddSliceY;
 		// trace a primary ray for each pixel on the line
 		for(int x = dbgScrRangeX.x; x < dbgScrRangeX.y; x++)
 		{
 			if(isDbgPixel && isDbgPixelEntered && dbgpixel.x == x && dbgpixel.y == y) __debugbreak();
-			bool tddIsPixelX = tdd && ((!tddSXM && x % tddrx == 0) || (tddSXM && x == tddSXX));
-			int pixelIndex = x + yTimesSCRWDTH;
+			const bool tddIsPixelX = tdd && ((!tddSXM && x % tddrx == 0) || (tddSXM && x == tddSXX));
+			const int pixelIndex = x + yTimesSCRWDTH;
 			if(isDbgFixSeed) lastPixelSeeds[pixelIndex] = pixelSeeds[pixelIndex];
 			const float xOffset = useAA ? threadRng.RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			const float yOffset = useAA ? threadRng.RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
 			float3 stochasticDOFTraced(0);
 			for(int s = 0; s < spp; ++s)
 			{
-				float2 defocusRand = threadRng.RandomPointOnCircle(pixelSeeds[pixelIndex]);
+				const float2 defocusRand = threadRng.RandomPointOnCircle(pixelSeeds[pixelIndex]);
 				Ray r = camera.GetPrimaryRay(static_cast<float>(x) + xOffset, static_cast<float>(y) + yOffset, defocusRand);
 				stochasticDOFTraced += Trace(r, pixelIndex, 0, tddIsPixelX, tddIsPixelY);
 			}
