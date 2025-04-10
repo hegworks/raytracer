@@ -563,7 +563,7 @@ void Renderer::MouseMove(int x, int y)
 #endif
 }
 
-void Renderer::MouseUp(const int button)
+void Renderer::MouseUp([[maybe_unused]] const int button)
 {
 #ifdef _GAME
 	m_gameManager.OnMouseUp(button);
