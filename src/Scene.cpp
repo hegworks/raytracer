@@ -468,7 +468,6 @@ Model& Scene::CreateModel(const ModelType modelType, bool isRandAxis, const bool
 	m_tranformList.emplace_back();
 	BuildTlas();
 
-	//TODO add #ifdef _ENGINE
 	printf("NumVertices: %llu\n", model.m_modelData.m_vertices.size());
 	printf("NumMeshes: %llu\n", model.m_modelData.m_meshVertexBorderList.size());
 

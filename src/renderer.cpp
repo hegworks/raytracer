@@ -284,8 +284,7 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		}
 	}
 
-	//TODO uncomment ifdefs
-//#ifdef _ENGINE
+#ifdef _ENGINE
 	switch(ndal)
 	{
 		case 0:
@@ -299,9 +298,9 @@ float3 Renderer::Trace(Ray& ray, int pixelIndex, int depth, bool tddIsPixelX, bo
 		default:
 			throw std::runtime_error("Unhandled situation");
 	}
-	//#elif defined(_GAME)
-		//return l;
-	//#endif
+#elif defined(_GAME)
+	return l;
+#endif
 }
 
 float3 Renderer::CalcLights([[maybe_unused]] Ray& ray, float3 p, float3 n, float3 brdf, uint pixelIndex)
@@ -576,6 +575,7 @@ void Renderer::MouseDown(int button)
 	m_gameManager.OnMouseDown(button);
 #endif
 
+#ifdef _ENGINE
 	if(isDbgPixel && !isDbgPixelClicked)
 	{
 		if(button == GLFW_MOUSE_BUTTON_LEFT)
@@ -591,6 +591,7 @@ void Renderer::MouseDown(int button)
 			selectedMeshIdx = hoveredMesh;
 		}
 	}
+#endif
 }
 
 void Renderer::KeyDown(const int key)
@@ -615,7 +616,6 @@ void Renderer::KeyDown(const int key)
 		if(theme == 7) ImGuiThemeManager::SetModernColors();
 		if(theme == 8) ImGuiThemeManager::SetNewDarkTheme();
 	}
-#endif
 
 	if(key == GLFW_KEY_Q)
 	{
@@ -640,19 +640,13 @@ void Renderer::KeyDown(const int key)
 			isDbgPixelEntered = true;
 		}
 	}
+
+#endif
 }
 
 void Renderer::RotateAroundWorldAxis(Transform& transform, const float3& worldAxis, const float angleRadians)
 {
 	const quat worldRotation = quat::FromAxisAngle(worldAxis, angleRadians);
 	transform.m_rot = worldRotation * transform.m_rot;
-#if 0
-	transform.m_rotAngles += worldAxis * RAD_TO_DEG(angleRadians);
-#elif 1
 	transform.m_rotAngles = RAD_TO_DEG(transform.m_rot.toEuler());
-#elif 0
-	float3 eu = 0;
-	quat::DecomposeQuaternionToEuler(transform.m_rot, eu);
-	transform.m_rotAngles = eu;
-#endif
 }

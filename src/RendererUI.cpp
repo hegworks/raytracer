@@ -14,12 +14,10 @@ void Renderer::UI()
 {
 	ImGui::End();
 
-	//TODO fix ifdefs
 #ifdef _GAME
 	ImGui::PushFont(font);
 	GameUI();
 	ImGui::PopFont();
-	return;
 #endif
 
 #ifdef _ENGINE
@@ -483,7 +481,7 @@ void Renderer::UI()
 										break;
 									case Material::Type::PATH_TRACED:
 										ImGui::DragFloat(("Smoothness##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.001f, 0, 1);
-										ImGui::DragFloat(("Specularity##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
+										ImGui::DragFloat(("Metallic##" + std::to_string(j)).c_str(), &mat.m_factor1, 0.001f, 0, 1);
 										break;
 									case Material::Type::EMISSIVE:
 										ImGui::DragFloat(("Intensity##" + std::to_string(j)).c_str(), &mat.m_factor0, 0.01f, 0.0f, 999999.0f);

@@ -16,9 +16,8 @@ void Renderer::Tick(const float deltaTime)
 		for(int x = 0; x < SCRWIDTH; x++)
 		{
 			const int pixelIndex = x + yTimesSCRWDTH;
-			//TODO remove useAA
-			const float xOffset = useAA ? threadRng.RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
-			const float yOffset = useAA ? threadRng.RandomFloat(pixelSeeds[pixelIndex]) : 0.0f;
+			const float xOffset = threadRng.RandomFloat(pixelSeeds[pixelIndex]);
+			const float yOffset = threadRng.RandomFloat(pixelSeeds[pixelIndex]);
 			float3 stochasticDOFTraced(0);
 			for(int s = 0; s < spp; ++s)
 			{
@@ -44,10 +43,7 @@ void Renderer::Tick(const float deltaTime)
 	dfps = fps, drps = rps, davg = avg;
 	//printf("%5.2fms (%.1ffps) - %.1fMrays/s\n", avg, fps, rps);
 
-	//TODO disable camera movement and keyboard object rotation in _GAME
-	const bool cameraChanged = camera.HandleInput(deltaTime);
-	const bool objectRotationChanged = HandleKeyboardRotations(deltaTime);
-	if(cameraChanged || objectRotationChanged || resetAccumulator || !useACM)
+	if(resetAccumulator)
 	{
 		memset(accumulator, 0, SCRSIZE * 16);
 		acmCounter = 1;

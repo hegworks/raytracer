@@ -203,8 +203,6 @@ void GameManager::OnTransformChanged(const int instanceIdx) const
 
 void GameManager::OnMouseDown(const int button)
 {
-	if(ImGui::GetIO().WantCaptureMouse && m_state != State::WIN) return; //TODO remove this before release
-
 	if(button == GLFW_MOUSE_BUTTON_LEFT)
 	{
 		m_mouseDownWindowPos = m_windowCoord;
@@ -229,8 +227,9 @@ void GameManager::OnMouseUp(const int button)
 	}
 }
 
-void GameManager::OnKeyDown(const int key) const
+void GameManager::OnKeyDown([[maybe_unused]] const int key) const
 {
+#if 0
 	if(key == GLFW_KEY_SPACE)
 	{
 		printf("q:\n");
@@ -247,6 +246,7 @@ void GameManager::OnKeyDown(const int key) const
 
 		printf("\n");
 	}
+#endif
 }
 
 void GameManager::RotateRandomly()
@@ -319,14 +319,6 @@ void GameManager::LoadLevel(const int levelIdx)
 	DirLight& frontLight = m_scene->CreateDirLight();
 	frontLight.m_dir = float3(0, 0, 1);
 
-	//DirLight& downLight = m_scene->CreateDirLight();
-
-	//DirLight& leftLight = m_scene->CreateDirLight();
-	//leftLight.m_dir = {-1,0,0};
-
-	//DirLight& rightLight = m_scene->CreateDirLight();
-	//rightLight.m_dir = {1,0,0};
-
 	Model& scenery = m_scene->CreateModel(ModelType::SCN_ROOM_LEVEL);
 	for(Material& material : scenery.m_modelData.m_meshMaterialList)
 	{
@@ -344,8 +336,6 @@ void GameManager::LoadLevel(const int levelIdx)
 		}
 	}
 	m_scene->m_tranformList.back().m_pos = float3(-8.1f, -10.05f, -4.0f);
-	//m_scene->m_tranformList.back().m_rotAngles = float3(-90, 0, 0);
-	//m_scene->m_tranformList.back().m_rot = quat::fromEuler(DEG_TO_RAD(float3(-90, 0, 0)));
 	m_scene->m_tranformList.back().m_scl = float3(1.8f);
 	Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
 
@@ -659,11 +649,6 @@ void GameManager::LoadLevel(const int levelIdx)
 			throw std::runtime_error("Unhandled levelIdx");
 	}
 
-	// unused situation
-	//m_winType = WinType::SINGLE_SIDED;
-	//m_singleSidedWinData.m_winRotDeg = 0;
-	//m_singleSidedWinData.m_winRotWeights = 0.33f;
-
 	RotateUntilLeastDiff(0.01f);
 	UpdateProgressBar(CalcProgress());
 
@@ -702,17 +687,6 @@ void GameManager::LoadStartMenu() const
 			material.m_factor1 = 1.54f;
 		}
 	}
-	/*{
-		m_scene->CreateModel(ModelType::DRAGON);
-		m_scene->m_tranformList.back().m_pos = float3(-2, -0.8, -3);
-		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
-	}
-	{
-		m_scene->CreateModel(ModelType::CUBE);
-		m_scene->m_tranformList.back().m_pos = float3(0, -0.8f, -3);
-		Scene::SetBlasTransform(m_scene->m_blasList.back(), m_scene->m_tranformList.back());
-	}
-	*/
 	{
 		DirLight& light = m_scene->CreateDirLight();
 		light.m_intensity = 0.3f;
