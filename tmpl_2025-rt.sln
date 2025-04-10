@@ -27,7 +27,6 @@ Global
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Engine_Release|x64.ActiveCfg = Engine_Release|x64
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Engine_Release|x64.Build.0 = Engine_Release|x64
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Game_Debug|x64.ActiveCfg = Game_Debug|x64
-		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Game_Debug|x64.Build.0 = Game_Debug|x64
 		{1723FD3C-92BD-E27E-67A3-92BABFB90E1A}.Game_Release|x64.ActiveCfg = Game_Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution

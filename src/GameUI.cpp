@@ -17,7 +17,6 @@ static string GetLevelModelTypeName(const ModelType modelType)
 		case ModelType::LVL_RAYMATIC: return "RAYMATIC!";
 		default: printf("Unhandled modelType: %hhu", static_cast<uint8_t>(modelType)), throw runtime_error("Unhandled modelType");
 	}
-	throw runtime_error("Unhandled modelType");
 }
 
 void Renderer::GameUI()

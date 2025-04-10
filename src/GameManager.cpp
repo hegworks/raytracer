@@ -398,7 +398,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_COCKTAIL, false, true, false);
+			[[maybe_unused]] Model& fullShape = m_scene->CreateModel(ModelType::LVL_COCKTAIL, false, true, false);
 			for(Material& material : lvlObj.m_modelData.m_meshMaterialList)
 			{
 				if(strcmp(material.m_name, "cocktail") == 0)
@@ -434,7 +434,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_SPINNER, false, true, false);
+			[[maybe_unused]] Model& fullShape = m_scene->CreateModel(ModelType::LVL_SPINNER, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::ANY_ROT;
@@ -560,7 +560,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_BUCKET, false, true, false);
+			[[maybe_unused]] Model& fullShape = m_scene->CreateModel(ModelType::LVL_BUCKET, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::DOUBLE_SIDED;
@@ -588,7 +588,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_CAT, false, true, false);
+			[[maybe_unused]] Model& fullShape = m_scene->CreateModel(ModelType::LVL_CAT, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::DOUBLE_SIDED;
@@ -616,7 +616,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_GUITAR, false, true, false);
+			[[maybe_unused]] Model& fullShape = m_scene->CreateModel(ModelType::LVL_GUITAR, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::ANY_ROT;
@@ -641,7 +641,7 @@ void GameManager::LoadLevel(const int levelIdx)
 			}
 			m_scene->m_tranformList.back().m_scl = float3(m_levelObjectScale);
 
-			Model& fullShape = m_scene->CreateModel(ModelType::LVL_CHAIR, false, true, false);
+			[[maybe_unused]] Model& fullShape = m_scene->CreateModel(ModelType::LVL_CHAIR, false, true, false);
 			m_scene->m_tranformList.back().m_scl = float3(EPS);
 
 			m_winType = WinType::DOUBLE_SIDED;

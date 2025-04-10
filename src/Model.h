@@ -183,6 +183,7 @@ inline void Model::processMesh(aiMesh* mesh, const aiScene* scene, const aiMatri
 					case Axis::X: { axis = mesh->mVertices[idx].x; break; }
 					case Axis::Y: { axis = mesh->mVertices[idx].y; break; }
 					case Axis::Z: { axis = mesh->mVertices[idx].z; break; }
+					default: throw runtime_error("Unhandled m_randAxis");
 				}
 
 				switch(m_randType)

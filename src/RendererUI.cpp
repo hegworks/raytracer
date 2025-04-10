@@ -22,6 +22,7 @@ void Renderer::UI()
 	return;
 #endif
 
+#ifdef _ENGINE
 	ImGui::SetNextWindowPos(ImVec2(WINDOWWIDTH - 350, 0));
 	ImGui::SetNextWindowSize(ImVec2(350, WINDOWHEIGHT));
 	ImGui::SetNextWindowBgAlpha(0.90f);
@@ -593,4 +594,6 @@ void Renderer::UI()
 			ImGui::End();
 		}
 	}
+#endif
+
 }
