@@ -109,12 +109,12 @@ void Renderer::Tick(const float deltaTime)
 	}
 	if(dbgCalcSum)
 	{
-		sum = 0;
+		illuminationSum = 0;
 		for(int i = 0; i < SCRSIZE; ++i)
 		{
-			sum += (illuminations[i].x + illuminations[i].y + illuminations[i].z) / 3.0f;
+			illuminationSum += (illuminations[i].x + illuminations[i].y + illuminations[i].z) / 3.0f;
 		}
-		sum /= 1000;
+		illuminationSum /= 1000;
 	}
 
 	// performance report - running average - ms, MRays/s

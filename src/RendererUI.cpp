@@ -42,7 +42,7 @@ void Renderer::UI()
 			ImGui::TableSetColumnIndex(1); ImGui::Text("%.0f", dfps);
 			ImGui::TableSetColumnIndex(2); ImGui::Text("%.0f", drps);
 			ImGui::TableSetColumnIndex(3); ImGui::Text("%i", acmCounter);
-			ImGui::TableSetColumnIndex(4); ImGui::Text("%.1f", dbgCalcSum ? sum : NAN);
+			ImGui::TableSetColumnIndex(4); ImGui::Text("%.1f", dbgCalcSum ? illuminationSum : NAN);
 
 			ImGui::EndTable();
 		}

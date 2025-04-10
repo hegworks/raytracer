@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "UknittyMath.h"
 
+//tdd: 2D Debugger
 inline bool tdd = false;
 inline bool tddResetCam = false;
 inline float tddSceneScale = 2.0f;
@@ -22,6 +23,7 @@ inline bool tddPNL = false; /// P Normal Length
 inline bool tddPLR = false; /// PointLightRay
 inline bool tddPLP = false; /// PointLightPosition
 
+// starting with d: Debug
 inline float davg, dfps, drps; /// DEBUG
 inline bool useAA = false; /// Anti-Aliasing
 
@@ -47,8 +49,8 @@ inline float TWO_EPS = 2e-3f;
 inline int epsInt = 2;
 inline float dbgFF = 10.f; /// FireFly
 inline float dbgGC = 1.35f; /// GammaCorrection
-//inline bool dbgSL = false; /// StochasticLights
-//inline int dbgSLS = 2; /// StochasticLightsSamples
+//inline bool dbgSL = false; /// StochasticLights -> turned into ifdef
+//inline int dbgSLS = 2; /// StochasticLightsSamples -> -> turned into ifdef
 inline bool dbgSF = true; /// StochasticFresnel
 
 inline bool useDOF = false; /// DepthOfField
@@ -62,15 +64,16 @@ inline int selectedMeshIdx = -1;
 inline int dbgRotAxisInt = 1; /// 0->X 1->Y 2->Z
 inline float3 rotAxis(0, 1, 0);
 
-inline float sum = 0; /// sum of all pixels rgb/3
+inline float illuminationSum = 0; /// sum of all pixels rgb/3
 inline bool dbgCalcSum = false;
 
+#ifdef _ENGINE
 static bool DBGCanPrint(const float2 pos)
 {
 	return !(pos.x < 0 || pos.x >= SCRWIDTH || pos.y < 0 || pos.y >= SCRHEIGHT - 10);
 }
 
-static bool IsCloseF(const float a, const float b)
+inline bool IsCloseF(const float a, const float b)
 {
 	return abs(a - b) < 0.001;
 }
@@ -84,7 +87,7 @@ static int2 WTS(float3 p)
 }
 
 /// 2D Debugger Primary/Point
-static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool tddIsPixelX, bool tddIsPixelY, bool tddIsCameraY)
+inline void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool tddIsPixelX, bool tddIsPixelY, bool tddIsCameraY)
 {
 	int2 pd = WTS(p); /// intersection point debug
 	if(tddIsCameraY)
@@ -154,3 +157,4 @@ static void TDDP(Ray& ray, float3 p, float3 n, Surface* screen, int depth, bool 
 		}
 	}
 }
+#endif
